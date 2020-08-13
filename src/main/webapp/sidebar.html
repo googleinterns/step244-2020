@@ -1,0 +1,43 @@
+<nav class="navbar-light navbar-nav" style="width: 100vw;">
+  <div class="navbar-nav ml-auto">
+    <button class="navbar-toggler" type="button" id="menu-toggle">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+  </div>
+</nav>
+<div id="sidebar-wrapper" style="top: 0;">
+  <ul class="sidebar-nav">
+    <li class="sidebar-brand" style="display: flex; justify-content: center;">
+      <button type="button" class="close" aria-label="Close">
+        <i class="fas fa-window-close"></i>
+      </button>
+    </li>
+    <li>
+      <a href="#">Search</a>
+    </li>
+    <li>
+      <a href="calendar.html">Calendar</a>
+    </li>
+    <li>
+      <a href="#">Add an event</a>
+    </li>
+    <li>
+      <a href="#">Groups</a>
+    </li>
+    <li>
+      <a href="#">Change name</a>
+    </li>
+  </ul>
+</div>
+<script>
+  $("#menu-toggle").click(function (e) {
+    e.preventDefault();
+    $("#wrapper").toggleClass("toggled");
+    $("#menu-toggle").hide();
+  });
+  $(".close").click(function (e) {
+    e.preventDefault();
+    $("#wrapper").toggleClass("toggled");
+    $("#menu-toggle").show();
+  });
+</script>
