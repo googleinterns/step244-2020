@@ -25,6 +25,7 @@ html * {
   z-index: 100;
   position: fixed;
   right: 150px;
+  top: 0;
   width: 0;
   height: 100%;
   margin-right: -150px;
@@ -87,6 +88,8 @@ html * {
   height: 65px;
   font-size: 18px;
   line-height: 60px;
+  display: flex; 
+  justify-content: center;
 }
 
 .sidebar-nav > .sidebar-brand a {
