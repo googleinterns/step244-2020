@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css"
+    integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js"
+    integrity="sha384-cs/chFZiN24E4KMATLdqdvsezGxaGsi4hLGOzlXwp5UZB1LY//20VyM2taTB4QvJ"
+    crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/solid.js"
+    integrity="sha384-tzzSw1/Vo+0N5UhStP3bvwWPq+uvzCMfrN1fEFe+xBmv1C/AtVX5K0uZtmcHitFZ"
+    crossorigin="anonymous"></script>
+  <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/fontawesome.js"
+    integrity="sha384-6OIrr52G08NpOFSZdxxz1xdNSndlD4vdcf/q2myIUVO0VsqaGHJsB0RaBE01VTOY"
+    crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js"
+    integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm"
+    crossorigin="anonymous"></script>
+  <script src="script.js"></script>
+</head>
+
+<body>
+
+  <div id="wrapper">
+    <!-- Used to include the same sidebar on each page.-->
+    <div id="sideBar">
+      <script>
+        $(function () {
+          $("#sideBar").load("sidebar.html");
+        });
+      </script>
+    </div>
+    <div id="page-content-wrapper">
+      <form action="">
+        <label for="event-title">Title</label>
+        <input type="text" id="event-title" name="event-title">
+
+        <label for="event-date">Date</label>
+        <input type="date" id="event-date" name="event-date">
+
+        <label for="event-time">Time</label>
+        <input type="time" id="event-time" name="event-time">
+
+        <label for="event-type">Type</label>
+        <input type="text" id="event-time" name="event-time">
+        <datalist id="event-list-types">
+          <option value="entertainment">Entertainment</option>
+          <option value="education">Education</option>
+          <option value="business">Business</option>
+          <option value="other">Other</option>
+        </datalist>
+        
+        <label for="event-description">Description</label>
+        <textarea id="event-description" name="event-description"></textarea>
+
+        <label for="event-location">Location</label>
+        <input type="text" id="event-location" name="event-location">
+
+        <label for="event-links">Links</label>
+        <input type="text" id="event-links" name="event-links">
+
+        <input type="button" value="Add custom field" onclick="">
+
+        <label for="event-add-person">Person</label>
+        <input type="text" id="event-add-person" name="event-add-person">
+        <input type="button" value="Add" onclick="">
+
+        <input type="submit" value="Done">
+      </form>
+    </div>
+  </div>
+
+</body>
+
+</html>
