@@ -34,10 +34,43 @@
     </div>
     <div id="page-content-wrapper">
       <form id="add-event-form" action="/events" method="POST">
+        <label for="event-title">Title</label>
+        <input type="text" id="event-title" name="event-title">
+
+        <label for="event-date">Date</label>
+        <input type="date" id="event-date" name="event-date">
+
+        <label for="event-time">Time</label>
+        <input type="time" id="event-time" name="event-time">
+
+        <label for="event-type">Type</label>
+        <input type="text" id="event-time" name="event-time">
+        <datalist id="event-list-types">
+          <option value="entertainment">Entertainment</option>
+          <option value="education">Education</option>
+          <option value="business">Business</option>
+          <option value="other">Other</option>
+        </datalist>
+        
+        <label for="event-description">Description</label>
+        <textarea id="event-description" name="event-description"></textarea>
+
+        <label for="event-location">Location</label>
+        <input type="text" id="event-location" name="event-location">
+
+        <label for="event-links">Links</label>
+        <input type="text" id="event-links" name="event-links">
+
+        <input type="button" value="Add custom field" onclick="">
+
+        <label for="event-add-person">Person</label>
+        <input type="text" id="event-add-person" name="event-add-person">
+        <input type="button" value="Add" onclick="">
+
+        <input type="submit" value="Done">
       </form>
     </div>
   </div>
 
 </body>
-
 </html>
