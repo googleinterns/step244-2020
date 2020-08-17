@@ -35,33 +35,37 @@
     <div id="page-content-wrapper">
       <form id="add-event-form" action="/events" method="POST">
         <label for="event-title">Title</label>
-        <input type="text" id="event-title" name="event-title">
+        <input type="text" id="event-title" name="title">
 
         <label for="event-date">Date</label>
-        <input type="date" id="event-date" name="event-date">
+        <input type="date" id="event-date" name="date">
 
         <label for="event-time">Time</label>
-        <input type="time" id="event-time" name="event-time">
+        <input type="time" id="event-time" name="time">
 
         <label for="event-type">Type</label>
-        <input type="text" id="event-time" name="event-time">
+        <input list="event-list-types" id="event-type" name="type">
         <datalist id="event-list-types">
-          <option value="entertainment">Entertainment</option>
-          <option value="education">Education</option>
-          <option value="business">Business</option>
-          <option value="other">Other</option>
+          <option value="entertainment"></option>
+          <option value="education"></option>
+          <option value="business"></option>
         </datalist>
         
         <label for="event-description">Description</label>
-        <textarea id="event-description" name="event-description"></textarea>
+        <textarea id="event-description" name="description"></textarea>
 
         <label for="event-location">Location</label>
-        <input type="text" id="event-location" name="event-location">
+        <input type="text" id="event-location" name="location">
 
         <label for="event-links">Links</label>
-        <input type="text" id="event-links" name="event-links">
+        <input type="text" id="event-links" name="links">
 
-        <input type="button" value="Add custom field" onclick="">
+        <input id="add-event-custom-fields" type="button" value="Add custom field" onclick="showCustomFieldName()">
+        <div id="add-event-custom-field" hidden>
+          <label for="field-name">Field name</label>
+          <input type="text" id="field-name">
+          <input type="button" value="Add" onclick="addCustomField()">
+        </div>
 
         <label for="event-add-person">Person</label>
         <input type="text" id="event-add-person" name="event-add-person">
