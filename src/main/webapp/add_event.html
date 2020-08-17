@@ -33,7 +33,7 @@
       </script>
     </div>
     <div id="page-content-wrapper">
-      <form id="add-event-form" action="/add-event">
+      <form id="add-event-form" action="/add-event" method="POST">
         <label for="event-title">Title</label>
         <input type="text" id="event-title" name="title">
 
@@ -61,15 +61,18 @@
         <input type="text" id="event-links" name="links">
 
         <input id="add-event-custom-fields" type="button" value="Add custom field" onclick="showCustomFieldName()">
+        <input type="hidden" id="event-custom-fields" name="custom-fields" value="">
+        
         <div id="add-event-custom-field" hidden>
           <label for="field-name">Field name</label>
           <input type="text" id="field-name">
           <input type="button" value="Add" onclick="addCustomField()">
         </div>
 
-        <label for="event-add-person">Person</label>
-        <input type="text" id="event-add-person" name="event-add-person">
-        <input type="button" value="Add" onclick="">
+        <label for="person">Person</label>
+        <input type="text" id="person">
+        <input type="button" value="Add" onclick="addPerson()">
+        <input type="hidden" id="event-people" name="people">
 
         <input type="submit" value="Done">
       </form>

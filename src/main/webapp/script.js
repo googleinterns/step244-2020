@@ -26,6 +26,8 @@ function addCustomField() {
   
   var fieldName = document.getElementById('field-name').value;
   document.getElementById('field-name').value = '';
+  document.getElementById('event-custom-fields').value += ',' + fieldName;
+  
 
   const fieldLabel = document.createElement('label');
   fieldLabel.setAttribute('for', fieldName);
@@ -39,6 +41,10 @@ function addCustomField() {
   var button = document.getElementById('add-event-custom-fields');
   form.insertBefore(fieldLabel, button);
   form.insertBefore(fieldInput, button);
-  
-  return form;
+}
+
+function addPerson() {
+  var person = document.getElementById('person').value;
+  document.getElementById('person').value = '';
+  document.getElementById('event-people').value += ',' + person;
 }

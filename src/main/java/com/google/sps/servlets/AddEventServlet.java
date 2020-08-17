@@ -17,26 +17,28 @@ import javax.servlet.http.HttpServletResponse;
 public class AddEventServlet extends HttpServlet {
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    UserService userService = UserServiceFactory.getUserService();
-    if (!userService.isUserLoggedIn()) {
-      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-      return;
-    }
+    // UserService userService = UserServiceFactory.getUserService();
+    // if (!userService.isUserLoggedIn()) {
+    //   response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+    //   return;
+    // }
 
-    // Make an Entity of event.
-    Entity eventEntity = new Entity("Event");
-    String uid = userService.getCurrentUser().getUserId();
+    // // Make an Entity of event.
+    // Entity eventEntity = new Entity("Event");
+    // // String uid = userService.getCurrentUser().getUserId();
 
-    eventEntity.setProperty("title", request.getParameter("title"));
-    eventEntity.setProperty("type", request.getParameter("type"));
-    eventEntity.setProperty("description", request.getParameter("description"));
-    eventEntity.setProperty("date", request.getParameter("date"));
-    eventEntity.setProperty("time", request.getParameter("time"));
-    eventEntity.setProperty("location", request.getParameter("location"));
-    eventEntity.setProperty("links", request.getParameter("links"));
+    // eventEntity.setProperty("title", request.getParameter("title"));
+    // eventEntity.setProperty("type", request.getParameter("type"));
+    // eventEntity.setProperty("description", request.getParameter("description"));
+    // eventEntity.setProperty("date", request.getParameter("date"));
+    // eventEntity.setProperty("time", request.getParameter("time"));
+    // eventEntity.setProperty("location", request.getParameter("location"));
+    // eventEntity.setProperty("links", request.getParameter("links"));
     
-    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-    datastore.put(eventEntity);
+    System.out.println(request.getParameterMap());
+
+    // DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+    // datastore.put(eventEntity);
 
     // Redirect back to the HTML page.
     response.sendRedirect("/index.html");
