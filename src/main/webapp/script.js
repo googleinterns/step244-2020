@@ -11,3 +11,34 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
+/** Add custom field to form while creating an event. */
+function showCustomFieldName() {
+  document.getElementById('add-event-custom-fields').hidden = true;
+  document.getElementById('add-event-custom-field').hidden = false;
+}
+
+function addCustomField() {
+  document.getElementById('add-event-custom-fields').hidden = false;
+  document.getElementById('add-event-custom-field').hidden = true;
+
+  var form = document.getElementById('add-event-form');
+  
+  var fieldName = document.getElementById('field-name').value;
+  document.getElementById('field-name').value = '';
+
+  const fieldLabel = document.createElement('label');
+  fieldLabel.setAttribute('for', fieldName);
+  fieldLabel.innerText = fieldName;
+
+  const fieldInput = document.createElement('input');
+  fieldInput.setAttribute('type', 'text');
+  fieldInput.setAttribute('id', fieldName);
+  fieldInput.setAttribute('name', fieldName);
+
+  var button = document.getElementById('add-event-custom-fields');
+  form.insertBefore(fieldLabel, button);
+  form.insertBefore(fieldInput, button);
+  
+  return form;
+}
