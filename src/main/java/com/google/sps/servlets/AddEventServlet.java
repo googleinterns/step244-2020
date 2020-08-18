@@ -12,7 +12,6 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.commons.collections4.CollectionUtils;
 
 /** Servlet responsible for adding an event. */
 @WebServlet("/event")
@@ -40,6 +39,7 @@ public class AddEventServlet extends HttpServlet {
     eventInfoEntity.setProperty("location", request.getParameter("location"));
     eventInfoEntity.setProperty("links", request.getParameter("links")); 
     if (request.getParameterValues("custom-fields") != null) {
+      eventInfoEntity.setProperty("custom-fields", Arrays.asList(request.getParameterValues("custom-fields")));
       for (String custom_field : request.getParameterValues("custom-fields")) {
         String custom_value = request.getParameter(custom_field);
         eventInfoEntity.setProperty(custom_field, custom_value);
@@ -49,7 +49,7 @@ public class AddEventServlet extends HttpServlet {
     Entity eventParticipantsEntity = new Entity("EventParticipants", eventEntity.getKey());
     eventParticipantsEntity.setProperty("participating-people", "" /*current person*/);
     if (request.getParameterValues("people") != null) {
-      eventParticipantsEntity.setProperty("invited-people", String.join(",", request.getParameterValues("people")));
+      eventParticipantsEntity.setProperty("invited-people", Arrays.asList(request.getParameterValues("people")));
     }
     
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
