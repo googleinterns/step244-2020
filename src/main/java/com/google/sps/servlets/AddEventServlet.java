@@ -6,6 +6,7 @@ import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.google.gson.Gson;
+import java.util.Arrays;
 import java.io.IOException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -13,7 +14,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /** Servlet responsible for adding an event. */
-@WebServlet("/add-event")
+@WebServlet("/event")
 public class AddEventServlet extends HttpServlet {
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -23,22 +24,29 @@ public class AddEventServlet extends HttpServlet {
     //   return;
     // }
 
-    // // Make an Entity of event.
-    // Entity eventEntity = new Entity("Event");
-    // // String uid = userService.getCurrentUser().getUserId();
+    // Make an Entity of event.
+    Entity eventEntity = new Entity("Event");
+    // String uid = userService.getCurrentUser().getUserId();
 
-    // eventEntity.setProperty("title", request.getParameter("title"));
-    // eventEntity.setProperty("type", request.getParameter("type"));
-    // eventEntity.setProperty("description", request.getParameter("description"));
-    // eventEntity.setProperty("date", request.getParameter("date"));
-    // eventEntity.setProperty("time", request.getParameter("time"));
-    // eventEntity.setProperty("location", request.getParameter("location"));
-    // eventEntity.setProperty("links", request.getParameter("links"));
+    eventEntity.setProperty("title", request.getParameter("title"));
+    eventEntity.setProperty("type", request.getParameter("type"));
+    eventEntity.setProperty("description", request.getParameter("description"));
+    eventEntity.setProperty("start-date", request.getParameter("start-date"));
+    eventEntity.setProperty("start-time", request.getParameter("start-time"));
+    eventEntity.setProperty("end-date", request.getParameter("end-date"));
+    eventEntity.setProperty("end-time", request.getParameter("end-time"));
+    eventEntity.setProperty("location", request.getParameter("location"));
+    eventEntity.setProperty("links", request.getParameter("links"));
     
-    System.out.println(request.getParameterMap());
+    for (String custom_field : request.getParameterValues("custom-fields")) {
+      String custom_value = request.getParameter(custom_field);
+      eventEntity.setProperty(custom_field, custom_value);
+    }
 
-    // DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-    // datastore.put(eventEntity);
+    eventEntity.setProperty("people", request.getParameterValues("people"));
+
+    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+    datastore.put(eventEntity);
 
     // Redirect back to the HTML page.
     response.sendRedirect("/index.html");

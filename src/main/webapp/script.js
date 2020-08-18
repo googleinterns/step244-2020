@@ -23,12 +23,14 @@ function addCustomField() {
   document.getElementById('add-event-custom-field').hidden = true;
 
   var form = document.getElementById('add-event-form');
-  
   var fieldName = document.getElementById('field-name').value;
   document.getElementById('field-name').value = '';
-  document.getElementById('event-custom-fields').value += ',' + fieldName;
-  
 
+  const customFieldInput = document.createElement('input');
+  customFieldInput.setAttribute('type', 'hidden');
+  customFieldInput.setAttribute('name', 'custom-fields');
+  customFieldInput.setAttribute('value', fieldName);
+  
   const fieldLabel = document.createElement('label');
   fieldLabel.setAttribute('for', fieldName);
   fieldLabel.innerText = fieldName;
@@ -39,6 +41,7 @@ function addCustomField() {
   fieldInput.setAttribute('name', fieldName);
 
   var button = document.getElementById('add-event-custom-fields');
+  form.insertBefore(customFieldInput, button);
   form.insertBefore(fieldLabel, button);
   form.insertBefore(fieldInput, button);
 }
@@ -46,5 +49,14 @@ function addCustomField() {
 function addPerson() {
   var person = document.getElementById('person').value;
   document.getElementById('person').value = '';
-  document.getElementById('event-people').value += ',' + person;
+
+  const personInput = document.createElement('input');
+  personInput.setAttribute('type', 'hidden');
+  personInput.setAttribute('name', 'people');
+  personInput.setAttribute('value', person);
+  document.getElementById('add-event-form').insertBefore(personInput, document.getElementById('event-people'));
+
+  const personLI = document.createElement('li');
+  personLI.innerText = person;
+  document.getElementById('event-people-list').appendChild(personLI);
 }
