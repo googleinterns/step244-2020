@@ -15,28 +15,26 @@
 package com.google.sps.servlets;
 
 import com.google.gson.Gson;
+import com.google.sps.data.User;
 import java.io.IOException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-@WebServlet("/cool")
-public class OurCoolServlet extends HttpServlet {
-  @Override
-  public void init() {
-  }
-
-  @Override
-  public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    response.setContentType("text/html;");
-    response.getWriter().println("<h1>Get cool</h1>");
-  }
-
+@WebServlet("/join")
+public class JoinServlet extends HttpServlet {
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    response.setContentType("application/json;");
-    Gson gson = new Gson();
-    response.getWriter().println(gson.toJson("Post cool"));
+    UserService userService = UserServiceFactory.getUserService();
+    if (!userService.isUserLoggedIn()) {
+      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+      return;
+    }
+
+    User.join(event);
+
+    // Redirect back to the HTML page.
+    response.sendRedirect("/index.html");
   }
 }
