@@ -6,7 +6,10 @@ import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.google.gson.Gson;
+import com.google.sps.data.User;
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 import java.io.IOException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -18,12 +21,12 @@ import javax.servlet.http.HttpServletResponse;
 public class AddEventServlet extends HttpServlet {
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    // UserService userService = UserServiceFactory.getUserService();
-    // if (!userService.isUserLoggedIn()) {
-    //   response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-    //   return;
-    // }
-    // String uid = userService.getCurrentUser().getUserId();
+    UserService userService = UserServiceFactory.getUserService();
+    if (!userService.isUserLoggedIn()) {
+      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+      return;
+    }
+    String uid = userService.getCurrentUser().getUserId();
 
     // Make an Entity of event.
     Entity eventEntity = new Entity("Event");
@@ -47,9 +50,11 @@ public class AddEventServlet extends HttpServlet {
     }
 
     Entity eventParticipantsEntity = new Entity("EventParticipants", eventEntity.getKey());
-    eventParticipantsEntity.setProperty("participating-people", "" /*current person*/);
+    eventParticipantsEntity.setProperty("participating-people", uid);
     if (request.getParameterValues("people") != null) {
-      eventParticipantsEntity.setProperty("invited-people", Arrays.asList(request.getParameterValues("people")));
+      List<String> participants_uids = Arrays.asList(request.getParameterValues("people"))
+                                         .stream().map(person -> User.getUID(person)).collect(Collectors.toList());
+      eventParticipantsEntity.setProperty("invited-people", participants_uids);
     }
     
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
