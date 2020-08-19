@@ -14,8 +14,19 @@
 
 package com.google.sps.data;
 
-public class Cool {
-  public static String getCool() {
-    return "Cool";
+public final class Event {
+
+  private final String name;
+  private final String date;
+  private final String description;
+
+  public Event(String name, String date, String description) {
+    this.name = name;
+    this.date = date;
+    this.description = description;
+  }
+
+  public String getName() {
+    return name;
   }
 }

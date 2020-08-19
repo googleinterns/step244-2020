@@ -53,6 +53,17 @@ html * {
   margin-right: -150px;
 }
 
+#search-bar {
+  position: relative;
+  left: 50%;
+  margin-right: -50%;
+  margin-bottom: 50px;
+}
+
+#events-container {
+  position: relative;
+}
+
 .sidebar-nav {
   position: absolute;
   top: 0;
