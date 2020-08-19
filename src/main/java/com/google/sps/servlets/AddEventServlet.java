@@ -31,6 +31,7 @@ public class AddEventServlet extends HttpServlet {
     // Make an Entity of event.
     Entity eventEntity = new Entity("Event");
 
+    // Make an Entity of event info.
     Entity eventInfoEntity = new Entity("EventInfo", eventEntity.getKey());
     eventInfoEntity.setProperty("title", request.getParameter("title"));
     eventInfoEntity.setProperty("type", request.getParameter("type"));
@@ -49,6 +50,7 @@ public class AddEventServlet extends HttpServlet {
       }
     }
 
+    // Make an Entity of event participants.
     Entity eventParticipantsEntity = new Entity("EventParticipants", eventEntity.getKey());
     eventParticipantsEntity.setProperty("participating-people", uid);
     if (request.getParameterValues("people") != null) {
@@ -57,6 +59,7 @@ public class AddEventServlet extends HttpServlet {
       eventParticipantsEntity.setProperty("invited-people", participants_uids);
     }
     
+    // Store Entities to datastore.
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
     datastore.put(eventEntity);
     datastore.put(eventInfoEntity);
