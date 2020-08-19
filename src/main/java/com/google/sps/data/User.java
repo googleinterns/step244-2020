@@ -24,7 +24,7 @@ import org.apache.commons.validator.routines.EmailValidator;
 
 public class User {
   /**
-   * Returns the nickname of the user with id, or empty String if the user has not set a nickname.
+   * Returns the uid of the user with userame, or empty String if the user not find.
    */
   public static String getUID(String username) {
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
