@@ -26,6 +26,7 @@ public class Event {
   private final String title;
   private final String date;
   private final List<String> tags;
+  private final Map<String, String> fields;
   private final String description;
 
   public Event(String title, String date, List<String> tags, String description) {

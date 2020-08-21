@@ -14,6 +14,8 @@
 
 package com.google.sps.data;
 
+import com.google.appengine.api.users.UserService;
+import com.google.appengine.api.users.UserServiceFactory;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
@@ -27,6 +29,7 @@ public class User {
   private final String nickname;
 
   public User(String email, String nickname) {
+    this.uid = UserServiceFactory.getUserService().getCurrentUser().getUserId();
     this.email = email;
     this.nickname = nickname;
   }
@@ -36,13 +39,13 @@ public class User {
 
   public static void add(parameters) {
     // Make an Entity of event.
-    Entity userEntity = new Entity("User");
+    Entity userEntity = new Entity("User", uid);
 
     // Make an Entity of user info.
-    Entity userInfoEntity = new Entity("UserInfo", userEntity.getKey());
+    Entity userInfoEntity = new Entity("UserInfo", uid);
 
     // Make an Entity of user users.
-    Entity userEventsEntity = new Entity("UserEvents", userEntity.getKey());
+    Entity userEventsEntity = new Entity("UserEvents", uid);
 
     // Store Entities to datastore.
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
