@@ -30,15 +30,19 @@ public class CredentialVerifierServlet extends HttpServlet {
       Credential credential = flow.loadCredential(user.getUserId());
       if (credential == null) {
         response.getWriter().print("false");
-      } else if (credential.getAccessToken() == null) {
+        return;
+      }
+      if (credential.getAccessToken() == null) {
         if (credential.refreshToken() == false) {
           response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        } else {
-          response.getWriter().print("true");
+          return;
         }
-      } else {
         response.getWriter().print("true");
+        return;
       }
+      response.getWriter().print("true");
+      return;
+
     } catch (GeneralSecurityException e) {
       response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
       e.printStackTrace();

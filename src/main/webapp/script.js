@@ -26,9 +26,7 @@ function addEventToGCalendar() { //To be modified to get fields
 
 function verifyCredentials() {
   return fetch("/credentials").then(response => response.text()).then(responseText => {
-    if (responseText == "true")
-      return true;
-    return false;
+    return (responseText == "true");
   }).catch(error => {
     alert(error);
     return false;
