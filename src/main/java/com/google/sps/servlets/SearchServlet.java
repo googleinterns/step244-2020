@@ -15,18 +15,26 @@
 package com.google.sps.servlets;
 
 import com.google.gson.Gson;
+import com.google.sps.data.Event;
+import com.google.sps.data.EventStorage;
 import com.google.sps.data.User;
+import com.google.sps.data.UserStorage;
 import java.io.IOException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.List;
 
-@WebServlet("/events")
+@WebServlet("/search")
 public class SearchServlet extends HttpServlet {
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    List<Event> events = User.search(parameters);
+    // List<Event> events = User.search();
+    List<Event> events = null;
+    
+    response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
+
     Gson gson = new Gson();
     String json = gson.toJson(events);
     response.getWriter().println(json);

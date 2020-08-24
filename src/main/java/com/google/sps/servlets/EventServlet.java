@@ -17,19 +17,25 @@ package com.google.sps.servlets;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.google.gson.Gson;
-import com.google.sps.data.User;
 import com.google.sps.data.Event;
+import com.google.sps.data.EventStorage;
+import com.google.sps.data.User;
+import com.google.sps.data.UserStorage;
 import java.io.IOException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-@WebServlet("/event")
+@WebServlet("/events")
 public class EventServlet extends HttpServlet {
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    Event event = Event.get(request.getParameter("event_id"));
+    // Event event = EventStorage.getEvent(Long.parseLong(request.getParameter("event_id")));
+    // Check an access
+    Event event = null;
+    response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
+
     Gson gson = new Gson();
     String json = gson.toJson(event);
     response.getWriter().println(json);
@@ -43,8 +49,9 @@ public class EventServlet extends HttpServlet {
       return;
     }
 
-    Event.add(parameters);
-
+    // EventStorage.addEvent();
+    response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
+    
     // Redirect back to the HTML page.
     response.sendRedirect("/index.html");
   }
@@ -57,7 +64,8 @@ public class EventServlet extends HttpServlet {
       return;
     }
 
-    Event.update(parameters);
+    // EventStorage.editEvent();
+    response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
 
     // Redirect back to the HTML page.
     response.sendRedirect("/index.html");

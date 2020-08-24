@@ -24,7 +24,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-@WebServlet("/join")
+@WebServlet("/events/join")
 public class JoinServlet extends HttpServlet {
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -34,7 +34,8 @@ public class JoinServlet extends HttpServlet {
       return;
     }
 
-    User.join(event);
+    // UserStorage.joinEvent(Long.parseLong(request.getParameter("event_id")));
+    response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
 
     // Redirect back to the HTML page.
     response.sendRedirect("/index.html");

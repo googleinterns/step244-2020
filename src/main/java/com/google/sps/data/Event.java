@@ -14,61 +14,55 @@
 
 package com.google.sps.data;
 
-import com.google.appengine.api.datastore.DatastoreService;
-import com.google.appengine.api.datastore.DatastoreServiceFactory;
-import com.google.appengine.api.datastore.Entity;
-import com.google.appengine.api.datastore.PreparedQuery;
-import com.google.appengine.api.datastore.Query;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Event {
-  private final String id;
+  private final Long id;
   private final String title;
   private final String date;
-  private final List<String> tags;
-  private final Map<String, String> fields;
+  private final List<String> tags = new ArrayList<String>();
+  private final Map<String, String> fields = new HashMap<String, String>();
   private final String description;
 
-  public Event(String title, String date, List<String> tags, String description) {
+  public Event(Long id, String title, String date, List<String> tags, Map<String, String> fields, String description) {
+    if (id == null) {
+      throw new IllegalArgumentException("id cannot be null");
+    }
+
+    if (title == null) {
+      throw new IllegalArgumentException("title cannot be null");
+    }
+
+    if (date == null) {
+      throw new IllegalArgumentException("date cannot be null");
+    }
+
+    if (tags == null) {
+      throw new IllegalArgumentException("tags cannot be null");
+    }
+
+    if (fields == null) {
+      throw new IllegalArgumentException("tags cannot be null");
+    }
+
+    if (description == null) {
+      throw new IllegalArgumentException("description cannot be null");
+    }
+
+    this.id = id;
     this.title = title;
     this.date = date;
-    this.tags = tags;
+
+    this.tags.addAll(tags);
+    this.fields.putAll(fields);
     this.description = description;
   }
 
-  public static Event get(event_id) {
-    // TODO: Search in datastore.
-  }
-
-  public static void add(parameters) {
-    // Make an Entity of event.
-    Entity eventEntity = new Entity("Event");
-
-    // Make an Entity of event info.
-    Entity eventInfoEntity = new Entity("EventInfo", eventEntity.getKey());
-
-    // Make an Entity of event users.
-    Entity eventUsersEntity = new Entity("EventUsers", eventEntity.getKey());
-
-    // Store Entities to datastore.
-    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-    datastore.put(eventEntity);
-    datastore.put(eventInfoEntity);
-    datastore.put(eventUsersEntity);
-
-    update(parameters);
-  }
-
-  public static void update(parameters) {
-    // TODO: Update event info with parameters.
-
-    // Store Entities to datastore.
-    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-    datastore.put(eventInfoEntity);
-    datastore.put(eventUsersEntity);
-  }
-
-  public static void join(event_id) {
-    // TODO: edit info in datastore
+  public Long getID() {
+    return id;
   }
 }

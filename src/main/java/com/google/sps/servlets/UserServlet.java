@@ -18,17 +18,21 @@ import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.google.gson.Gson;
 import com.google.sps.data.User;
+import com.google.sps.data.UserStorage;
 import java.io.IOException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-@WebServlet("/user")
-public class EventServlet extends HttpServlet {
+@WebServlet("/users")
+public class UserServlet extends HttpServlet {
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    User user = User.get(request.getParameter("user_id"));
+    // User user = User.getUser(Long.parseLong(request.getParameter("user_id")));
+    User user = null;
+    response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
+
     Gson gson = new Gson();
     String json = gson.toJson(user);
     response.getWriter().println(json);
@@ -42,7 +46,8 @@ public class EventServlet extends HttpServlet {
       return;
     }
 
-    User.add(parameters);
+    // UserStorage.addUser();
+    response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
 
     // Redirect back to the HTML page.
     response.sendRedirect("/index.html");
@@ -56,7 +61,8 @@ public class EventServlet extends HttpServlet {
       return;
     }
 
-    User.update(parameters);
+    //UserStorage.editUser();
+    response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
 
     // Redirect back to the HTML page.
     response.sendRedirect("/index.html");

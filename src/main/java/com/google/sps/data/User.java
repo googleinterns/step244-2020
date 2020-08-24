@@ -14,75 +14,30 @@
 
 package com.google.sps.data;
 
-import com.google.appengine.api.users.UserService;
-import com.google.appengine.api.users.UserServiceFactory;
-import com.google.appengine.api.datastore.DatastoreService;
-import com.google.appengine.api.datastore.DatastoreServiceFactory;
-import com.google.appengine.api.datastore.Entity;
-import com.google.appengine.api.datastore.PreparedQuery;
-import com.google.appengine.api.datastore.Query;
-import java.util.List;
-
 public class User {
-  private final String uid;
+  private final Long id;
   private final String email;
   private final String nickname;
 
-  public User(String email, String nickname) {
-    this.uid = UserServiceFactory.getUserService().getCurrentUser().getUserId();
+  public User(Long id, String email, String nickname) {
+    if (id == null) {
+      throw new IllegalArgumentException("id cannot be null");
+    }
+
+    if (email == null) {
+      throw new IllegalArgumentException("email cannot be null");
+    }
+
+    if (nickname == null) {
+      throw new IllegalArgumentException("nickname cannot be null");
+    }
+
+    this.id = id;
     this.email = email;
     this.nickname = nickname;
   }
-
-  public static User get() {
-  }
-
-  public static void add(parameters) {
-    // Make an Entity of event.
-    Entity userEntity = new Entity("User", uid);
-
-    // Make an Entity of user info.
-    Entity userInfoEntity = new Entity("UserInfo", uid);
-
-    // Make an Entity of user users.
-    Entity userEventsEntity = new Entity("UserEvents", uid);
-
-    // Store Entities to datastore.
-    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-    datastore.put(userEntity);
-    datastore.put(userInfoEntity);
-    datastore.put(userEventsEntity);
-
-    update(parameters);
-  }
-
-  public static void update(parameters) {
-    // TODO: update user info with parameters.
-
-    // Store Entities to datastore.
-    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-    datastore.put(userInfoEntity);
-    datastore.put(userEventsEntity);
-  }
-
-  public static void join(event_id) {
-    // TODO: edit info in datastore
-    Event.join(event_id);
-  }
-
-  public static List<Event> search(parameters) {
-    Query query = new Query("EventInfo");
-
-    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-    PreparedQuery results = datastore.prepare(query);
-
-    List<Event> events = new ArrayList<>();
-    for (Entity entity : results.asIterable()) {
-      if (...) {
-        events.add(...);
-      }
-    }
-    //TODO: Search with parameters.
-    return events;
+  
+  public Long getID() {
+    return id;
   }
 }
