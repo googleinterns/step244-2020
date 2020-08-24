@@ -29,16 +29,16 @@ public class GCalendarEventsServlet extends HttpServlet {
     String endTime = (String) request.getParameter("endTime");      //Example: 2020-08-18T16:00:00Z
     Event event = new Event().setDescription(description).setSummary(title);
     
-    DateTime startDateTime = new DateTime("endTime");
-    DateTime endDateTime = new DateTime("startTime");
-    EventDateTime start = new EventDateTime().setDateTime(startDateTime).setTimeZone("Europe/Zurich");
+    DateTime startDateTime = new DateTime(startTime);
+    DateTime endDateTime = new DateTime(endTime);
+    EventDateTime start = new EventDateTime().setDateTime(startDateTime);
     event.setStart(start);
-    EventDateTime end = new EventDateTime().setDateTime(endDateTime).setTimeZone("Europe/Zurich");
+    EventDateTime end = new EventDateTime().setDateTime(endDateTime);
     event.setEnd(end);
     
     ExtendedProperties extendedProps = new ExtendedProperties();
     Map<String, String> shared = new HashMap<>();
-    shared.put("field1", "val1"); //To be modifed in the future to get them from param
+    //shared.put("field1", "val1"); To be modifed in the future to get them from param
     extendedProps.setShared(shared);
     event.setExtendedProperties(extendedProps);
     String calendarId = "c_fmqkfbflaaoqltet2ei7shv184@group.calendar.google.com"; //To be modified with the user's primary
