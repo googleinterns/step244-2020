@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class Event {
   private final Long id;
@@ -29,37 +30,13 @@ public class Event {
   private final String description;
 
   public Event(Long id, String title, String date, List<String> tags, Map<String, String> fields, String description) {
-    if (id == null) {
-      throw new IllegalArgumentException("id cannot be null");
-    }
+    this.id = Objects.requireNonNull(id, "id cannot be null");
+    this.title = Objects.requireNonNull(title, "title cannot be null");
+    this.date = Objects.requireNonNull(date, "date cannot be null");
 
-    if (title == null) {
-      throw new IllegalArgumentException("title cannot be null");
-    }
-
-    if (date == null) {
-      throw new IllegalArgumentException("date cannot be null");
-    }
-
-    if (tags == null) {
-      throw new IllegalArgumentException("tags cannot be null");
-    }
-
-    if (fields == null) {
-      throw new IllegalArgumentException("tags cannot be null");
-    }
-
-    if (description == null) {
-      throw new IllegalArgumentException("description cannot be null");
-    }
-
-    this.id = id;
-    this.title = title;
-    this.date = date;
-
-    this.tags.addAll(tags);
-    this.fields.putAll(fields);
-    this.description = description;
+    this.tags.addAll(Objects.requireNonNull(tags, "tags cannot be null"));
+    this.fields.putAll(Objects.requireNonNull(fields, "fields cannot be null"));
+    this.description = Objects.requireNonNull(description, "description cannot be null");
   }
 
   public Long getID() {

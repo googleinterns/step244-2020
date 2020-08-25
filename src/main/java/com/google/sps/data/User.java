@@ -14,27 +14,17 @@
 
 package com.google.sps.data;
 
+import java.util.Objects;
+
 public class User {
   private final Long id;
   private final String email;
   private final String nickname;
 
   public User(Long id, String email, String nickname) {
-    if (id == null) {
-      throw new IllegalArgumentException("id cannot be null");
-    }
-
-    if (email == null) {
-      throw new IllegalArgumentException("email cannot be null");
-    }
-
-    if (nickname == null) {
-      throw new IllegalArgumentException("nickname cannot be null");
-    }
-
-    this.id = id;
-    this.email = email;
-    this.nickname = nickname;
+    this.id = Objects.requireNonNull(id, "id cannot be null");
+    this.email = Objects.requireNonNull(email, "email cannot be null");
+    this.nickname = Objects.requireNonNull(nickname, "nickname cannot be null");
   }
   
   public Long getID() {
