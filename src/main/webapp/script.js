@@ -12,16 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-function getEvent() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const event_id = urlParams.get('event_id');
-  fetch('/events?event_id=' + event_id).then(response => response.json());
+function getEvent(event_id) {
+  fetch('/events/' + event_id).then(response => response.json());
 }
 
 function getUser() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const user_id = urlParams.get('user_id');
-  fetch('/users?user_id=' + user_id).then(response => response.json());
+  fetch('/users').then(response => response.json());
 }
 
 function searchEvents() {
@@ -31,5 +27,5 @@ function searchEvents() {
 }
 
 function joinEvent(event_id) {
-  fetch('/join?event_id=' + event_id).then(response => response.json());
+  fetch('/events/' + event_id + '/join').then(response => response.json());
 }

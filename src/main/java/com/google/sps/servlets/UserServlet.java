@@ -24,7 +24,6 @@ import com.google.gson.Gson;
 import com.google.sps.data.User;
 import com.google.sps.data.UserStorage;
 import java.io.IOException;
-import javax.inject.Named;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -32,11 +31,8 @@ import javax.servlet.http.HttpServletResponse;
 
 @Api
 public class UserServlet extends HttpServlet {
-  @Override
   @ApiMethod(path = "users", httpMethod = ApiMethod.HttpMethod.GET)
-  public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    // User user = User.getUser(Long.parseLong(request.getParameter("user_id")));
-    // User user = null;
+  public void getUser(HttpServletRequest request, HttpServletResponse response) throws IOException {
     response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
 
     // Gson gson = new Gson();
@@ -44,20 +40,8 @@ public class UserServlet extends HttpServlet {
     // response.getWriter().println(json);
   }
 
-  @ApiMethod(path = "users/{user_id}", httpMethod = ApiMethod.HttpMethod.GET)
-  public void doGet(HttpServletRequest request, HttpServletResponse response, @Named("user_id") Long user_id) throws IOException {
-    // User user = User.getUser(Long.parseLong(request.getParameter("user_id")));
-    // User user = null;
-    response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
-
-    // Gson gson = new Gson();
-    // String json = gson.toJson(user);
-    // response.getWriter().println(json);
-  }
-
-  @Override
   @ApiMethod(path = "users", httpMethod = ApiMethod.HttpMethod.POST)
-  public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+  public void addUser(HttpServletRequest request, HttpServletResponse response) throws IOException {
     UserService userService = UserServiceFactory.getUserService();
     if (!userService.isUserLoggedIn()) {
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -70,15 +54,15 @@ public class UserServlet extends HttpServlet {
     response.sendRedirect("/index.html");
   }
 
-  @ApiMethod(path = "/users/{user_id}", httpMethod = ApiMethod.HttpMethod.PUT)
-  public void doPut(HttpServletRequest request, HttpServletResponse response, @Named("user_id") Long user_id) throws IOException {
+  @ApiMethod(path = "users", httpMethod = ApiMethod.HttpMethod.PUT)
+  public void editUser(HttpServletRequest request, HttpServletResponse response) throws IOException {
     UserService userService = UserServiceFactory.getUserService();
     if (!userService.isUserLoggedIn()) {
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
       return;
     }
 
-    //UserStorage.editUser();
+    // UserStorage.editUser();
     
     // Redirect back to the HTML page.
     response.sendRedirect("/index.html");

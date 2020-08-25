@@ -35,11 +35,10 @@ import javax.servlet.http.HttpServletResponse;
 
 @Api
 public class EventServlet extends HttpServlet {
-  @Override
   @ApiMethod(path = "events", httpMethod = ApiMethod.HttpMethod.GET)
-  public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+  public void searchEvents(HttpServletRequest request, HttpServletResponse response) throws IOException {
     // Search
-    List<Event> event = null;
+    // List<Event> events = null;
     response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
 
     // Gson gson = new Gson();
@@ -48,7 +47,7 @@ public class EventServlet extends HttpServlet {
   }
 
   @ApiMethod(path = "events/{event_id}", httpMethod = ApiMethod.HttpMethod.GET)
-  public void doGet(HttpServletRequest request, HttpServletResponse response, @Named("event_id") Long event_id) throws IOException {
+  public void getEvent(HttpServletRequest request, HttpServletResponse response, @Named("event_id") Long event_id) throws IOException {
     // Event event = EventStorage.getEvent(Long.parseLong(request.getParameter("event_id")));
     // Check an access
     Event event = null;
@@ -73,9 +72,8 @@ public class EventServlet extends HttpServlet {
     response.sendRedirect("/index.html");
   }
 
-  @Override
   @ApiMethod(path = "events", httpMethod = ApiMethod.HttpMethod.POST)
-  public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+  public void addEvent(HttpServletRequest request, HttpServletResponse response) throws IOException {
     UserService userService = UserServiceFactory.getUserService();
     if (!userService.isUserLoggedIn()) {
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -89,7 +87,7 @@ public class EventServlet extends HttpServlet {
   }
 
   @ApiMethod(path = "events/{event_id}", httpMethod = ApiMethod.HttpMethod.PUT)
-  public void doPut(HttpServletRequest request, HttpServletResponse response, @Named("event_id") Long event_id) throws IOException {
+  public void editEvent(HttpServletRequest request, HttpServletResponse response, @Named("event_id") Long event_id) throws IOException {
     UserService userService = UserServiceFactory.getUserService();
     if (!userService.isUserLoggedIn()) {
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
