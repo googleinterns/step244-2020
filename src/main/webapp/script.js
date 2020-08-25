@@ -15,39 +15,21 @@
 function getEvent() {
   const urlParams = new URLSearchParams(window.location.search);
   const event_id = urlParams.get('event_id');
-  fetch('/event?event_id=' + event_id).then(response => response.json()).then();
+  fetch('/events?event_id=' + event_id).then(response => response.json());
 }
 
 function getUser() {
   const urlParams = new URLSearchParams(window.location.search);
   const user_id = urlParams.get('user_id');
-  fetch('/user?user_id=' + user_id).then(response => response.json()).then();
+  fetch('/users?user_id=' + user_id).then(response => response.json());
 }
 
-/* Add all fetched events to the page. */
-function getEvents() {
-  fetch('/events').then(response => response.json()).then(events => events.forEach(addEvent));
-}
-
-/* Add all fetched events which match the search to the page. */
-function getSearchEvents() {
+function searchEvents() {
   fetch('/events?' + new URLSearchParams({
     search: search,
-  })).then(response => response.json()).then(events => events.forEach(...));
-}
-
-function getGCalendarEvents() {
-  fetch('/events/gcalendar').then(response => response.json()).then(events => events.forEach(...));
-}
-
-function getInvitedEvents() {
-  fetch('/events/invited').then(response => response.json()).then(events => events.forEach(...));
-}
-
-function getJoinedEvents() {
-  fetch('/events/joined').then(response => response.json()).then(events => events.forEach(...));
+  })).then(response => response.json());
 }
 
 function joinEvent(event_id) {
-  fetch('/join?event_id=' + event_id).then(response => response.json()).then();
+  fetch('/join?event_id=' + event_id).then(response => response.json());
 }
