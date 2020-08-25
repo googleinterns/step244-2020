@@ -68,8 +68,7 @@ public class EventServlet extends HttpServlet {
     }
 
     // UserStorage.joinEvent(Long.parseLong(request.getParameter("event_id")));
-    response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
-
+    
     // Redirect back to the HTML page.
     response.sendRedirect("/index.html");
   }
@@ -84,7 +83,6 @@ public class EventServlet extends HttpServlet {
     }
 
     // EventStorage.addEvent();
-    response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
     
     // Redirect back to the HTML page.
     response.sendRedirect("/index.html");
@@ -99,8 +97,7 @@ public class EventServlet extends HttpServlet {
     }
 
     // EventStorage.editEvent();
-    response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
-
+    
     // Redirect back to the HTML page.
     response.sendRedirect("/index.html");
   }

@@ -65,8 +65,7 @@ public class UserServlet extends HttpServlet {
     }
 
     // UserStorage.addUser();
-    response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
-
+    
     // Redirect back to the HTML page.
     response.sendRedirect("/index.html");
   }
@@ -80,8 +79,7 @@ public class UserServlet extends HttpServlet {
     }
 
     //UserStorage.editUser();
-    response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
-
+    
     // Redirect back to the HTML page.
     response.sendRedirect("/index.html");
   }
