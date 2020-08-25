@@ -29,15 +29,12 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+@WebServlet("/users")
 @Api
 public class UserServlet extends HttpServlet {
-  @ApiMethod(path = "users", httpMethod = ApiMethod.HttpMethod.GET)
-  public void getUser(HttpServletRequest request, HttpServletResponse response) throws IOException {
+  @Override
+  public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
-
-    // Gson gson = new Gson();
-    // String json = gson.toJson(user);
-    // response.getWriter().println(json);
   }
 
   @ApiMethod(path = "users", httpMethod = ApiMethod.HttpMethod.POST)
@@ -48,8 +45,6 @@ public class UserServlet extends HttpServlet {
       return;
     }
 
-    // UserStorage.addUser();
-    
     // Redirect back to the HTML page.
     response.sendRedirect("/index.html");
   }
@@ -62,8 +57,6 @@ public class UserServlet extends HttpServlet {
       return;
     }
 
-    // UserStorage.editUser();
-    
     // Redirect back to the HTML page.
     response.sendRedirect("/index.html");
   }

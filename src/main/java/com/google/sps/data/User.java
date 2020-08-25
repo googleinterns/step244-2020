@@ -19,12 +19,12 @@ import java.util.Objects;
 public class User {
   private final Long id;
   private final String email;
-  private final String nickname;
+  private final String username;
 
-  public User(Long id, String email, String nickname) {
+  public User(Long id, String email, String username) {
     this.id = Objects.requireNonNull(id, "id cannot be null");
     this.email = Objects.requireNonNull(email, "email cannot be null");
-    this.nickname = Objects.requireNonNull(nickname, "nickname cannot be null");
+    this.username = Objects.requireNonNull(username, "username cannot be null");
   }
   
   public Long getID() {

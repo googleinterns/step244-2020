@@ -33,29 +33,13 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+@WebServlet("/events")
 @Api
 public class EventServlet extends HttpServlet {
-  @ApiMethod(path = "events", httpMethod = ApiMethod.HttpMethod.GET)
-  public void searchEvents(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    // Search
-    // List<Event> events = null;
+  @Override
+  public void doGet(HttpServletRequest request, HttpServletResponse response) {
+    // TODO: parse "events/{event_id}" here.
     response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
-
-    // Gson gson = new Gson();
-    // String json = gson.toJson(event);
-    // response.getWriter().println(json);
-  }
-
-  @ApiMethod(path = "events/{event_id}", httpMethod = ApiMethod.HttpMethod.GET)
-  public void getEvent(HttpServletRequest request, HttpServletResponse response, @Named("event_id") Long event_id) throws IOException {
-    // Event event = EventStorage.getEvent(Long.parseLong(request.getParameter("event_id")));
-    // Check an access
-    Event event = null;
-    response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
-
-    // Gson gson = new Gson();
-    // String json = gson.toJson(event);
-    // response.getWriter().println(json);
   }
 
   @ApiMethod(path = "events/{event_id}/join", httpMethod = ApiMethod.HttpMethod.POST)
@@ -66,8 +50,6 @@ public class EventServlet extends HttpServlet {
       return;
     }
 
-    // UserStorage.joinEvent(Long.parseLong(request.getParameter("event_id")));
-    
     // Redirect back to the HTML page.
     response.sendRedirect("/index.html");
   }
@@ -80,8 +62,6 @@ public class EventServlet extends HttpServlet {
       return;
     }
 
-    // EventStorage.addEvent();
-    
     // Redirect back to the HTML page.
     response.sendRedirect("/index.html");
   }
@@ -94,8 +74,6 @@ public class EventServlet extends HttpServlet {
       return;
     }
 
-    // EventStorage.editEvent();
-    
     // Redirect back to the HTML page.
     response.sendRedirect("/index.html");
   }
