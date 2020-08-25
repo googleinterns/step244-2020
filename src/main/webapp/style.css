@@ -9,6 +9,22 @@ html * {
   padding: 0;
 }
 
+h2 {
+    vertical-align: bottom;
+}
+
+#search {
+    width: 475px;
+}
+
+#category {
+    width: 150px;
+}
+
+#tags {
+    width: 700px;
+}
+
 #wrapper {
   padding-left: 0;
   -webkit-transition: all 0.5s ease;
@@ -55,13 +71,39 @@ html * {
 
 #search-bar {
   position: relative;
-  left: 50%;
+  left: 25%;
   margin-right: -50%;
   margin-bottom: 50px;
 }
 
 #events-container {
   position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-gap: 10px;
+  grid-auto-rows: minmax(300px, auto);
+}
+
+#events-container > div {
+    border: 2px solid #ebe719;
+    border-radius: 15px;
+    padding: 1em;
+}
+
+#go {
+    background-color: #4CAF50;
+  border: none;
+  color: white;
+  padding: 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+    border: 2px solid #ebe719;
+    border-radius: 50%;
+    padding: 1em;
 }
 
 .sidebar-nav {

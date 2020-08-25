@@ -28,35 +28,84 @@ import javax.servlet.http.HttpServletResponse;
 @WebServlet("/event")
 public final class EventServlet extends HttpServlet {
 
+private List<Event> events;
+ 
+  @Override
+  public void init() {
+    events = new ArrayList<>();
+    events.add(new Event("Meeting", "Tomorrow 6pm", "Remote", "Bring a pen", "other", "business"));
+    events.add(new Event("Party", "Friday 8pm", "London", "Dress code: yellow shirt", "culture", "friends"));
+    events.add(new Event("Concert", "02/02/21 10pm", "Wembley", "RSVP here", "culture", "music"));
+    events.add(new Event("Graduation party", "After the ceremony", "Royal Albert Hall", "At Tim's house", "sport", "friends"));
+  }
+ 
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    /*
+    Filter pastEventFilter = new FilterPredicate("date", FilterOperator.LESS_THAN, currentDate);
 
-    Query query = new Query("Event");
-
+    Query query = new Query("Event").setFilter(pastEventFilter).addSort("time", SortDirection.ASCENDING);
+ 
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
     PreparedQuery results = datastore.prepare(query);
-
+ 
     String search = request.getParameter("search");
-
+ 
     List<Event> events = new ArrayList<>();
     for (Entity entity : results.asIterable()) {
       String name = (String) entity.getProperty("title");
-
+ 
       if (search.isEmpty() || isResultForSearch(search, event)) {
         String time = (String) entity.getProperty("time");
+        String location = (String) entity.getProperty("location");
         String description = (String) entity.getProperty("description");
-        Event event = new Event(name, time, description);
+        Event event = new Event(name, time, location, description);
         events.add(event);
+      }
+    }
+    */
+    String search = request.getParameter("search");
+    String category = request.getParameter("category");
+    String tags = request.getParameter("tags");
+
+    List<Event> searchedEvents = new ArrayList<>(events);
+
+    if (search != null && !search.isEmpty()) {
+      for (Event event : events) {
+        if (!isResultForSearch(search, event)) {
+          searchedEvents.remove(event);
+        }
+      }
+    }
+ 
+    if (category != null && !category.isEmpty() && !category.equals("all")) {
+      for (Event event : events) {
+        if (!category.equals(event.getCategory())) {
+          searchedEvents.remove(event);
+        }
+      }
+    }
+
+    if (tags != null && !tags.isEmpty()) {
+      for (Event event : events) {
+        if (!tags.contains(event.getTags())) {
+          searchedEvents.remove(event);
+        }
       }
     }
 
     Gson gson = new Gson();
     
     response.setContentType("application/json");
-    response.getWriter().println(gson.toJson(events));
+    response.getWriter().println(gson.toJson(searchedEvents));
+  }
+ 
+  private boolean isResultForSearch(String search, Event event) {
+    return isTextMatch(search, event.getName()) || isTextMatch(search, event.getDescription());
   }
 
-  private boolean isResultForSearch(String search, Event event) {
-    return event.getName().toLowerCase().contains(search.toLowerCase());
+  private boolean isTextMatch(String search, String text) {
+    return text.toLowerCase().contains(search.toLowerCase());
   }
+
 }

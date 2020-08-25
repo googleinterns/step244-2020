@@ -21,19 +21,23 @@ function getEvents() {
 /* Add all fetched events which match the search to the page. */
 function getSearchEvents() {
   var search = document.getElementById('search').value;
+  var category = document.getElementById('category').value;
+  var tags = document.getElementById('tags').value;
   document.getElementById('events-container').innerText = "";
   fetch('/event?' + new URLSearchParams({
     search: search,
+}) + '&' + new URLSearchParams({
+    category: category,
+}) + '&' + new URLSearchParams({
+    tags: tags,
 })).then(response => response.json()).then(events => events.forEach(addEvent));
 }
 
 /* Add name, text, and image of event fields to the page. */
 function addEvent(event) {
-  document.getElementById('events-container').innerHTML += "<hr><h1>" + event.name + "</h1>";
-  document.getElementById('events-container').innerHTML += "<h2>" + event.date + "</h2>";
-  document.getElementById('events-container').innerHTML += "<h3>" + event.description + "</h3>";
-  document.getElementById('events-container').innerHTML += "<button type=\"button\" onclick=\"joinEvent()\">Join event!</button>";
+  document.getElementById('events-container').innerHTML += "<div><h1>" + event.name + "</h1><hr><br><h2>" + event.date + "</h2><h3>" + event.description + "</h3><br><p><i class=\"fas fa-map-marker-alt\"></i>    " + event.location + "</p><br><button type=\"button\" onclick=\"joinEvent()\">Join event!</button><br><br></div>";
 }
+
 
 function joinEvent() {
 

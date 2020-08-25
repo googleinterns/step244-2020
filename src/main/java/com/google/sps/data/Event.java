@@ -18,15 +18,33 @@ public final class Event {
 
   private final String name;
   private final String date;
+  private final String location;
   private final String description;
+  private final String category;
+  private final String tags;
 
-  public Event(String name, String date, String description) {
+  public Event(String name, String date, String location, String description, String category, String tags) {
     this.name = name;
     this.date = date;
+    this.location = location;
     this.description = description;
+    this.category = category;
+    this.tags = tags;
   }
 
   public String getName() {
     return name;
+  }
+
+  public String getDescription() {
+    return description;
+  }
+
+  public String getCategory() {
+    return category;
+  }
+
+  public String getTags() {
+    return tags;
   }
 }
