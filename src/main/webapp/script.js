@@ -11,3 +11,24 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
+function addEventToGCalendar() { //To be modified to get fields
+  var resp = verifyCredentials().then(validCredential => {
+    if (validCredential == true) {
+      fetch("/events/gcalendar", { method: "POST" }).then(response => {
+        window.location.href = "http://localhost:8080/calendar.html";
+      }).catch(error => alert(error));
+    } else {
+      window.location.href = "http://localhost:8080/token?origin=calendar"; //To be modified to get current location
+    }
+  });
+}
+
+function verifyCredentials() {
+  return fetch("/credentials").then(response => response.text()).then(responseText => {
+    return (responseText == "true");
+  }).catch(error => {
+    alert(error);
+    return false;
+  });
+}
