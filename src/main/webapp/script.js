@@ -12,6 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+function getEvent(event_id) {
+  fetch('/events/' + event_id).then(response => response.json());
+}
+
+function getUser() {
+  fetch('/users').then(response => response.json());
+}
+
+function searchEvents() {
+  fetch('/events?' + new URLSearchParams({
+    search: search,
+  })).then(response => response.json());
+}
+
+function joinEvent(event_id) {
+  fetch('/events/' + event_id + '/join').then(response => response.json());
+
 function addEventToGCalendar() { //To be modified to get fields
   var resp = verifyCredentials().then(validCredential => {
     if (validCredential == true) {
