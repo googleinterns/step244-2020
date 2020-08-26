@@ -21,7 +21,7 @@ import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 
 public class EventStorage {
-  public static Event getEvent(Long event_id) {
+  public static Event getEvent(String event_id) {
     // TODO: Query in datastore.
     return null;
   }
@@ -55,7 +55,7 @@ public class EventStorage {
     datastore.delete(eventEntityKey);
   }
 
-  public static void joinEvent(Long event_id) {
+  public static void joinEvent(String event_id) {
     // TODO: Add current user to EventUsers
   }
 }

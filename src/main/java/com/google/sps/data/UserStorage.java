@@ -25,7 +25,12 @@ import java.util.List;
 import java.util.ArrayList;
 
 public class UserStorage {
-  public static User getUser(Long user_id) {
+  public static User getUser(String user_id) {
+    // TODO: Query in datastore.
+    return null;
+  }
+
+  public static User getUserByUsername(String username) {
     // TODO: Query in datastore.
     return null;
   }
@@ -52,14 +57,18 @@ public class UserStorage {
     // TODO: Edit event in datastore.
   }
 
-  public static void deleteUser(Long user_id) {
+  public static void deleteUser(String user_id) {
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 
     Key userEntityKey = KeyFactory.createKey("User", user_id);
     datastore.delete(userEntityKey);
   }
 
-  public static void joinEvent(Long event_id) {
+  public static String getIDbyUsername(String username) {
+    return getUserByUsername(username).getID();
+  }
+
+  public static void joinEvent(String event_id) {
     // TODO: edit info in datastore
     EventStorage.joinEvent(event_id);
   }

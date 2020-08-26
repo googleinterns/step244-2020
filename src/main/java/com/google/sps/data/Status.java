@@ -1,5 +1,6 @@
 // Copyright 2019 Google LLC
 //
+//
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -14,20 +15,9 @@
 
 package com.google.sps.data;
 
-import java.util.Objects;
-
-public class User {
-  private final String id;
-  private final String email;
-  private final String username;
-
-  public User(String id, String email, String username) {
-    this.id = Objects.requireNonNull(id, "id cannot be null");
-    this.email = Objects.requireNonNull(email, "email cannot be null");
-    this.username = Objects.requireNonNull(username, "username cannot be null");
-  }
-  
-  public String getID() {
-    return id;
-  }
+public final class Status {
+  public static final String OWNER = "owner";
+  public static final String INVITED = "invited";
+  public static final String ACCEPTED = "accepted";
+  public static final String DECLINED = "declined";
 }

@@ -34,6 +34,60 @@
     </div>
     <div id="page-content-wrapper">
       <form id="add-event-form" action="/events" method="POST">
+        <label for="event-title">Title</label>
+        <input type="text" id="event-title" name="title">
+
+        <label for="event-start-date">Start date</label>
+        <!-- yyyy-mm-dd -->
+        <input type="date" id="event-start-date" name="start-date">
+
+        <label for="event-start-time">Start time</label>
+        <!-- 24-hour format that includes leading zeros: hh:mm -->
+        <input type="time" id="event-start-time" name="start-time">
+        
+        <label for="event-end-date">End date</label>
+        <!-- yyyy-mm-dd -->
+        <input type="date" id="event-end-date" name="end-date">
+
+        <label for="event-end-time">End time</label>
+        <!-- 24-hour format that includes leading zeros: hh:mm -->
+        <input type="time" id="event-end-time" name="end-time">
+
+        <label for="event-tags">Tags</label>
+        <input list="event-list-tags" id="event-tags" name="tags">
+        <datalist id="event-list-tags">
+          <option value="entertainment"></option>
+          <option value="education"></option>
+          <option value="business"></option>
+        </datalist>
+        
+        <label for="event-description">Description</label>
+        <textarea id="event-description" name="description"></textarea>
+
+        <label for="event-location">Location</label>
+        <input type="text" id="event-location" name="location">
+
+        <label for="event-links">Links</label>
+        <input type="text" id="event-links" name="links">
+
+        <input id="add-event-fields" type="button" value="Add custom field" onclick="showFieldName()">
+        
+        <div id="add-event-field" hidden>
+          <label for="field-name">Field name</label>
+          <input type="text" id="field-name">
+          <input type="button" value="Add" onclick="addField()">
+        </div>
+
+        <label for="person">Person</label>
+        <input type="text" id="person">
+        <input type="button" value="Add" onclick="addPerson()">
+
+        <div id="event-people">
+          <ul id="event-people-list">
+          </ul>
+        </div>
+
+        <input type="submit" value="Done">
       </form>
     </div>
   </div>
