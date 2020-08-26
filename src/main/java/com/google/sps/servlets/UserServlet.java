@@ -14,10 +14,6 @@
 
 package com.google.sps.servlets;
 
-import com.google.api.server.spi.config.Api;
-import com.google.api.server.spi.config.AnnotationBoolean;
-import com.google.api.server.spi.config.ApiMethod;
-import com.google.api.server.spi.config.ApiMethod.HttpMethod;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.google.gson.Gson;
@@ -29,16 +25,15 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-@WebServlet("/users")
-@Api
+@WebServlet("/users/*")
 public class UserServlet extends HttpServlet {
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
   }
 
-  @ApiMethod(path = "users", httpMethod = ApiMethod.HttpMethod.POST)
-  public void addUser(HttpServletRequest request, HttpServletResponse response) throws IOException {
+  @Override
+  public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
     UserService userService = UserServiceFactory.getUserService();
     if (!userService.isUserLoggedIn()) {
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -49,8 +44,8 @@ public class UserServlet extends HttpServlet {
     response.sendRedirect("/index.html");
   }
 
-  @ApiMethod(path = "users", httpMethod = ApiMethod.HttpMethod.PUT)
-  public void editUser(HttpServletRequest request, HttpServletResponse response) throws IOException {
+  @Override
+  public void doPut(HttpServletRequest request, HttpServletResponse response) throws IOException {
     UserService userService = UserServiceFactory.getUserService();
     if (!userService.isUserLoggedIn()) {
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
