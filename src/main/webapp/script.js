@@ -28,6 +28,7 @@ function searchEvents() {
 
 function joinEvent(event_id) {
   fetch('/events/' + event_id + '/join').then(response => response.json());
+}
 
 function addEventToGCalendar() { //To be modified to get fields
   var resp = verifyCredentials().then(validCredential => {
@@ -48,4 +49,161 @@ function verifyCredentials() {
     alert(error);
     return false;
   });
+}
+
+function getGCalendarEvents(calendar, startTime, endTime) {
+  verifyCredentials().then(validCredential => {
+    if (validCredential) {
+      fetch("/events/gcalendar?start=" + startTime + "&end=" + endTime).then(response => response.json()).then(events => {
+        var fullcalendarEvents = [];
+        events.forEach(event => {
+          var start, end;
+          if (event.start.dateTime) {
+            start = event.start.dateTime.value;
+            end = event.end.dateTime.value;
+          } else {
+            start = event.start.date.value;
+            end = event.end.date.value;
+          }
+          var shared = null, private = null;
+          if (event.extendedProperties)
+            shared = event.extendedProperties.shared, private = event.extendedProperties.private;
+          fullcalendarEvents.push({
+            id: event.id,
+            title: event.summary,
+            start: start,
+            end: end,
+            location: event.location,
+            description: event.description,
+            shared: shared,
+            private: private
+          });
+        });
+        if (calendar.getEventSources().length)
+          calendar.getEventSources()[0].remove();
+        calendar.addEventSource(fullcalendarEvents);
+      });
+    } else {
+      window.location.href = "http://localhost:8080/token?origin=calendar";
+    }
+  });
+}
+
+function createCalendarElements(givenProperties) {
+  var eventWrapper = document.createElement("div");
+  eventWrapper.classList.add("event-wrapper");
+
+  var contentWrapper = document.createElement("div");
+  contentWrapper.classList.add("content-wrapper");
+
+  var descriptionElement = document.createElement("div");
+  descriptionElement.classList.add("description-wrapper");
+  if (givenProperties.description) {
+    var descriptionContent = document.createElement("div");
+    descriptionContent.innerHTML = givenProperties.description;
+    descriptionContent.classList.add("right-item");
+    var descriptionIcon = document.createElement("i");
+    descriptionIcon.classList.add("fa", "fa-bars", "left-item");
+    descriptionElement.appendChild(descriptionIcon);
+    descriptionElement.appendChild(descriptionContent);
+  }
+
+  var locationElement = document.createElement("div");
+  locationElement.classList.add("extendedprop-wrapper");
+  if (givenProperties.location) {
+    var locationIcon = document.createElement("i");
+    locationIcon.classList.add("fa", "fa-location-arrow", "left-item");
+    var locationContent = document.createElement("div");
+    locationContent.innerHTML = givenProperties.location;
+    locationContent.classList.add("right-item");
+    locationElement.appendChild(locationIcon);
+    locationElement.appendChild(locationContent);
+  }
+
+  eventWrapper.appendChild(descriptionElement);
+  eventWrapper.appendChild(locationElement);
+
+  if (givenProperties.shared) {
+    for (const [key, value] of Object.entries(givenProperties.shared)) {
+      var extendedPropertyElement = document.createElement("div");
+      extendedPropertyElement.classList.add("extendedprop-wrapper");
+      var extendedPropertyName = document.createElement("div");
+      extendedPropertyName.innerHTML = key;
+      extendedPropertyName.classList.add("left-item");
+      var extendedPropertyValue = document.createElement("div");
+      extendedPropertyValue.innerHTML = value;
+      extendedPropertyValue.classList.add("right-item");
+      extendedPropertyElement.appendChild(extendedPropertyName);
+      extendedPropertyElement.appendChild(extendedPropertyValue);
+      eventWrapper.appendChild(extendedPropertyElement);
+    }
+  }
+
+  var buttonDivElement = document.createElement("div");
+  buttonDivElement.classList.add("add-button");
+  var buttonElement = document.createElement("button");
+  buttonElement.classList.add("btn", "btn-primary");
+  var plusIcon = document.createElement("i");
+  plusIcon.classList.add("fas", "fa-edit");
+
+  buttonElement.appendChild(plusIcon);
+  buttonDivElement.appendChild(buttonElement);
+  eventWrapper.appendChild(buttonDivElement);
+  return eventWrapper;
+}
+
+function hasAnyParentWithGivenId(parent, id) {
+  if (parent == null)
+    return false;
+  while (parent.nodeName != "BODY") {
+    if (parent.id === id)
+      return true;
+    parent = parent.parentElement;
+  }
+  return false;
+}
+
+function isIdValid(givenId) {
+  if (givenId.length && document.getElementById(givenId))
+    return true;
+  return false;
+}
+
+function calendarRender() {
+  var calendarEl = document.getElementById('calendar');
+  var calendar = new FullCalendar.Calendar(calendarEl, {
+    initialView: 'timeGridWeek',
+    headerToolbar: {
+      left: 'prev,next today',
+      center: 'title',
+      right: 'timeGridDay,timeGridWeek,dayGridMonth'
+    },
+    eventDidMount: function (info) {
+      $(info.el).popover({
+        animation: true,
+        html: true,
+        title: info.event.title,
+        content: createCalendarElements(info.event.extendedProps),
+        trigger: 'click',
+        container: 'body',
+        placement: 'top',
+      });
+    },
+    datesSet: function (info) {
+      var viewUTCStartTime = info.view.activeStart.getTime() - info.view.activeStart.getTimezoneOffset();
+      var viewUTCEndTime = info.view.activeEnd.getTime() - info.view.activeEnd.getTimezoneOffset();
+      getGCalendarEvents(calendar, viewUTCStartTime, viewUTCEndTime);
+    },
+    fixedWeekCount: false,
+    eventClick: function (event) {
+      event.jsEvent.preventDefault();
+    },
+    eventTimeFormat: {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    },
+    displayEventEnd: true
+  });
+  calendar.render();
 }
