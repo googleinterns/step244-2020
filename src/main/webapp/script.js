@@ -28,6 +28,7 @@ function searchEvents() {
 
 function joinEvent(event_id) {
   fetch('/events/' + event_id + '/join').then(response => response.json());
+}
 
 function addEventToGCalendar() { //To be modified to get fields
   var resp = verifyCredentials().then(validCredential => {
@@ -48,25 +49,26 @@ function verifyCredentials() {
     alert(error);
     return false;
   });
-
-/** Add custom field to form while creating an event. */
-function showCustomFieldName() {
-  document.getElementById('add-event-custom-fields').hidden = true;
-  document.getElementById('add-event-custom-field').hidden = false;
 }
 
-function addCustomField() {
-  document.getElementById('add-event-custom-fields').hidden = false;
-  document.getElementById('add-event-custom-field').hidden = true;
+/** Add custom field to form while creating an event. */
+function showFieldName() {
+  document.getElementById('add-event-fields').hidden = true;
+  document.getElementById('add-event-field').hidden = false;
+}
+
+function addField() {
+  document.getElementById('add-event-fields').hidden = false;
+  document.getElementById('add-event-field').hidden = true;
 
   var form = document.getElementById('add-event-form');
   var fieldName = document.getElementById('field-name').value;
   document.getElementById('field-name').value = '';
 
-  const customFieldInput = document.createElement('input');
-  customFieldInput.setAttribute('type', 'hidden');
-  customFieldInput.setAttribute('name', 'custom-fields');
-  customFieldInput.setAttribute('value', fieldName);
+  const FieldInput = document.createElement('input');
+  FieldInput.setAttribute('type', 'hidden');
+  FieldInput.setAttribute('name', 'fields');
+  FieldInput.setAttribute('value', fieldName);
   
   const fieldLabel = document.createElement('label');
   fieldLabel.setAttribute('for', fieldName);
@@ -77,8 +79,8 @@ function addCustomField() {
   fieldInput.setAttribute('id', fieldName);
   fieldInput.setAttribute('name', fieldName);
 
-  var button = document.getElementById('add-event-custom-fields');
-  form.insertBefore(customFieldInput, button);
+  var button = document.getElementById('add-event-fields');
+  form.insertBefore(FieldInput, button);
   form.insertBefore(fieldLabel, button);
   form.insertBefore(fieldInput, button);
 }

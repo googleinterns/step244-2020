@@ -17,16 +17,18 @@ package com.google.sps.servlets;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.google.gson.Gson;
-import com.google.sps.data.Status;
 import com.google.sps.data.Event;
 import com.google.sps.data.EventStorage;
+import com.google.sps.data.TimeRange;
+import com.google.sps.data.DateRange;
 import com.google.sps.data.User;
 import com.google.sps.data.UserStorage;
 import java.io.IOException;
+import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.stream.Collectors;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,12 +40,13 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-@WebServlet("/events")
+@WebServlet("/events/*")
 public class EventServlet extends HttpServlet {
   @Override
-  public void doGet(HttpServletRequest request, HttpServletResponse response) {
+  public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     // TODO: parse "events/{event_id}" here.
-    response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
+    // response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
+    response.sendRedirect("/index.html");
   }
 
   @Override
@@ -56,12 +59,24 @@ public class EventServlet extends HttpServlet {
 
     String title = Objects.toString(request.getParameter("title"), "");
     String description = Objects.toString(request.getParameter("description"), "");
+    String duration_parameter = request.getParameter("duration");
+    Long duration = 0L;
+    if (duration_parameter != null && !duration_parameter.isEmpty()) {
+      try {
+        duration = Long.parseLong(duration_parameter);
+      } catch (Exception e) {
+        System.err.println(e + duration_parameter);
+      }
+    }
+    
     String location = Objects.toString(request.getParameter("location"), "");
 
+    List<String> field_names = new ArrayList<String>();
     Map<String, String> fields = new HashMap<String, String>();
     if (request.getParameterValues("fields") != null) {
       for (String field : request.getParameterValues("fields")) {
         String value = request.getParameter(field);
+        field_names.add(field);
         fields.put(field, value);
       }
     }
@@ -71,25 +86,22 @@ public class EventServlet extends HttpServlet {
       tags = Arrays.asList(request.getParameterValues("tags"));
     }
 
-    Map<String, String> participants_status_by_id = new HashMap<String, String>();
     String current_user_id = userService.getCurrentUser().getUserId();
-    participants_status_by_id.put(current_user_id, Status.OWNER);
+    List<String> participants_ids = new ArrayList<String>();
     if (request.getParameterValues("people") != null) {
-      List<String> participants_ids = Arrays.asList(request.getParameterValues("people"))
-                                         .stream().map(person -> UserStorage.getIDbyUsername(person)).collect(Collectors.toList());
-      for (String id : participants_ids) {
-        participants_status_by_id.put(id, Status.INVITED);
-      }
+      participants_ids = Arrays.asList(request.getParameterValues("people"))
+                               .stream().map(person -> UserStorage.getIDbyUsername(person)).collect(Collectors.toList());
     }
 
     Event event = new Event(UUID.randomUUID().toString(), title, description, 
-        tags, 
-        formatDate(request.getParameter("start-date")), formatTime(request.getParameter("start-time")),
-        formatDate(request.getParameter("end-date")), formatTime(request.getParameter("end-time")),
+        tags,
+        formatDate(request.getParameter("start-date")),
+        formatTime(request.getParameter("start-time")),
+        duration,
         location, 
         parseLinks(request.getParameter("links")), 
-        fields, 
-        participants_status_by_id);
+        field_names, fields,
+        current_user_id, participants_ids, new ArrayList<String>(), new ArrayList<String>());
 
     EventStorage.addEvent(event);
 
@@ -101,30 +113,32 @@ public class EventServlet extends HttpServlet {
     return Arrays.asList(links.split(","));
   }
 
-  // yyyy-MM-dd -> Date
-  private Date formatDate(String date) {
+  // yyyy-MM-dd -> DateRange
+  private DateRange formatDate(String date) {
+    Calendar calendar = Calendar.getInstance();
     if (date != null) {
+      SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
       try {
-        return new SimpleDateFormat("yyyy-MM-dd").parse(date);
-      }
-      catch (Exception e) {
-        System.err.println(e.toString() + ", " + date);
+        calendar.setTime(sdf.parse(date));
+        return new DateRange(calendar, calendar);
+      } catch (Exception e) {
+        System.err.println(e + date);
       }
     }
-    return null;
+    return new DateRange();
   }
 
-  // HH:mm -> Date
-  private Date formatTime(String time) {
+  // HH:mm -> TimeRange
+  private TimeRange formatTime(String time) {
     if (time != null) {
       try {
-        return new SimpleDateFormat("HH:mm").parse(time);
-      }
-      catch (Exception e) {
-        System.err.println(e.toString() + ", " + time);
+        LocalTime parsed_time = LocalTime.parse(time);
+        return new TimeRange(parsed_time, parsed_time);
+      } catch (Exception e) {
+        System.err.println(e + time);
       }
     }
-    return null;
+    return new TimeRange();
   }
 
   public void doPut(HttpServletRequest request, HttpServletResponse response) throws IOException {

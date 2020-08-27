@@ -1,6 +1,5 @@
 // Copyright 2019 Google LLC
 //
-//
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -15,9 +14,26 @@
 
 package com.google.sps.data;
 
-public final class Status {
-  public static final String OWNER = "owner";
-  public static final String INVITED = "invited";
-  public static final String ACCEPTED = "accepted";
-  public static final String DECLINED = "declined";
+import java.time.LocalTime;
+
+public final class TimeRange {
+  private final LocalTime start;
+  private final LocalTime end; // in minutes
+
+  public TimeRange(LocalTime start, LocalTime end) {
+    this.start = start;
+    this.end = end;
+  }
+
+  public TimeRange() {
+    this.start = null;
+    this.end = null;
+  }
+
+  public LocalTime start() {
+    return start;
+  }
+  public LocalTime end() {
+    return end;
+  }
 }

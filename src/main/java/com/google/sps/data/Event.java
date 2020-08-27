@@ -16,7 +16,7 @@ package com.google.sps.data;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,32 +27,84 @@ public class Event {
   private final String title;
   private final String description;
   private final List<String> tags = new ArrayList<String>();
-  private final Date start_date;
-  private final Date start_time;
-  private final Date end_date;
-  private final Date end_time;
+  private final DateRange date_range;
+  private final TimeRange time_range;
+  private final Long duration; // in minutes
   private final String location;
   private final List<String> links = new ArrayList<String>();
+  private final List<String> field_names = new ArrayList<String>();
   private final Map<String, String> fields = new HashMap<String, String>();
-  private final Map<String, String> participants_status_by_id = new HashMap<String, String>();
+  private final String owner_id;
+  private final List<String> invited_participants_id = new ArrayList<String>();
+  private final List<String> joined_participants_id = new ArrayList<String>();
+  private final List<String> declined_participants_id = new ArrayList<String>();
+  
 
-  public Event(String id, String title, String description, List<String> tags, Date start_date, Date start_time, Date end_date, Date end_time,
-               String location, List<String> links, Map<String, String> fields, Map<String, String> participants_status_by_id) {
+  public Event(String id, String title, String description, List<String> tags, DateRange date_range, TimeRange time_range, Long duration,
+               String location, List<String> links, List<String> field_names, Map<String, String> fields, 
+               String owner_id, List<String> invited_participant_id, List<String> joined_participant_id, List<String> declined_participant_id) {
     this.id = Objects.requireNonNull(id, "id cannot be null");
     this.title = Objects.requireNonNull(title, "title cannot be null");
     this.description = Objects.requireNonNull(description, "description cannot be null");
     this.tags.addAll(Objects.requireNonNull(tags, "tags cannot be null"));
-    this.start_date = start_date;
-    this.start_time = start_time;
-    this.end_date = end_date;
-    this.end_time = end_time;
+    this.date_range = Objects.requireNonNull(date_range, "date_range cannot be null");
+    this.time_range = Objects.requireNonNull(time_range, "time_range cannot be null");
+    this.duration = duration;
     this.location = Objects.requireNonNull(location, "location cannot be null");
     this.links.addAll(Objects.requireNonNull(links, "links cannot be null"));
+    this.field_names.addAll(Objects.requireNonNull(field_names, "fields_names cannot be null"));
     this.fields.putAll(Objects.requireNonNull(fields, "fields cannot be null"));
-    this.participants_status_by_id.putAll(Objects.requireNonNull(participants_status_by_id, "participants_status_by_id cannot be null"));
+    this.owner_id = Objects.requireNonNull(owner_id, "owner_id cannot be null");
+    this.invited_participants_id.addAll(Objects.requireNonNull(invited_participants_id, "invited_participants_id cannot be null"));
+    this.joined_participants_id.addAll(Objects.requireNonNull(joined_participants_id, "joined_participants_id cannot be null"));
+    this.declined_participants_id.addAll(Objects.requireNonNull(declined_participants_id, "declined_participants_id cannot be null"));
   }
 
   public String getID() {
     return id;
+  }
+
+  public String getTitle() {
+    return title;
+  }
+
+  public String getDescription() {
+    return description;
+  }
+
+  public List<String> getTags() {
+    return tags;
+  }
+
+  public String getLocation() {
+    return location;
+  }
+
+  public List<String> getLinks() {
+    return links;
+  }
+
+  public List<String> getFieldNames() {
+    return field_names;
+  }
+
+  public Map<String, String> getFields() {
+    return fields;
+  }
+
+  public String getOwnerID() {
+    return owner_id;
+  }
+
+  public List<String> getInvitedIDs() {
+    return invited_participants_id;
+  }
+
+  public List<String> getJoinedIDs() {
+    return joined_participants_id;
+  }
+
+  public List<String> getDeclinedIDs() {
+    return declined_participants_id;
   }
 }
