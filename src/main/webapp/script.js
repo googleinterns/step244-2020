@@ -21,13 +21,20 @@ function getUser() {
 }
 
 function searchEvents() {
+  document.getElementById('events-container').innerText = "";
+  var search = document.getElementById('search').value;
   fetch('/events?' + new URLSearchParams({
     search: search,
-  })).then(response => response.json());
+  })).then(response => response.json()).then(events => events.forEach(showEvent));
+}
+
+function showEvent(event) {
+  document.getElementById('events-container').innerHTML += "<div><h1>" + event.title + "</h1><hr><br><h2>" + event.date + "</h2><h3>" + event.description + "</h3><br><button type=\"button\" onclick=\"joinEvent()\">Join event!</button><br><br></div>";
 }
 
 function joinEvent(event_id) {
   fetch('/events/' + event_id + '/join').then(response => response.json());
+}
 
 function addEventToGCalendar() { //To be modified to get fields
   var resp = verifyCredentials().then(validCredential => {

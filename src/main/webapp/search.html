@@ -21,7 +21,7 @@
   <script src="script.js"></script>
 </head>
 
-<body>
+<body onload="searchEvents()">
 
   <div id="wrapper">
     <!-- Used to include the same sidebar on each page.-->
@@ -34,15 +34,14 @@
     </div>
     <div id="page-content-wrapper">
       <div id="search-bar">
-        <form>
-          <input type="text" placeholder="Search.." name="search" id="search">
-          <button type="button" onclick="searchEvents()">Submit</button>
+        <h1>Search event</h1>
+        <br>
+        <form class="form-inline">
+          <input class="form-control" type="text" placeholder="Search.." name="search" id="search">
+          <button class="btn btn-primary" type="button" onclick="searchEvents()">Search</button>
         </form>
       </div>
-      <div id="events">
-        <ul id="events-list">
-        </ul>
-      </div>
+      <div id="events-container"></div>
     </div>
   </div>
 

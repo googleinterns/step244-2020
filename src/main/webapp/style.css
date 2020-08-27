@@ -9,6 +9,17 @@ html * {
   padding: 0;
 }
 
+#search {
+  width: 200px;
+}
+
+#search-bar {
+  left: 45%;
+  margin-bottom: 50px;
+  margin-right: -50%;
+  position: relative;
+}
+
 #wrapper {
   padding-left: 0;
   -webkit-transition: all 0.5s ease;
