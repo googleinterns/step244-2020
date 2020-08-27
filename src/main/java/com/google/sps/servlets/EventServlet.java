@@ -42,20 +42,29 @@ public class EventServlet extends HttpServlet {
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String pathName = request.getPathInfo();
     UserService userService = UserServiceFactory.getUserService();
-    if (pathName.length() <= 1) {
-      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-      return ;
-    }
 
-    if (pathName.contains("gcalendar")) {
+    if (pathName.equals("/gcalendar")) {
+      String start = request.getParameter("start");
+      String end = request.getParameter("end");
+      if (start == null || end == null) {
+        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        return;
+      }
+
+      if (!start.matches("^[0-9]+$") || !end.matches("^[0-9]+$")) {
+        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        return;
+      }
+
       if (!userService.isUserLoggedIn()) {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
       }
-      String eventsInJson = getGCalendarEventsByInterval(request.getParameter("start"), request.getParameter("end"));
+      String eventsInJson = getGCalendarEventsByInterval(start, end);
       if (eventsInJson == null)
         response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-      else response.getWriter().println(eventsInJson);
-      return ;
+      else
+        response.getWriter().println(eventsInJson);
+      return;
     }
     // TODO: parse "events/{event_id}" here.
     response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
