@@ -30,6 +30,7 @@ import java.security.GeneralSecurityException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import com.google.api.client.http.HttpHeaders;
 
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -44,26 +45,7 @@ public class EventServlet extends HttpServlet {
     UserService userService = UserServiceFactory.getUserService();
 
     if (pathName.equals("/gcalendar")) {
-      String start = request.getParameter("start");
-      String end = request.getParameter("end");
-      if (start == null || end == null) {
-        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-        return;
-      }
-
-      if (!start.matches("^[0-9]+$") || !end.matches("^[0-9]+$")) {
-        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-        return;
-      }
-
-      if (!userService.isUserLoggedIn()) {
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-      }
-      String eventsInJson = getGCalendarEventsByInterval(start, end);
-      if (eventsInJson == null)
-        response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-      else
-        response.getWriter().println(eventsInJson);
+      getEvents(request, response, userService);
       return;
     }
     // TODO: parse "events/{event_id}" here.
@@ -93,14 +75,53 @@ public class EventServlet extends HttpServlet {
     response.sendRedirect("/index.html");
   }
 
-  private String getGCalendarEventsByInterval(String startTime, String endTime) throws IOException {
-    long start = Long.parseLong(startTime);
-    long end = Long.parseLong(endTime);
-    DateTime startDateTime = new DateTime(start);
-    DateTime endDateTime = new DateTime(end);
+  private void getEvents(HttpServletRequest request, HttpServletResponse response, UserService userService)
+      throws IOException {
+    String startEpochInSeconds = request.getParameter("startEpochInSeconds");
+    String endEpochInSeconds = request.getParameter("endEpochInSeconds");
+
+    if (startEpochInSeconds == null || endEpochInSeconds == null || !startEpochInSeconds.matches("^[0-9]+$")
+        || !endEpochInSeconds.matches("^[0-9]+$")) {
+      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      return;
+    }
+
+    if (!userService.isUserLoggedIn()) {
+      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+      return;
+    }
+    Long startEpochInSecondsParsed = parseLongFromString(startEpochInSeconds);
+    Long endEpochInSecondsParsed = parseLongFromString(endEpochInSeconds);
+
+    if (startEpochInSecondsParsed < 0 || endEpochInSecondsParsed < 0
+        || startEpochInSecondsParsed > endEpochInSecondsParsed) {
+      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      return;
+    }
+
+    String eventsInJson = getGCalendarEventsByInterval(startEpochInSecondsParsed, endEpochInSecondsParsed);
+    if (eventsInJson == null)
+      response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+    else
+      response.getWriter().println(eventsInJson);
+    return;
+  }
+
+  private long parseLongFromString(String str) {
+    try {
+      long nr = Long.parseLong(str);
+      return nr;
+    } catch (NumberFormatException e) {
+      return -1;
+    }
+  }
+
+  private String getGCalendarEventsByInterval(Long startEpochInSeconds, Long endEpochInSeconds) throws IOException {
+    DateTime startDateTime = new DateTime(startEpochInSeconds);
+    DateTime endDateTime = new DateTime(endEpochInSeconds);
     try {
       Calendar service = Utils.loadCalendarClient();
-      com.google.api.client.http.HttpHeaders headers = new com.google.api.client.http.HttpHeaders()
+      HttpHeaders headers = new com.google.api.client.http.HttpHeaders()
           .setAcceptEncoding("gzip").setUserAgent("gzip");
       List<com.google.api.services.calendar.model.Event> events = service.events().list("primary")
           .setFields("items(summary,start,end,description,extendedProperties,location)").setSingleEvents(true)

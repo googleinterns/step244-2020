@@ -34,10 +34,10 @@ function addEventToGCalendar() { //To be modified to get fields
   var resp = verifyCredentials().then(validCredential => {
     if (validCredential == true) {
       fetch("/events/gcalendar", { method: "POST" }).then(response => {
-        window.location.href = "http://localhost:8080/calendar.html";
+        window.location.href = getCurrentUrl() + "/calendar.html";
       }).catch(error => alert(error));
     } else {
-      window.location.href = "http://localhost:8080/token?origin=calendar"; //To be modified to get current location
+      window.location.href = getCurrentUrl() + "/token?origin=calendar";
     }
   });
 }
@@ -54,39 +54,46 @@ function verifyCredentials() {
 function getGCalendarEvents(calendar, startTime, endTime) {
   verifyCredentials().then(validCredential => {
     if (validCredential) {
-      fetch("/events/gcalendar?start=" + startTime + "&end=" + endTime).then(response => response.json()).then(events => {
-        var fullcalendarEvents = [];
-        events.forEach(event => {
-          var start, end;
-          if (event.start.dateTime) {
-            start = event.start.dateTime.value;
-            end = event.end.dateTime.value;
-          } else {
-            start = event.start.date.value;
-            end = event.end.date.value;
-          }
-          var shared = null, private = null;
-          if (event.extendedProperties)
-            shared = event.extendedProperties.shared, private = event.extendedProperties.private;
-          fullcalendarEvents.push({
-            id: event.id,
-            title: event.summary,
-            start: start,
-            end: end,
-            location: event.location,
-            description: event.description,
-            shared: shared,
-            private: private
+      fetch("/events/gcalendar?startEpochInSeconds=" + startTime + "&endEpochInSeconds=" + endTime)
+        .then(response => response.json()).then(events => {
+          var fullcalendarEvents = [];
+          events.forEach(event => {
+            var start, end;
+            if (event.start.dateTime) {
+              start = event.start.dateTime.value;
+              end = event.end.dateTime.value;
+            } else {
+              start = event.start.date.value;
+              end = event.end.date.value;
+            }
+            var shared = null, private = null;
+            if (event.extendedProperties)
+              shared = event.extendedProperties.shared, private = event.extendedProperties.private;
+            fullcalendarEvents.push({
+              id: event.id,
+              title: event.summary,
+              start: start,
+              end: end,
+              location: event.location,
+              description: event.description,
+              shared: shared,
+              private: private
+            });
           });
+          if (calendar.getEventSources().length)
+            calendar.getEventSources()[0].remove();
+          calendar.addEventSource(fullcalendarEvents);
         });
-        if (calendar.getEventSources().length)
-          calendar.getEventSources()[0].remove();
-        calendar.addEventSource(fullcalendarEvents);
-      });
     } else {
-      window.location.href = "http://localhost:8080/token?origin=calendar";
+      window.location.href = getCurrentUrl() + "/token?origin=calendar";
     }
   });
+}
+
+function getCurrentUrl(){
+  var currentUrl = window.location.href;
+  var currentUrlSlices = currentUrl.split("/");
+  return currentUrlSlices[0] + "//" + currentUrlSlices[2];
 }
 
 function createCalendarElements(givenProperties) {

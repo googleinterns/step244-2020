@@ -48,8 +48,10 @@
         lastUsedId = document.getElementsByClassName("popover")[0].id;
     }
     else {
+      //script for seeing if the click was inside the tooltip or not
       if (e.target.id === lastUsedId || e.target.parentElement.id === lastUsedId || hasAnyParentWithGivenId(e.target.parentElement, lastUsedId))
         return;
+      //remove tooltip if clicked outside
       $('#' + lastUsedId).popover('hide');
       if (document.getElementsByClassName("popover").length == 1)
         lastUsedId = document.getElementsByClassName("popover")[0].id;
