@@ -127,11 +127,11 @@ html * {
 }
 
 .popover{
-  width: 30vw !important;
-  min-width: 448px !important;
-  height: auto !important;
-  max-width: 30vw !important;
-  max-height: 70vh !important;
+  width: 30vw;
+  min-width: 448px;
+  height: auto;
+  max-width: 30vw;
+  max-height: 70vh;
   display: flex;
   flex-direction: column;
 }

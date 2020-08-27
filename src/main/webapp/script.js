@@ -153,9 +153,7 @@ function createCalendarElements(givenProperties) {
 }
 
 function hasAnyParentWithGivenId(parent, id) {
-  if (parent == null)
-    return false;
-  while (parent.nodeName != "BODY") {
+  while (parent != null && parent.nodeName != "BODY") {
     if (parent.id === id)
       return true;
     parent = parent.parentElement;
@@ -164,9 +162,7 @@ function hasAnyParentWithGivenId(parent, id) {
 }
 
 function isIdValid(givenId) {
-  if (givenId.length && document.getElementById(givenId))
-    return true;
-  return false;
+  return givenId.length && document.getElementById(givenId);
 }
 
 function calendarRender() {
