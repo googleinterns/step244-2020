@@ -23,10 +23,20 @@ import com.google.appengine.api.users.UserServiceFactory;
 import com.google.gson.Gson;
 import com.google.sps.data.Event;
 import com.google.sps.data.EventStorage;
+import com.google.sps.data.TimeRange;
+import com.google.sps.data.DateRange;
 import com.google.sps.data.User;
 import com.google.sps.data.UserStorage;
 import java.io.IOException;
+<<<<<<< HEAD
 import java.security.GeneralSecurityException;
+=======
+import java.time.LocalTime;
+import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.stream.Collectors;
+>>>>>>> Add EventStorage addEvent()
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,8 +58,7 @@ public class EventServlet extends HttpServlet {
       getEvents(request, response, userService);
       return;
     }
-    // TODO: parse "events/{event_id}" here.
-    response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
+    response.sendRedirect("/index.html");
   }
 
   @Override
@@ -70,6 +79,54 @@ public class EventServlet extends HttpServlet {
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
       return;
     }
+
+    String title = Objects.toString(request.getParameter("title"), "");
+    String description = Objects.toString(request.getParameter("description"), "");
+    String duration_parameter = request.getParameter("duration");
+    Long duration = 0L;
+    if (duration_parameter != null && !duration_parameter.isEmpty()) {
+      try {
+        duration = Long.parseLong(duration_parameter);
+      } catch (Exception e) {
+        System.err.println(e + duration_parameter);
+      }
+    }
+    
+    String location = Objects.toString(request.getParameter("location"), "");
+
+    List<String> field_names = new ArrayList<String>();
+    Map<String, String> fields = new HashMap<String, String>();
+    if (request.getParameterValues("fields") != null) {
+      for (String field : request.getParameterValues("fields")) {
+        String value = request.getParameter(field);
+        field_names.add(field);
+        fields.put(field, value);
+      }
+    }
+    
+    List<String> tags = new ArrayList<String>();
+    if (request.getParameterValues("tags") != null) {
+      tags = Arrays.asList(request.getParameterValues("tags"));
+    }
+
+    String current_user_id = userService.getCurrentUser().getUserId();
+    List<String> participants_ids = new ArrayList<String>();
+    if (request.getParameterValues("people") != null) {
+      participants_ids = Arrays.asList(request.getParameterValues("people"))
+                               .stream().map(person -> UserStorage.getIDbyUsername(person)).collect(Collectors.toList());
+    }
+
+    Event event = new Event(UUID.randomUUID().toString(), title, description, 
+        tags,
+        formatDate(request.getParameter("start-date")),
+        formatTime(request.getParameter("start-time")),
+        duration,
+        location, 
+        parseLinks(request.getParameter("links")), 
+        field_names, fields,
+        current_user_id, participants_ids, new ArrayList<String>(), new ArrayList<String>());
+
+    EventStorage.addEvent(event);
 
     // Redirect back to the HTML page.
     response.sendRedirect("/index.html");
@@ -105,6 +162,38 @@ public class EventServlet extends HttpServlet {
     else
       response.getWriter().println(eventsInJson);
     return;
+  }
+
+  private List<String> parseLinks(String links) {
+    return Arrays.asList(links.split(","));
+  }
+
+  // yyyy-MM-dd -> DateRange
+  private DateRange formatDate(String date) {
+    Calendar calendar = Calendar.getInstance();
+    if (date != null) {
+      SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+      try {
+        calendar.setTime(sdf.parse(date));
+        return new DateRange(calendar, calendar);
+      } catch (Exception e) {
+        System.err.println(e + date);
+      }
+    }
+    return new DateRange();
+  }
+
+  // HH:mm -> TimeRange
+  private TimeRange formatTime(String time) {
+    if (time != null) {
+      try {
+        LocalTime parsed_time = LocalTime.parse(time);
+        return new TimeRange(parsed_time, parsed_time);
+      } catch (Exception e) {
+        System.err.println(e + time);
+      }
+    }
+    return new TimeRange();
   }
 
   private long parseLongFromString(String str) {
