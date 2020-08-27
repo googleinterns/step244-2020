@@ -18,10 +18,12 @@
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js"
     integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm"
     crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.3.0/main.min.js"></script>
   <script src="script.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.3.0/main.min.css">
 </head>
 
-<body>
+<body onload="calendarRender()">
 
   <div id="wrapper">
     <!-- Used to include the same sidebar on each page.-->
@@ -38,5 +40,26 @@
   </div>
 
 </body>
+<script>
+  var lastUsedId = "";
+  $('body').on('click', function (e) {
+    if (!isIdValid(lastUsedId)) {
+      if (document.getElementsByClassName("popover").length)
+        lastUsedId = document.getElementsByClassName("popover")[0].id;
+    }
+    else {
+      //script for seeing if the click was inside the tooltip or not
+      if (e.target.id === lastUsedId || e.target.parentElement.id === lastUsedId || hasAnyParentWithGivenId(e.target.parentElement, lastUsedId))
+        return;
+      //remove tooltip if clicked outside
+      $('#' + lastUsedId).popover('hide');
+      if (document.getElementsByClassName("popover").length == 1)
+        lastUsedId = document.getElementsByClassName("popover")[0].id;
+      else if (document.getElementsByClassName("popover").length == 2)
+        lastUsedId = document.getElementsByClassName("popover")[1].id;
+      else lastUsedId = "";
+    }
+  });
+</script>
 
 </html>
