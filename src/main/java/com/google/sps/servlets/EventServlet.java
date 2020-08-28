@@ -17,6 +17,7 @@ package com.google.sps.servlets;
 import com.google.api.client.http.HttpStatusCodes;
 import com.google.api.client.util.DateTime;
 import com.google.api.services.calendar.Calendar;
+import com.google.api.services.calendar.model.EventDateTime;
 import com.google.api.services.calendar.model.Event.ExtendedProperties;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
@@ -39,6 +40,8 @@ import java.util.Objects;
 import java.util.UUID;
 import com.google.api.client.http.HttpHeaders;
 
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -60,7 +63,7 @@ public class EventServlet extends HttpServlet {
   }
 
   @Override
-  public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+  public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
     UserService userService = UserServiceFactory.getUserService();
     if (!userService.isUserLoggedIn()) {
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -69,8 +72,6 @@ public class EventServlet extends HttpServlet {
 
     addEvent(request, response, userService);
 
-    // Redirect back to the HTML page.
-    response.sendRedirect("/index.html");
   }
 
   public void doPut(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -84,7 +85,8 @@ public class EventServlet extends HttpServlet {
     response.sendRedirect("/index.html");
   }
 
-  private void addEvent(HttpServletRequest request, HttpServletResponse response,  UserService userService) throws IOException {
+  private void addEvent(HttpServletRequest request, HttpServletResponse response, UserService userService)
+      throws IOException, ServletException {
     String title = Objects.toString(request.getParameter("title"), "");
     String description = Objects.toString(request.getParameter("description"), "");
     String duration_parameter = request.getParameter("duration");
@@ -118,10 +120,30 @@ public class EventServlet extends HttpServlet {
                                .stream().map(person -> UserStorage.getIDbyUsername(person)).collect(Collectors.toList());
     }
 
-    Event event = new Event(UUID.randomUUID().toString(), title, description, 
+    String startDateAsString = request.getParameter("start-date");
+    String startTimeAsString = request.getParameter("start-time");
+    String idFromGCalendarEvent = null;
+    if (startDateAsString != null && startTimeAsString != null && !startDateAsString.isEmpty() 
+         && !startTimeAsString.isEmpty()){// event has time set
+      com.google.api.services.calendar.model.Event newEvent = createGCalendarEvent(startTimeAsString, startDateAsString,
+          duration, location, description, title, fields);
+      if (newEvent == null){
+        response.setContentType("text/html");
+        response.getWriter().print("<script>alert(\"Please login first.\")</script>");
+        RequestDispatcher dispatcher = request.getRequestDispatcher("/add_event.html");
+        dispatcher.include(request, response);
+        return ;
+      }
+      idFromGCalendarEvent = newEvent.getId();
+    }
+    String idForDataStoreEvent = null;
+    if (idFromGCalendarEvent == null)
+      idForDataStoreEvent = UUID.randomUUID().toString();
+    else idForDataStoreEvent = idFromGCalendarEvent;
+    Event event = new Event(idForDataStoreEvent, title, description, 
         tags,
-        formatDateRange(request.getParameter("start-date")),
-        request.getParameter("start-time"),
+        formatDateRange(startDateAsString),
+        formatTimeRange(startTimeAsString),
         duration,
         location, 
         parseLinks(request.getParameter("links")), 
@@ -129,6 +151,35 @@ public class EventServlet extends HttpServlet {
         current_user_id, participants_ids, new ArrayList<String>(), new ArrayList<String>());
 
     EventStorage.addEvent(event);
+    response.sendRedirect("/index.html");
+  }
+
+  private com.google.api.services.calendar.model.Event createGCalendarEvent(String timeInString, String dateInString, long durationInMinutes, 
+    String location, String description, String title, Map<String, String> externalFields) throws IOException {
+    com.google.api.services.calendar.model.Event event = new com.google.api.services.calendar.model.Event();
+    event.setDescription(description).setSummary(title);
+    DateTime startDateTime = new DateTime(dateInString + "T" + timeInString + ":00Z"); // Set in UTC
+    DateTime endDateTime = new DateTime(startDateTime.getValue() + durationInMinutes * 60 * 1000);
+    event.setStart(new EventDateTime().setDateTime(startDateTime));
+    event.setEnd(new EventDateTime().setDateTime(endDateTime));
+
+    ExtendedProperties extendedProps = new ExtendedProperties();
+    extendedProps.setShared(externalFields);
+    event.setExtendedProperties(extendedProps);
+
+    String calendarId = "primary";
+    try {
+      Calendar service = Utils.loadCalendarClient();
+      System.out.println(service);
+      if (service == null){
+        return null;
+      }
+      service.events().insert(calendarId, event).execute();
+      return event;
+    } catch (GeneralSecurityException e) {
+      e.printStackTrace();
+    }
+    return null;
   }
 
   private List<String> parseLinks(String links) {

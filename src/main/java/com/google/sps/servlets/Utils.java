@@ -51,7 +51,8 @@ public class Utils {
   static Calendar loadCalendarClient() throws IOException, GeneralSecurityException {
     String userId = UserServiceFactory.getUserService().getCurrentUser().getUserId();
     Credential credential = newFlow().loadCredential(userId);
-    credential.refreshToken();
+    if (credential == null)
+      return null;
     return new Calendar.Builder(GoogleNetHttpTransport.newTrustedTransport(), JacksonFactory.getDefaultInstance(),
         credential).setApplicationName("SEE").build();
   }
