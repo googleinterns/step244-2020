@@ -55,7 +55,7 @@ public class EventServlet extends HttpServlet {
     String pathName = request.getPathInfo();
     UserService userService = UserServiceFactory.getUserService();
 
-    if (pathName.equals("/gcalendar")) {
+    if (pathName != null && pathName.equals("/gcalendar")) {
       getEvents(request, response, userService);
       return;
     }
