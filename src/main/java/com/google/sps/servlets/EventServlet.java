@@ -67,6 +67,24 @@ public class EventServlet extends HttpServlet {
       return;
     }
 
+    addEvent(request, response, userService);
+
+    // Redirect back to the HTML page.
+    response.sendRedirect("/index.html");
+  }
+
+  public void doPut(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    UserService userService = UserServiceFactory.getUserService();
+    if (!userService.isUserLoggedIn()) {
+      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+      return;
+    }
+
+    // Redirect back to the HTML page.
+    response.sendRedirect("/index.html");
+  }
+
+  public void addEvent(HttpServletRequest request, HttpServletResponse response,  UserService userService) throws IOException {
     String title = Objects.toString(request.getParameter("title"), "");
     String description = Objects.toString(request.getParameter("description"), "");
     String duration_parameter = request.getParameter("duration");
@@ -102,7 +120,7 @@ public class EventServlet extends HttpServlet {
 
     Event event = new Event(UUID.randomUUID().toString(), title, description, 
         tags,
-        request.getParameter("start-date"),
+        formatDateRange(request.getParameter("start-date")),
         request.getParameter("start-time"),
         duration,
         location, 
@@ -111,24 +129,25 @@ public class EventServlet extends HttpServlet {
         current_user_id, participants_ids, new ArrayList<String>(), new ArrayList<String>());
 
     EventStorage.addEvent(event);
-
-    // Redirect back to the HTML page.
-    response.sendRedirect("/index.html");
   }
 
   private List<String> parseLinks(String links) {
     return Arrays.asList(links.split(","));
   }
 
-  public void doPut(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    UserService userService = UserServiceFactory.getUserService();
-    if (!userService.isUserLoggedIn()) {
-      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-      return;
+  private String formatDateRange(String date) {  // yyyy-mm-dd -> yyyy.mm.dd-yyyy.mm.dd
+    if (date != null && !date.isEmpty()) {
+      date = date.replace("-", ".");
+      return date + "-" + date;
     }
+    return "0000.01.01-9999.12.12";
+  }
 
-    // Redirect back to the HTML page.
-    response.sendRedirect("/index.html");
+  private String formatTimeRange(String time) {  // hh:mm -> hh:mm-hh:mm
+    if (time != null && !time.isEmpty()) {
+      return time + "-" + time;
+    }
+    return "00:00-23:59";
   }
 
   private void getEvents(HttpServletRequest request, HttpServletResponse response, UserService userService)

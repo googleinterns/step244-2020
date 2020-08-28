@@ -15,7 +15,6 @@
 package com.google.sps.data;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -72,6 +71,14 @@ public class Event {
 
   public List<String> getTags() {
     return tags;
+  }
+
+  public String getTimeRange() {
+    return time_range;
+  }
+
+  public String getDateRange() {
+    return date_range;
   }
 
   public String getLocation() {
