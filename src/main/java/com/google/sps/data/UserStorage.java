@@ -49,7 +49,7 @@ public class UserStorage {
     // TODO: Edit event in datastore.
   }
 
-  public static void deleteUser(Long user_id) {
+  public static void deleteUser(String user_id) {
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 
     Key userEntityKey = KeyFactory.createKey("User", user_id);

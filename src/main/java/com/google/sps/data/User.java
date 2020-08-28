@@ -23,33 +23,17 @@ import com.google.appengine.api.datastore.Query;
 import org.apache.commons.validator.routines.EmailValidator;
 
 public class User {
-  /**
-   * Returns the uid of the user with userame, or empty String if the user not find.
-   */
-  public static String getUID(String username) {
-    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-    if (isEmail(username)) {
-      Query query = new Query("UserInfo").setFilter(new Query.FilterPredicate("e-mail", Query.FilterOperator.EQUAL, username));
-      PreparedQuery results = datastore.prepare(query);
-      Entity entity = results.asSingleEntity();
-      if (entity == null) {
-        return "";
-      }
-      return (String) entity.getProperty("uid");
-    }
-    else {
-      Query query = new Query("UserInfo").setFilter(new Query.FilterPredicate("nickname", Query.FilterOperator.EQUAL, username));
-      PreparedQuery results = datastore.prepare(query);
-      Entity entity = results.asSingleEntity();
-      if (entity == null) {
-        return "";
-      }
-      return (String) entity.getProperty("uid");
-    }
-  }
+  private final String id;
+  private final String email;
+  private final String username;
 
-  public static boolean isEmail(String email) {
-    EmailValidator validator = EmailValidator.getInstance();
-    return validator.isValid(email);
+  public User(String id, String email, String username) {
+    this.id = Objects.requireNonNull(id, "id cannot be null");
+    this.email = Objects.requireNonNull(email, "email cannot be null");
+    this.username = Objects.requireNonNull(username, "username cannot be null");
+  }
+  
+  public String getID() {
+    return id;
   }
 }

@@ -15,6 +15,7 @@
 package com.google.sps.servlets;
 
 import com.google.api.client.http.HttpStatusCodes;
+import com.google.api.client.http.HttpHeaders;
 import com.google.api.client.util.DateTime;
 import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.model.Event.ExtendedProperties;
@@ -23,25 +24,20 @@ import com.google.appengine.api.users.UserServiceFactory;
 import com.google.gson.Gson;
 import com.google.sps.data.Event;
 import com.google.sps.data.EventStorage;
-import com.google.sps.data.TimeRange;
-import com.google.sps.data.DateRange;
 import com.google.sps.data.User;
 import com.google.sps.data.UserStorage;
 import java.io.IOException;
-<<<<<<< HEAD
 import java.security.GeneralSecurityException;
-=======
 import java.time.LocalTime;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.stream.Collectors;
->>>>>>> Add EventStorage addEvent()
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import com.google.api.client.http.HttpHeaders;
-
+import java.util.Objects;
+import java.util.UUID;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -69,17 +65,6 @@ public class EventServlet extends HttpServlet {
       return;
     }
 
-    // Redirect back to the HTML page.
-    response.sendRedirect("/index.html");
-  }
-
-  public void doPut(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    UserService userService = UserServiceFactory.getUserService();
-    if (!userService.isUserLoggedIn()) {
-      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-      return;
-    }
-
     String title = Objects.toString(request.getParameter("title"), "");
     String description = Objects.toString(request.getParameter("description"), "");
     String duration_parameter = request.getParameter("duration");
@@ -94,13 +79,10 @@ public class EventServlet extends HttpServlet {
     
     String location = Objects.toString(request.getParameter("location"), "");
 
-    List<String> field_names = new ArrayList<String>();
     Map<String, String> fields = new HashMap<String, String>();
     if (request.getParameterValues("fields") != null) {
       for (String field : request.getParameterValues("fields")) {
-        String value = request.getParameter(field);
-        field_names.add(field);
-        fields.put(field, value);
+        fields.put(field, request.getParameter(field));
       }
     }
     
@@ -118,8 +100,8 @@ public class EventServlet extends HttpServlet {
 
     Event event = new Event(UUID.randomUUID().toString(), title, description, 
         tags,
-        formatDate(request.getParameter("start-date")),
-        formatTime(request.getParameter("start-time")),
+        request.getParameter("start-date"),
+        request.getParameter("start-time"),
         duration,
         location, 
         parseLinks(request.getParameter("links")), 
@@ -129,6 +111,14 @@ public class EventServlet extends HttpServlet {
     EventStorage.addEvent(event);
 
     // Redirect back to the HTML page.
+    response.sendRedirect("/index.html");
+  }
+
+  private List<String> parseLinks(String links) {
+    return Arrays.asList(links.split(","));
+  }
+
+  public void doPut(HttpServletRequest request, HttpServletResponse response) throws IOException {
     response.sendRedirect("/index.html");
   }
 
@@ -162,38 +152,6 @@ public class EventServlet extends HttpServlet {
     else
       response.getWriter().println(eventsInJson);
     return;
-  }
-
-  private List<String> parseLinks(String links) {
-    return Arrays.asList(links.split(","));
-  }
-
-  // yyyy-MM-dd -> DateRange
-  private DateRange formatDate(String date) {
-    Calendar calendar = Calendar.getInstance();
-    if (date != null) {
-      SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-      try {
-        calendar.setTime(sdf.parse(date));
-        return new DateRange(calendar, calendar);
-      } catch (Exception e) {
-        System.err.println(e + date);
-      }
-    }
-    return new DateRange();
-  }
-
-  // HH:mm -> TimeRange
-  private TimeRange formatTime(String time) {
-    if (time != null) {
-      try {
-        LocalTime parsed_time = LocalTime.parse(time);
-        return new TimeRange(parsed_time, parsed_time);
-      } catch (Exception e) {
-        System.err.println(e + time);
-      }
-    }
-    return new TimeRange();
   }
 
   private long parseLongFromString(String str) {

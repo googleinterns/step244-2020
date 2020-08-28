@@ -24,12 +24,12 @@ import java.util.Objects;
 import com.google.gson.Gson;
 
 public class Event {
-  private final Long id;
+  private final String id;
   private final String title;
   private final String description;
   private final List<String> tags = new ArrayList<String>();
-  private final DateRange date_range;
-  private final TimeRange time_range;
+  private final String date_range;
+  private final String time_range;
   private final Long duration; // in minutes
   private final String location;
   private final List<String> links = new ArrayList<String>();
@@ -40,15 +40,13 @@ public class Event {
   private final List<String> declined_participants_id = new ArrayList<String>();
   
 
-  public Event(String id, String title, String description, List<String> tags, DateRange date_range, TimeRange time_range, Long duration,
+  public Event(String id, String title, String description, List<String> tags, String date_range, String time_range, Long duration,
                String location, List<String> links, Map<String, String> fields, 
                String owner_id, List<String> invited_participant_id, List<String> joined_participant_id, List<String> declined_participant_id) {
     this.id = Objects.requireNonNull(id, "id cannot be null");
     this.title = Objects.requireNonNull(title, "title cannot be null");
-    this.date = Objects.requireNonNull(date, "date cannot be null");
-    this.tags.addAll(Objects.requireNonNull(tags, "tags cannot be null"));
-    this.fields.putAll(Objects.requireNonNull(fields, "fields cannot be null"));
     this.description = Objects.requireNonNull(description, "description cannot be null");
+    this.tags.addAll(Objects.requireNonNull(tags, "tags cannot be null"));
     this.date_range = Objects.requireNonNull(date_range, "date_range cannot be null");
     this.time_range = Objects.requireNonNull(time_range, "time_range cannot be null");
     this.duration = duration;
@@ -61,7 +59,7 @@ public class Event {
     this.declined_participants_id.addAll(Objects.requireNonNull(declined_participants_id, "declined_participants_id cannot be null"));
   }
 
-  public Long getID() {
+  public String getID() {
     return id;
   }
 
