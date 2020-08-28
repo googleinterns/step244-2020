@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css"
+    integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js"
+    integrity="sha384-cs/chFZiN24E4KMATLdqdvsezGxaGsi4hLGOzlXwp5UZB1LY//20VyM2taTB4QvJ"
+    crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/solid.js"
+    integrity="sha384-tzzSw1/Vo+0N5UhStP3bvwWPq+uvzCMfrN1fEFe+xBmv1C/AtVX5K0uZtmcHitFZ"
+    crossorigin="anonymous"></script>
+  <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/fontawesome.js"
+    integrity="sha384-6OIrr52G08NpOFSZdxxz1xdNSndlD4vdcf/q2myIUVO0VsqaGHJsB0RaBE01VTOY"
+    crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js"
+    integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm"
+    crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.3.0/main.min.js"></script>
+  <script src="script.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.3.0/main.min.css">
+</head>
+
+<body onload="calendarRender()">
+
+  <div id="wrapper">
+    <!-- Used to include the same sidebar on each page.-->
+    <div id="sideBar">
+      <script>
+        $(function () {
+          $("#sideBar").load("sidebar.html");
+        });
+      </script>
+    </div>
+    <div id="page-content-wrapper">
+      <div id="calendar"></div>
+    </div>
+  </div>
+
+</body>
+<script>
+  var lastUsedId = "";
+  $('body').on('click', function (e) {
+    if (!isIdValid(lastUsedId)) {
+      if (document.getElementsByClassName("popover").length)
+        lastUsedId = document.getElementsByClassName("popover")[0].id;
+    }
+    else {
+      //script for seeing if the click was inside the tooltip or not
+      if (e.target.id === lastUsedId || e.target.parentElement.id === lastUsedId || hasAnyParentWithGivenId(e.target.parentElement, lastUsedId))
+        return;
+      //remove tooltip if clicked outside
+      $('#' + lastUsedId).popover('hide');
+      if (document.getElementsByClassName("popover").length == 1)
+        lastUsedId = document.getElementsByClassName("popover")[0].id;
+      else if (document.getElementsByClassName("popover").length == 2)
+        lastUsedId = document.getElementsByClassName("popover")[1].id;
+      else lastUsedId = "";
+    }
+  });
+</script>
+
+</html>
