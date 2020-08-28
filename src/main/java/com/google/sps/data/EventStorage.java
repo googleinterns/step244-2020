@@ -35,8 +35,7 @@ public class EventStorage {
     eventEntity.setProperty("tags", event.getTags());
     eventEntity.setProperty("location", event.getLocation());
     eventEntity.setProperty("links", event.getLinks());
-    eventEntity.setProperty("field-names", event.getFieldNames());
-
+    eventEntity.setProperty("fields", event.getFields());
     eventEntity.setProperty("owner", event.getOwnerID());
     eventEntity.setProperty("invited-users", event.getInvitedIDs());
     eventEntity.setProperty("joined-users", event.getJoinedIDs());

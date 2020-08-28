@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import com.google.gson.Gson;
 
 public class Event {
   private final String id;
@@ -32,7 +33,6 @@ public class Event {
   private final Long duration; // in minutes
   private final String location;
   private final List<String> links = new ArrayList<String>();
-  private final List<String> field_names = new ArrayList<String>();
   private final Map<String, String> fields = new HashMap<String, String>();
   private final String owner_id;
   private final List<String> invited_participants_id = new ArrayList<String>();
@@ -41,7 +41,7 @@ public class Event {
   
 
   public Event(String id, String title, String description, List<String> tags, DateRange date_range, TimeRange time_range, Long duration,
-               String location, List<String> links, List<String> field_names, Map<String, String> fields, 
+               String location, List<String> links, Map<String, String> fields, 
                String owner_id, List<String> invited_participant_id, List<String> joined_participant_id, List<String> declined_participant_id) {
     this.id = Objects.requireNonNull(id, "id cannot be null");
     this.title = Objects.requireNonNull(title, "title cannot be null");
@@ -52,7 +52,6 @@ public class Event {
     this.duration = duration;
     this.location = Objects.requireNonNull(location, "location cannot be null");
     this.links.addAll(Objects.requireNonNull(links, "links cannot be null"));
-    this.field_names.addAll(Objects.requireNonNull(field_names, "fields_names cannot be null"));
     this.fields.putAll(Objects.requireNonNull(fields, "fields cannot be null"));
     this.owner_id = Objects.requireNonNull(owner_id, "owner_id cannot be null");
     this.invited_participants_id.addAll(Objects.requireNonNull(invited_participants_id, "invited_participants_id cannot be null"));
@@ -84,12 +83,8 @@ public class Event {
     return links;
   }
 
-  public List<String> getFieldNames() {
-    return field_names;
-  }
-
-  public Map<String, String> getFields() {
-    return fields;
+  public String getFields() { // Map -> gson
+    return new Gson().toJson(fields);
   }
 
   public String getOwnerID() {

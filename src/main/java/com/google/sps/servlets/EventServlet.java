@@ -100,7 +100,7 @@ public class EventServlet extends HttpServlet {
         duration,
         location, 
         parseLinks(request.getParameter("links")), 
-        field_names, fields,
+        fields,
         current_user_id, participants_ids, new ArrayList<String>(), new ArrayList<String>());
 
     EventStorage.addEvent(event);
