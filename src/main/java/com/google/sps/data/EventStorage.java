@@ -33,6 +33,9 @@ public class EventStorage {
     eventEntity.setProperty("title", event.getTitle());
     eventEntity.setProperty("description", event.getDescription());
     eventEntity.setProperty("tags", event.getTags());
+    eventEntity.setProperty("date-range", event.getDateRange());
+    eventEntity.setProperty("time-range", event.getTimeRange());
+    eventEntity.setProperty("duration", event.getDuration());
     eventEntity.setProperty("location", event.getLocation());
     eventEntity.setProperty("links", event.getLinks());
     eventEntity.setProperty("fields", event.getFields());

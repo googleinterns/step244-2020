@@ -84,7 +84,7 @@ public class EventServlet extends HttpServlet {
     response.sendRedirect("/index.html");
   }
 
-  public void addEvent(HttpServletRequest request, HttpServletResponse response,  UserService userService) throws IOException {
+  private void addEvent(HttpServletRequest request, HttpServletResponse response,  UserService userService) throws IOException {
     String title = Objects.toString(request.getParameter("title"), "");
     String description = Objects.toString(request.getParameter("description"), "");
     String duration_parameter = request.getParameter("duration");

@@ -81,6 +81,10 @@ public class Event {
     return date_range;
   }
 
+  public Long getDuration() {
+    return duration;
+  }
+
   public String getLocation() {
     return location;
   }
