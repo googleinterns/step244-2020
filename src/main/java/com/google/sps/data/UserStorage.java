@@ -19,14 +19,20 @@ import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
+import com.google.appengine.api.datastore.Query.FilterPredicate;
+import com.google.appengine.api.datastore.Query.FilterOperator;
 import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.Query;
 import java.util.List;
 import java.util.ArrayList;
 
 public class UserStorage {
-  public static User getUser(Long user_id) {
+  public static User getUser(String user_id) {
     // TODO: Query in datastore.
+    return null;
+  }
+
+  public static User getUserByUsername(String username) {
     return null;
   }
 
@@ -34,32 +40,31 @@ public class UserStorage {
     // Make an Entity of user.
     Entity userEntity = new Entity("User", user.getID());
 
-    Key userEntityKey = userEntity.getKey();
-    // Make an Entity of user info.
-    Entity userInfoEntity = new Entity("UserInfo", userEntityKey);
-
-    // Make an Entity of user users.
-    Entity userEventsEntity = new Entity("UserEvents", userEntityKey);
-
     // Store Entities to datastore.
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
     datastore.put(userEntity);
-    datastore.put(userInfoEntity);
-    datastore.put(userEventsEntity);
   }
 
   public static void editUser(User user) {
     // TODO: Edit event in datastore.
   }
 
-  public static void deleteUser(Long user_id) {
+  public static void deleteUser(String user_id) {
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 
     Key userEntityKey = KeyFactory.createKey("User", user_id);
     datastore.delete(userEntityKey);
   }
 
-  public static void joinEvent(Long event_id) {
+  public static String getIDbyUsername(String username) {
+    Query query = new Query("User").setFilter(new FilterPredicate("username", FilterOperator.EQUAL, username));
+
+    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+    Entity user_entity = datastore.prepare(query).asSingleEntity();
+    return (String) user_entity.getProperty("id");
+  }
+
+  public static void joinEvent(String event_id) {
     // TODO: edit info in datastore
     EventStorage.joinEvent(event_id);
   }

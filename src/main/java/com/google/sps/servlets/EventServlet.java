@@ -27,9 +27,16 @@ import com.google.sps.data.User;
 import com.google.sps.data.UserStorage;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.time.LocalTime;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.stream.Collectors;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
 import com.google.api.client.http.HttpHeaders;
 
 import javax.servlet.annotation.WebServlet;
@@ -60,8 +67,57 @@ public class EventServlet extends HttpServlet {
       return;
     }
 
+    String title = Objects.toString(request.getParameter("title"), "");
+    String description = Objects.toString(request.getParameter("description"), "");
+    String duration_parameter = request.getParameter("duration");
+    Long duration = 0L;
+    if (duration_parameter != null && !duration_parameter.isEmpty()) {
+      try {
+        duration = Long.parseLong(duration_parameter);
+      } catch (Exception e) {
+        System.err.println(e + duration_parameter);
+      }
+    }
+
+    String location = Objects.toString(request.getParameter("location"), "");
+
+    Map<String, String> fields = new HashMap<String, String>();
+    if (request.getParameterValues("fields") != null) {
+      for (String field : request.getParameterValues("fields")) {
+        fields.put(field, request.getParameter(field));
+      }
+    }
+
+    List<String> tags = new ArrayList<String>();
+    if (request.getParameterValues("tags") != null) {
+      tags = Arrays.asList(request.getParameterValues("tags"));
+    }
+
+    String current_user_id = userService.getCurrentUser().getUserId();
+    List<String> participants_ids = new ArrayList<String>();
+    if (request.getParameterValues("people") != null) {
+      participants_ids = Arrays.asList(request.getParameterValues("people"))
+                               .stream().map(person -> UserStorage.getIDbyUsername(person)).collect(Collectors.toList());
+    }
+
+    Event event = new Event(UUID.randomUUID().toString(), title, description, 
+        tags,
+        request.getParameter("start-date"),
+        request.getParameter("start-time"),
+        duration,
+        location, 
+        parseLinks(request.getParameter("links")), 
+        fields,
+        current_user_id, participants_ids, new ArrayList<String>(), new ArrayList<String>());
+
+    EventStorage.addEvent(event);
+
     // Redirect back to the HTML page.
     response.sendRedirect("/index.html");
+  }
+
+  private List<String> parseLinks(String links) {
+    return Arrays.asList(links.split(","));
   }
 
   public void doPut(HttpServletRequest request, HttpServletResponse response) throws IOException {
