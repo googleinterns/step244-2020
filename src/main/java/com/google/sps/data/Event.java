@@ -22,14 +22,14 @@ import java.util.Map;
 import java.util.Objects;
 
 public class Event {
-  private final Long id;
+  private final String id;
   private final String title;
   private final String date;
   private final List<String> tags = new ArrayList<String>();
   private final Map<String, String> fields = new HashMap<String, String>();
   private final String description;
 
-  public Event(Long id, String title, String date, List<String> tags, Map<String, String> fields, String description) {
+  public Event(String id, String title, String date, List<String> tags, Map<String, String> fields, String description) {
     this.id = Objects.requireNonNull(id, "id cannot be null");
     this.title = Objects.requireNonNull(title, "title cannot be null");
     this.date = Objects.requireNonNull(date, "date cannot be null");
@@ -39,7 +39,27 @@ public class Event {
     this.description = Objects.requireNonNull(description, "description cannot be null");
   }
 
-  public Long getID() {
+  public String getID() {
     return id;
+  }
+
+  public String getTitle() {
+    return title;
+  }
+
+  public String getDate() {
+    return date;
+  }
+
+  public List<String> getTags() {
+    return tags;
+  }
+
+  public Map<String, String> getFields() {
+    return fields;
+  }
+
+  public String getDescription() {
+    return description;
   }
 }

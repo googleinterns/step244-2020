@@ -19,6 +19,11 @@ import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
+import com.google.appengine.api.datastore.PreparedQuery;
+import com.google.appengine.api.datastore.Query;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 public class EventStorage {
   public static Event getEvent(Long event_id) {
@@ -26,9 +31,44 @@ public class EventStorage {
     return null;
   }
 
+  public static List<Event> getSearchedEvents(String search) {
+    Query query = new Query("Event");
+ 
+    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+    PreparedQuery results = datastore.prepare(query);
+
+    List<Event> events = new ArrayList<>();
+    for (Entity entity : results.asIterable()) {
+      String title = (String) entity.getProperty("title");
+      String description = (String) entity.getProperty("description");
+ 
+      if (search == null || search.isEmpty() || EventStorage.isTextMatch(search, title) || EventStorage.isTextMatch(search, description)) {
+        String id = (String) entity.getProperty("id");
+        String date = (String) entity.getProperty("date");
+        List<String> tags = (List<String>) entity.getProperty("tags");
+        Map<String, String> fields = (Map<String, String>) entity.getProperty("fields");
+        Event event = new Event(id, title, date, tags, fields, description); 
+
+        events.add(event);
+      }
+    }
+
+    return events;
+  }
+
+  private static boolean isTextMatch(String search, String text) {
+    return text.toLowerCase().contains(search.toLowerCase());
+  }
+
   public static void addEvent(Event event) {
     // Make an Entity of event.
     Entity eventEntity = new Entity("Event", event.getID());
+    eventEntity.setProperty("id", event.getID());
+    eventEntity.setProperty("title", event.getTitle());
+    eventEntity.setProperty("date", event.getDate());
+    eventEntity.setProperty("tags", event.getTags());
+    eventEntity.setProperty("description", event.getDescription());
+
 
     Key eventEntityKey = eventEntity.getKey();
     // Make an Entity of event info.

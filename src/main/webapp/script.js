@@ -25,11 +25,13 @@ function searchEvents() {
   var search = document.getElementById('search').value;
   fetch('/events?' + new URLSearchParams({
     search: search,
-  })).then(response => response.json()).then(events => events.forEach(showEvent));
+})).then(response => response.json()).then(events => events.forEach(showEvent));
 }
 
 function showEvent(event) {
-  document.getElementById('events-container').innerHTML += "<div><h1>" + event.title + "</h1><hr><br><h2>" + event.date + "</h2><h3>" + event.description + "</h3><br><button type=\"button\" onclick=\"joinEvent()\">Join event!</button><br><br></div>";
+  document.getElementById('events-container').innerHTML += "<div><h1>" 
+  + event.title + "</h1><hr><br><h2>" + event.date + "</h2><h3>" + event.description 
+  + "</h3><br><button type=\"button\" onclick=\"joinEvent()\">Join event!</button><br><br></div>";
 }
 
 function joinEvent(event_id) {

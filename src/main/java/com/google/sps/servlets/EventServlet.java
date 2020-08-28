@@ -16,13 +16,21 @@ package com.google.sps.servlets;
 
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
+import com.google.appengine.api.datastore.DatastoreService;
+import com.google.appengine.api.datastore.DatastoreServiceFactory;
+import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.PreparedQuery;
+import com.google.appengine.api.datastore.Query;
 import com.google.gson.Gson;
 import com.google.sps.data.Event;
 import com.google.sps.data.EventStorage;
 import com.google.sps.data.User;
 import com.google.sps.data.UserStorage;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -30,10 +38,17 @@ import javax.servlet.http.HttpServletResponse;
 
 @WebServlet("/events/*")
 public class EventServlet extends HttpServlet {
+
   @Override
-  public void doGet(HttpServletRequest request, HttpServletResponse response) {
-    // TODO: parse "events/{event_id}" here.
-    response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
+  public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException { 
+    String search = request.getParameter("search");
+ 
+    List<Event> events = EventStorage.getSearchedEvents(search);
+
+    Gson gson = new Gson();
+    
+    response.setContentType("application/json");
+    response.getWriter().println(gson.toJson(events));
   }
 
   @Override

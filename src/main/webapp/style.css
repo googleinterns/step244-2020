@@ -9,6 +9,20 @@ html * {
   padding: 0;
 }
 
+#events-container {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-gap: 10px;
+  grid-auto-rows: minmax(300px, auto);
+}
+
+#events-container > div {
+  border: 2px solid #ebe719;
+  border-radius: 15px;
+  padding: 1em;
+}
+
 #search {
   width: 200px;
 }
