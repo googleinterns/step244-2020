@@ -85,12 +85,20 @@ function getGCalendarEvents(calendar, startTime, endTime) {
           calendar.addEventSource(fullcalendarEvents);
         });
     } else {
-      window.location.href = getCurrentUrl() + "/token?origin=calendar";
+      fetch("/auth?origin=calendar").then(authResponse => authResponse.json()).then(authInfo => {
+        if (authInfo.isLoggedIn){
+          window.location.href = getCurrentUrl() + "/token?origin=calendar";
+        }
+        else{
+          window.location.href = authInfo.authLink;
+        }
+      })
+      ;
     }
   });
 }
 
-function getCurrentUrl(){
+function getCurrentUrl() {
   var currentUrl = window.location.href;
   var currentUrlSlices = currentUrl.split("/");
   return currentUrlSlices[0] + "//" + currentUrlSlices[2];
