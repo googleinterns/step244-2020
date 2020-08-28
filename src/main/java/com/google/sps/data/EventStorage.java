@@ -21,13 +21,15 @@ import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.Query;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;  
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class EventStorage {
-  public static Event getEvent(Long event_id) {
+  public static Event getEvent(String event_id) {
     // TODO: Query in datastore.
     return null;
   }
@@ -44,11 +46,24 @@ public class EventStorage {
       String description = (String) entity.getProperty("description");
  
       if (search == null || search.isEmpty() || EventStorage.isTextMatch(search, title) || EventStorage.isTextMatch(search, description)) {
-        String id = (String) entity.getProperty("id");
-        String date = (String) entity.getProperty("date");
+        String id = (String) entity.getKey().getAppId();
         List<String> tags = (List<String>) entity.getProperty("tags");
-        Map<String, String> fields = (Map<String, String>) entity.getProperty("fields");
-        Event event = new Event(id, title, date, tags, fields, description); 
+        String date_range = (String) entity.getProperty("date-range");
+        String time_range = (String) entity.getProperty("time-range");
+        Long duration = (Long) entity.getProperty("duration");
+        String location = (String) entity.getProperty("location");
+        List<String> links = (List<String>) entity.getProperty("links");
+        String fieldsJson = (String) entity.getProperty("fields");
+        Map<String, String> fields = new Gson().fromJson(
+          fieldsJson, new TypeToken<HashMap<String, String>>() {}.getType()
+        );
+        String owner_id = (String) entity.getProperty("owner");
+        List<String> invited_participant_id = (List<String>) entity.getProperty("invited-users");
+        List<String> joined_participant_id = (List<String>) entity.getProperty("joined-users");
+        List<String> declined_participant_id = (List<String>) entity.getProperty("declined-users");
+        Event event = new Event(id, title, description, tags, date_range, time_range, duration,
+               location, links, fields, 
+               owner_id, invited_participant_id, joined_participant_id, declined_participant_id);
 
         events.add(event);
       }
@@ -64,25 +79,24 @@ public class EventStorage {
   public static void addEvent(Event event) {
     // Make an Entity of event.
     Entity eventEntity = new Entity("Event", event.getID());
-    eventEntity.setProperty("id", event.getID());
+
     eventEntity.setProperty("title", event.getTitle());
-    eventEntity.setProperty("date", event.getDate());
-    eventEntity.setProperty("tags", event.getTags());
     eventEntity.setProperty("description", event.getDescription());
-
-
-    Key eventEntityKey = eventEntity.getKey();
-    // Make an Entity of event info.
-    Entity eventInfoEntity = new Entity("EventInfo", eventEntityKey);
-
-    // Make an Entity of event users.
-    Entity eventUsersEntity = new Entity("EventUsers", eventEntityKey);
+    eventEntity.setProperty("tags", event.getTags());
+    eventEntity.setProperty("date-range", event.getDateRange());
+    eventEntity.setProperty("time-range", event.getTimeRange());
+    eventEntity.setProperty("duration", event.getDuration());
+    eventEntity.setProperty("location", event.getLocation());
+    eventEntity.setProperty("links", event.getLinks());
+    eventEntity.setProperty("fields", event.getFields());
+    eventEntity.setProperty("owner", event.getOwnerID());
+    eventEntity.setProperty("invited-users", event.getInvitedIDs());
+    eventEntity.setProperty("joined-users", event.getJoinedIDs());
+    eventEntity.setProperty("declined-users", event.getDeclinedIDs());
 
     // Store Entities to datastore.
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
     datastore.put(eventEntity);
-    datastore.put(eventInfoEntity);
-    datastore.put(eventUsersEntity);
   }
 
   public static void editEvent(Event event) {
@@ -96,7 +110,7 @@ public class EventStorage {
     datastore.delete(eventEntityKey);
   }
 
-  public static void joinEvent(Long event_id) {
+  public static void joinEvent(String event_id) {
     // TODO: Add current user to EventUsers
   }
 }

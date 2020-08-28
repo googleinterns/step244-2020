@@ -14,20 +14,26 @@
 
 package com.google.sps.data;
 
-import java.util.Objects;
+import java.util.Calendar;
 
-public class User {
-  private final String id;
-  private final String email;
-  private final String username;
+public final class DateRange {
+  private final Calendar start;
+  private final Calendar end;
 
-  public User(String id, String email, String username) {
-    this.id = Objects.requireNonNull(id, "id cannot be null");
-    this.email = Objects.requireNonNull(email, "email cannot be null");
-    this.username = Objects.requireNonNull(username, "username cannot be null");
+  public DateRange(Calendar start, Calendar end) {
+    this.start = start;
+    this.end = end;
   }
 
-  public String getID() {
-    return id;
+  public DateRange() {
+    this.start = null;
+    this.end = null;
+  }
+
+  public Calendar start() {
+    return start;
+  }
+  public Calendar end() {
+    return end;
   }
 }
