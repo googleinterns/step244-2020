@@ -13,7 +13,19 @@
 // limitations under the License.
 
 function getEvent(event_id) {
-  fetch('/events/' + event_id).then(response => response.json());
+  fetch('/events/' + event_id).then(response => response.json()).then((event) => {
+    document.getElementById('title-info').innerText = event.title;
+    document.getElementById('start-date-info').innerTest = event.date_range;
+    document.getElementById('start-time-info').innerText = event.time_range;
+    document.getElementById('duration-info').innerText = event.duration;
+    //   document.getElementById('tags-list-info')
+    document.getElementById('description-info').innerText = event.description;
+    document.getElementById('location-info').innerText = event.location;
+    //   document.getElementById('links-info')
+    //   document.getElementById('fields-info')
+    document.getElementById('owner-info').innerText = event.owner;
+    //   document.getElementById('people-list-info')
+  });
 }
 
 function getUser() {
