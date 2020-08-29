@@ -35,7 +35,7 @@ function showEvent(event) {
   document.getElementById('events-container').innerHTML += "<div><h1>" 
   + event.title + "</h1><hr><br><h2>" + event.duration + "</h2><h3>" + event.description 
   + "</h3><br><p><i class=\"fas fa-map-marker-alt\"></i>    " + event.location 
-  + "</p><br><button type=\"button\" onclick=\"joinEvent()\">Join event!</button><br><br></div>";
+  + "</p><br><button type=\"button\" class=\"btn btn-success\" onclick=\"joinEvent()\">Join event!</button><br><br></div>";
 }
 
 function joinEvent(event_id) {
