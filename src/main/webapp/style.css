@@ -9,6 +9,10 @@ html * {
   padding: 0;
 }
 
+.advanced-search {
+  width: 600px;
+}
+
 #events-container {
   position: relative;
   display: grid;
@@ -23,15 +27,12 @@ html * {
   padding: 1em;
 }
 
-#search {
-  width: 200px;
-}
-
 #search-bar {
-  left: 45%;
+  left: 30%;
   margin-bottom: 50px;
   margin-right: -50%;
   position: relative;
+  width: 800px;
 }
 
 #wrapper {
