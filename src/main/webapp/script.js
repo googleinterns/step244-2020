@@ -23,8 +23,11 @@ function getUser() {
 function searchEvents() {
   document.getElementById('events-container').innerText = "";
   var search = document.getElementById('search').value;
+  var tags = document.getElementById('tags').value;
   fetch('/events?' + new URLSearchParams({
     search: search,
+}) + '&' + new URLSearchParams({
+    tags: tags,
 })).then(response => response.json()).then(events => events.forEach(showEvent));
 }
 

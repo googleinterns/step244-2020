@@ -34,7 +34,7 @@ public class EventStorage {
     return null;
   }
 
-  public static List<Event> getSearchedEvents(String search) {
+  public static List<Event> getSearchedEvents(String search, String searchTags) {
     Query query = new Query("Event");
  
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
@@ -48,24 +48,27 @@ public class EventStorage {
       if (search == null || search.isEmpty() || EventStorage.isTextMatch(search, title) || EventStorage.isTextMatch(search, description)) {
         String id = (String) entity.getKey().getAppId();
         List<String> tags = (List<String>) entity.getProperty("tags");
-        String date_range = (String) entity.getProperty("date-range");
-        String time_range = (String) entity.getProperty("time-range");
-        Long duration = (Long) entity.getProperty("duration");
-        String location = (String) entity.getProperty("location");
-        List<String> links = (List<String>) entity.getProperty("links");
-        String fieldsJson = (String) entity.getProperty("fields");
-        Map<String, String> fields = new Gson().fromJson(
-          fieldsJson, new TypeToken<HashMap<String, String>>() {}.getType()
-        );
-        String owner_id = (String) entity.getProperty("owner");
-        List<String> invited_participant_id = (List<String>) entity.getProperty("invited-users");
-        List<String> joined_participant_id = (List<String>) entity.getProperty("joined-users");
-        List<String> declined_participant_id = (List<String>) entity.getProperty("declined-users");
-        Event event = new Event(id, title, description, tags, date_range, time_range, duration,
-               location, links, fields, 
-               owner_id, invited_participant_id, joined_participant_id, declined_participant_id);
 
-        events.add(event);
+        if (searchTags == null || searchTags.equals("all") || tags.contains(searchTags)) {
+          String date_range = (String) entity.getProperty("date-range");
+          String time_range = (String) entity.getProperty("time-range");
+          Long duration = (Long) entity.getProperty("duration");
+          String location = (String) entity.getProperty("location");
+          List<String> links = (List<String>) entity.getProperty("links");
+          String fieldsJson = (String) entity.getProperty("fields");
+          Map<String, String> fields = new Gson().fromJson(
+          fieldsJson, new TypeToken<HashMap<String, String>>() {}.getType()
+          );
+          String owner_id = (String) entity.getProperty("owner");
+          List<String> invited_participant_id = (List<String>) entity.getProperty("invited-users");
+          List<String> joined_participant_id = (List<String>) entity.getProperty("joined-users");
+          List<String> declined_participant_id = (List<String>) entity.getProperty("declined-users");
+          Event event = new Event(id, title, description, tags, date_range, time_range, duration,
+            location, links, fields, 
+            owner_id, invited_participant_id, joined_participant_id, declined_participant_id);
+
+          events.add(event);
+        }
       }
     }
 
