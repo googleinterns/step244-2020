@@ -33,6 +33,7 @@ public class UserStorage {
   }
 
   public static User getUserByUsername(String username) {
+    // TODO: Query in datastore.
     return null;
   }
 

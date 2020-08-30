@@ -26,8 +26,7 @@ public class Event {
   private final String title;
   private final String description;
   private final List<String> tags = new ArrayList<String>();
-  private final String date_range;
-  private final String time_range;
+  private final TimeRange time_range;
   private final Long duration; // in minutes
   private final String location;
   private final List<String> links = new ArrayList<String>();
@@ -38,15 +37,14 @@ public class Event {
   private final List<String> declined_participants_id = new ArrayList<String>();
 
 
-  public Event(String id, String title, String description, List<String> tags, String date_range, String time_range, Long duration,
+  public Event(String id, String title, String description, List<String> tags, TimeRange time_range, Long duration,
                String location, List<String> links, Map<String, String> fields, 
                String owner_id, List<String> invited_participant_id, List<String> joined_participant_id, List<String> declined_participant_id) {
     this.id = Objects.requireNonNull(id, "id cannot be null");
     this.title = Objects.requireNonNull(title, "title cannot be null");
     this.description = Objects.requireNonNull(description, "description cannot be null");
     this.tags.addAll(Objects.requireNonNull(tags, "tags cannot be null"));
-    this.date_range = Objects.requireNonNull(date_range, "date_range cannot be null");
-    this.time_range = Objects.requireNonNull(time_range, "time_range cannot be null");
+    this.time_range = time_range;
     this.duration = duration;
     this.location = Objects.requireNonNull(location, "location cannot be null");
     this.links.addAll(Objects.requireNonNull(links, "links cannot be null"));
@@ -73,12 +71,8 @@ public class Event {
     return tags;
   }
 
-  public String getTimeRange() {
-    return time_range;
-  }
-
-  public String getDateRange() {
-    return date_range;
+  public String getTimeRange() { // Convert fields of TimeRange to gson sttring
+    return new Gson().toJson(time_range);
   }
 
   public Long getDuration() {
@@ -93,7 +87,7 @@ public class Event {
     return links;
   }
 
-  public String getFields() { // Map -> gson
+  public String getFields() { // Convert fields map to gson string
     return new Gson().toJson(fields);
   }
 

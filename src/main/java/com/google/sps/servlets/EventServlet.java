@@ -24,12 +24,14 @@ import com.google.appengine.api.users.UserServiceFactory;
 import com.google.gson.Gson;
 import com.google.sps.data.Event;
 import com.google.sps.data.EventStorage;
+import com.google.sps.data.TimeRange;
 import com.google.sps.data.User;
 import com.google.sps.data.UserStorage;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.time.LocalTime;
 import java.text.SimpleDateFormat;
+import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
@@ -72,6 +74,8 @@ public class EventServlet extends HttpServlet {
 
     addEvent(request, response, userService);
 
+    // Redirect back to the HTML page.
+    response.sendRedirect("/index.html");
   }
 
   public void doPut(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -142,8 +146,7 @@ public class EventServlet extends HttpServlet {
     else idForDataStoreEvent = idFromGCalendarEvent;
     Event event = new Event(idForDataStoreEvent, title, description, 
         tags,
-        formatDateRange(startDateAsString),
-        formatTimeRange(startTimeAsString),
+        formatTimeRange(startDateAsString, startTimeAsString),
         duration,
         location, 
         parseLinks(request.getParameter("links")), 
@@ -170,7 +173,6 @@ public class EventServlet extends HttpServlet {
     String calendarId = "primary";
     try {
       Calendar service = Utils.loadCalendarClient();
-      System.out.println(service);
       if (service == null){
         return null;
       }
@@ -186,19 +188,15 @@ public class EventServlet extends HttpServlet {
     return Arrays.asList(links.split(","));
   }
 
-  private String formatDateRange(String date) {  // yyyy-mm-dd -> yyyy.mm.dd-yyyy.mm.dd
-    if (date != null && !date.isEmpty()) {
-      date = date.replace("-", ".");
-      return date + "-" + date;
+  private TimeRange formatTimeRange(String date, String time) {
+    if (date != null && !date.isEmpty() && time != null && !time.isEmpty()) {
+      Timestamp timestamp = Timestamp.valueOf(
+          new SimpleDateFormat("yyyy-MM-dd HH:mm")
+          .format(date + ' ' + time) // get the current date as String
+        );
+      return new TimeRange(timestamp);
     }
-    return "0000.01.01-9999.12.12";
-  }
-
-  private String formatTimeRange(String time) {  // hh:mm -> hh:mm-hh:mm
-    if (time != null && !time.isEmpty()) {
-      return time + "-" + time;
-    }
-    return "00:00-23:59";
+    return null;
   }
 
   private void getEvents(HttpServletRequest request, HttpServletResponse response, UserService userService)
