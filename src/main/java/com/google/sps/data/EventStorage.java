@@ -21,6 +21,9 @@ import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.Query;
+import com.google.appengine.api.datastore.Query.Filter;
+import com.google.appengine.api.datastore.Query.FilterOperator;
+import com.google.appengine.api.datastore.Query.FilterPredicate;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;  
 import java.util.ArrayList;
@@ -34,8 +37,14 @@ public class EventStorage {
     return null;
   }
 
-  public static List<Event> getSearchedEvents(String search, String searchTags) {
+  public static List<Event> getSearchedEvents(String search, String searchTags, String searchDuration) {
     Query query = new Query("Event");
+
+    if (searchDuration != null && !searchDuration.isEmpty()) {
+        Filter durationFilter =
+        new FilterPredicate("duration", FilterOperator.LESS_THAN_OR_EQUAL, Long.parseLong(searchDuration));
+        query = query.setFilter(durationFilter);
+    }
  
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
     PreparedQuery results = datastore.prepare(query);
