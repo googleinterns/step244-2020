@@ -86,10 +86,9 @@ function getGCalendarEvents(calendar, startTime, endTime) {
         });
     } else {
       fetch("/auth?origin=calendar").then(authResponse => authResponse.json()).then(authInfo => {
-        if (authInfo.isLoggedIn){
+        if (authInfo.isLoggedIn) {
           window.location.href = getCurrentUrl() + "/token?origin=calendar";
-        }
-        else{
+        } else {
           window.location.href = authInfo.authLink;
         }
       })

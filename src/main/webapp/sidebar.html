@@ -31,16 +31,15 @@
 </div>
 <script>
   $(function() {
-    fetch("/auth").then(response => response.json()).then(authInfo =>{
-      if (authInfo.isLoggedIn){
+    fetch("/auth").then(response => response.json()).then(authInfo => {
+      if (authInfo.isLoggedIn) {
         var liElement = document.createElement("li");
         var hrefElement = document.createElement("a");
         hrefElement.innerHTML = "Logout";
         hrefElement.href = authInfo.authLink;
         liElement.appendChild(hrefElement);
         document.getElementsByClassName("sidebar-nav")[0].appendChild(liElement);
-      }
-      else{
+      } else {
         var liElement = document.createElement("li");
         var hrefElement = document.createElement("a");
         hrefElement.innerHTML = "Login";
