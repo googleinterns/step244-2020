@@ -63,8 +63,9 @@ public class EventServlet extends HttpServlet {
     String search = request.getParameter("search");
     String tags = request.getParameter("tags");
     String duration = request.getParameter("duration");
+    String location = request.getParameter("location");
  
-    List<Event> events = EventStorage.getSearchedEvents(search, tags, duration);
+    List<Event> events = EventStorage.getSearchedEvents(search, tags, duration, location);
 
     Gson gson = new Gson();
     

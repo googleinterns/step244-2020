@@ -25,12 +25,15 @@ function searchEvents() {
   var search = document.getElementById('search').value;
   var tags = document.getElementById('tags').value;
   var duration = document.getElementById('duration').value;
+  var location = document.getElementById('location').value;
   fetch('/events?' + new URLSearchParams({
     search: search,
 }) + '&' + new URLSearchParams({
     tags: tags,
 }) + '&' + new URLSearchParams({
     duration: duration,
+}) + '&' + new URLSearchParams({
+    location: location,
 })).then(response => response.json()).then(events => events.forEach(showEvent));
 }
 
