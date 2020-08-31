@@ -21,8 +21,7 @@
   <script src="script.js"></script>
 </head>
 
-<body>
-
+<body onload="setMinDateToToday();">
   <div id="wrapper">
     <!-- Used to include the same sidebar on each page.-->
     <div id="sideBar">
@@ -38,13 +37,21 @@
         <input type="text" id="event-title" name="title">
 
         <label for="event-start-date">Start date</label>
-        <input type="date" id="event-start-date" name="start-date">
+        <input type="date" id="event-start-date" name="start-date" max="2200-01-01">
 
         <label for="event-start-time">Start time</label>
         <input type="time" id="event-start-time" name="start-time">
 
         <label for="event-duration">Duration in minutes</label>
         <input type="text" id="event-duration" name="duration">
+
+        <label for="event-category">Category</label>
+        <input list="event-category-list" id="event-category" name="category">
+        <datalist id="event-category-list">
+          <option value="entertainment"></option>
+          <option value="education"></option>
+          <option value="business"></option>
+        </datalist>
 
         <label for="event-tags">Tags</label>
         <input list="event-tags-list" id="event-tags" name="tags">

@@ -24,7 +24,7 @@ import com.google.appengine.api.users.UserServiceFactory;
 import com.google.gson.Gson;
 import com.google.sps.data.Event;
 import com.google.sps.data.EventStorage;
-import com.google.sps.data.TimeRange;
+import com.google.sps.data.DateTimeRange;
 import com.google.sps.data.User;
 import com.google.sps.data.UserStorage;
 import java.io.IOException;
@@ -75,7 +75,9 @@ public class EventServlet extends HttpServlet {
     addEvent(request, response, userService);
 
     // Redirect back to the HTML page.
-    response.sendRedirect("/index.html");
+    if (response.getStatus() == HttpServletResponse.SC_OK) {
+      response.sendRedirect("/index.html");
+    }
   }
 
   public void doPut(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -91,93 +93,111 @@ public class EventServlet extends HttpServlet {
 
   private void addEvent(HttpServletRequest request, HttpServletResponse response, UserService userService)
       throws IOException, ServletException {
-    String title = Objects.toString(request.getParameter("title"), "");
-    String description = Objects.toString(request.getParameter("description"), "");
-    String duration_parameter = request.getParameter("duration");
+    String title = Objects.toString(request.getParameter("title").trim(), "");
+    String description = Objects.toString(request.getParameter("description").trim(), "");
+    String category = Objects.toString(request.getParameter("category").trim(), "");
+
+    List<String> tags = new ArrayList<String>();
+    if (request.getParameterValues("tags") != null) {
+      tags = Arrays.asList(Arrays.stream(request.getParameterValues("tags")).map(String::trim).toArray(String[]::new));
+    }
+    
+    String startDate = request.getParameter("start-date");
+    String startTime = request.getParameter("start-time");
+    
+    String durationParameter = request.getParameter("duration").trim();
     Long duration = 0L;
-    if (duration_parameter != null && !duration_parameter.isEmpty()) {
+    if (durationParameter != null && !durationParameter.isEmpty()) {
       try {
-        duration = Long.parseLong(duration_parameter);
+        duration = Long.parseLong(durationParameter);
       } catch (Exception e) {
-        System.err.println(e + duration_parameter);
+        System.err.println(e + durationParameter);
+        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        return;
       }
     }
 
-    String location = Objects.toString(request.getParameter("location"), "");
+    String location = Objects.toString(request.getParameter("location").trim(), "");
 
     Map<String, String> fields = new HashMap<String, String>();
     if (request.getParameterValues("fields") != null) {
       for (String field : request.getParameterValues("fields")) {
-        fields.put(field, request.getParameter(field));
+        if (request.getParameter(field) != null) {
+          fields.put(field.trim(), request.getParameter(field).trim());
+        }
       }
     }
 
-    List<String> tags = new ArrayList<String>();
-    if (request.getParameterValues("tags") != null) {
-      tags = Arrays.asList(request.getParameterValues("tags"));
+    String currentUserId = null;
+    try {
+      currentUserId = userService.getCurrentUser().getUserId();
+    } catch (Exception e) {
+      System.err.println("Can't get current user id: " + e);
+      response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+      return;
     }
-
-    String current_user_id = userService.getCurrentUser().getUserId();
-    List<String> participants_ids = new ArrayList<String>();
+    
+    List<String> participantsIds = new ArrayList<String>();
     if (request.getParameterValues("people") != null) {
-      participants_ids = Arrays.asList(request.getParameterValues("people"))
-                               .stream().map(person -> UserStorage.getIDbyUsername(person)).collect(Collectors.toList());
+      participantsIds = Arrays.asList(request.getParameterValues("people"))
+                               .stream().map(person -> UserStorage.getIDbyUsername(person)).filter(Objects::nonNull).collect(Collectors.toList());
     }
 
-    String startDateAsString = request.getParameter("start-date");
-    String startTimeAsString = request.getParameter("start-time");
-    String idFromGCalendarEvent = null;
-    if (startDateAsString != null && startTimeAsString != null && !startDateAsString.isEmpty() 
-         && !startTimeAsString.isEmpty()){// event has time set
-      com.google.api.services.calendar.model.Event newEvent = createGCalendarEvent(startTimeAsString, startDateAsString,
-          duration, location, description, title, fields);
-      if (newEvent == null){
-        response.setContentType("text/html");
-        response.getWriter().print("<script>alert(\"Please login first.\")</script>");
-        RequestDispatcher dispatcher = request.getRequestDispatcher("/add_event.html");
-        dispatcher.include(request, response);
-        return ;
-      }
-      idFromGCalendarEvent = newEvent.getId();
-    }
-    String idForDataStoreEvent = null;
-    if (idFromGCalendarEvent == null)
-      idForDataStoreEvent = UUID.randomUUID().toString();
-    else idForDataStoreEvent = idFromGCalendarEvent;
-    Event event = new Event(idForDataStoreEvent, title, description, 
-        tags,
-        formatTimeRange(startDateAsString, startTimeAsString),
+    
+    String gcalendarId = null;
+
+    Event event = new Event(UUID.randomUUID().toString(), gcalendarId, title, description, 
+        category, tags,
+        formatDateTimeRange(startDate, startTime),
         duration,
         location, 
         parseLinks(request.getParameter("links")), 
         fields,
-        current_user_id, participants_ids, new ArrayList<String>(), new ArrayList<String>());
+        currentUserId, participantsIds, new ArrayList<String>(), new ArrayList<String>()
+    );
 
-    EventStorage.addEvent(event);
-    response.sendRedirect("/index.html");
+    
+    if (event.isDateTimeSet()) {
+      com.google.api.services.calendar.model.Event newEvent = createGCalendarEvent(event);
+      if (newEvent == null) {
+        response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        return;
+      }
+      gcalendarId = newEvent.getId();
+    }
+
+    if (gcalendarId != null) {
+      event.setGCalendarID(gcalendarId);
+    }
+
+    try {
+      EventStorage.addEvent(event);
+    } catch (Exception e) {
+      System.err.println("Can't add new event to storage: " + e);
+      response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+      return;
+    }
   }
 
-  private com.google.api.services.calendar.model.Event createGCalendarEvent(String timeInString, String dateInString, long durationInMinutes, 
-    String location, String description, String title, Map<String, String> externalFields) throws IOException {
-    com.google.api.services.calendar.model.Event event = new com.google.api.services.calendar.model.Event();
-    event.setDescription(description).setSummary(title);
-    DateTime startDateTime = new DateTime(dateInString + "T" + timeInString + ":00Z"); // Set in UTC
-    DateTime endDateTime = new DateTime(startDateTime.getValue() + durationInMinutes * 60 * 1000);
-    event.setStart(new EventDateTime().setDateTime(startDateTime));
-    event.setEnd(new EventDateTime().setDateTime(endDateTime));
+  private com.google.api.services.calendar.model.Event createGCalendarEvent(Event event) throws IOException {
+    com.google.api.services.calendar.model.Event gcalendarEvent = new com.google.api.services.calendar.model.Event();
+    gcalendarEvent.setDescription(event.getDescription()).setSummary(event.getTitle());
+    DateTime startDateTime = new DateTime(event.getDateTimeAsString());
+    DateTime endDateTime = new DateTime(startDateTime.getValue() + event.getDuration() * 60 * 1000);
+    gcalendarEvent.setStart(new EventDateTime().setDateTime(startDateTime));
+    gcalendarEvent.setEnd(new EventDateTime().setDateTime(endDateTime));
 
     ExtendedProperties extendedProps = new ExtendedProperties();
-    extendedProps.setShared(externalFields);
-    event.setExtendedProperties(extendedProps);
+    extendedProps.setShared(event.getFields());
+    gcalendarEvent.setExtendedProperties(extendedProps);
 
-    String calendarId = "primary";
     try {
       Calendar service = Utils.loadCalendarClient();
       if (service == null){
         return null;
       }
-      service.events().insert(calendarId, event).execute();
-      return event;
+      service.events().insert("primary", gcalendarEvent).execute();
+      return gcalendarEvent;
     } catch (GeneralSecurityException e) {
       e.printStackTrace();
     }
@@ -188,15 +208,8 @@ public class EventServlet extends HttpServlet {
     return Arrays.asList(links.split(","));
   }
 
-  private TimeRange formatTimeRange(String date, String time) {
-    if (date != null && !date.isEmpty() && time != null && !time.isEmpty()) {
-      Timestamp timestamp = Timestamp.valueOf(
-          new SimpleDateFormat("yyyy-MM-dd HH:mm")
-          .format(date + ' ' + time) // get the current date as String
-        );
-      return new TimeRange(timestamp);
-    }
-    return null;
+  private DateTimeRange formatDateTimeRange(String date, String time) {
+    return new DateTimeRange(date, time);
   }
 
   private void getEvents(HttpServletRequest request, HttpServletResponse response, UserService userService)

@@ -32,12 +32,15 @@ public class EventStorage {
 
     eventEntity.setProperty("title", event.getTitle());
     eventEntity.setProperty("description", event.getDescription());
+    eventEntity.setProperty("category", event.getCategory());
     eventEntity.setProperty("tags", event.getTags());
-    eventEntity.setProperty("time-range", event.getTimeRange());
+    eventEntity.setProperty("date", event.getDate());
+    eventEntity.setProperty("time", event.getTime());
+    eventEntity.setProperty("date-time-range", event.getDateTimeRangeAsJSON());
     eventEntity.setProperty("duration", event.getDuration());
     eventEntity.setProperty("location", event.getLocation());
     eventEntity.setProperty("links", event.getLinks());
-    eventEntity.setProperty("fields", event.getFields());
+    eventEntity.setProperty("fields", event.getFieldsAsJSON());
     eventEntity.setProperty("owner", event.getOwnerID());
     eventEntity.setProperty("invited-users", event.getInvitedIDs());
     eventEntity.setProperty("joined-users", event.getJoinedIDs());

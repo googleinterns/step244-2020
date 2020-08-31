@@ -62,6 +62,9 @@ public class UserStorage {
 
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
     Entity user_entity = datastore.prepare(query).asSingleEntity();
+    if (user_entity == null) {
+      return null;
+    }
     return (String) user_entity.getProperty("id");
   }
 

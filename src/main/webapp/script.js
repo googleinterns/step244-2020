@@ -259,3 +259,7 @@ function addPerson() {
   personLI.innerText = person;
   document.getElementById('event-people-list').appendChild(personLI);
 }
+
+function setMinDateToToday() {
+  document.getElementById("event-start-date").min = new Date().toISOString().slice(0, 10);
+}

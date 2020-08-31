@@ -23,40 +23,54 @@ import com.google.gson.Gson;
 
 public class Event {
   private final String id;
+  private String gcalendarId;
   private final String title;
   private final String description;
+  private final String category;
   private final List<String> tags = new ArrayList<String>();
-  private final TimeRange time_range;
+  private final DateTimeRange dateTimeRange;
   private final Long duration; // in minutes
   private final String location;
   private final List<String> links = new ArrayList<String>();
   private final Map<String, String> fields = new HashMap<String, String>();
-  private final String owner_id;
-  private final List<String> invited_participants_id = new ArrayList<String>();
-  private final List<String> joined_participants_id = new ArrayList<String>();
-  private final List<String> declined_participants_id = new ArrayList<String>();
+  private final String ownerId;
+  private final List<String> invitedParticipantsId = new ArrayList<String>();
+  private final List<String> joinedParticipantsId = new ArrayList<String>();
+  private final List<String> declinedParticipantsId = new ArrayList<String>();
 
 
-  public Event(String id, String title, String description, List<String> tags, TimeRange time_range, Long duration,
+  public Event(String id, String gcalendarId, 
+               String title, String description, String category, List<String> tags, 
+               DateTimeRange dateTimeRange, Long duration,
                String location, List<String> links, Map<String, String> fields, 
-               String owner_id, List<String> invited_participant_id, List<String> joined_participant_id, List<String> declined_participant_id) {
+               String ownerId, List<String> invitedParticipantsId, List<String> joinedParticipantsId, List<String> declinedParticipantsId) {
     this.id = Objects.requireNonNull(id, "id cannot be null");
+    this.gcalendarId = gcalendarId;
     this.title = Objects.requireNonNull(title, "title cannot be null");
     this.description = Objects.requireNonNull(description, "description cannot be null");
+    this.category = Objects.requireNonNull(category, "category cannot be null");
     this.tags.addAll(Objects.requireNonNull(tags, "tags cannot be null"));
-    this.time_range = time_range;
+    this.dateTimeRange = dateTimeRange;
     this.duration = duration;
     this.location = Objects.requireNonNull(location, "location cannot be null");
     this.links.addAll(Objects.requireNonNull(links, "links cannot be null"));
     this.fields.putAll(Objects.requireNonNull(fields, "fields cannot be null"));
-    this.owner_id = Objects.requireNonNull(owner_id, "owner_id cannot be null");
-    this.invited_participants_id.addAll(Objects.requireNonNull(invited_participants_id, "invited_participants_id cannot be null"));
-    this.joined_participants_id.addAll(Objects.requireNonNull(joined_participants_id, "joined_participants_id cannot be null"));
-    this.declined_participants_id.addAll(Objects.requireNonNull(declined_participants_id, "declined_participants_id cannot be null"));
+    this.ownerId = Objects.requireNonNull(ownerId, "ownerId cannot be null");
+    this.invitedParticipantsId.addAll(Objects.requireNonNull(invitedParticipantsId, "invitedParticipantsId cannot be null"));
+    this.joinedParticipantsId.addAll(Objects.requireNonNull(joinedParticipantsId, "joinedParticipantsId cannot be null"));
+    this.declinedParticipantsId.addAll(Objects.requireNonNull(declinedParticipantsId, "declinedParticipantsId cannot be null"));
   }
 
   public String getID() {
     return id;
+  }
+
+  public String getGCalendarID() {
+    return gcalendarId;
+  }
+
+  public void setGCalendarID(String newGCalendarId) {
+    this.gcalendarId = newGCalendarId;
   }
 
   public String getTitle() {
@@ -67,12 +81,41 @@ public class Event {
     return description;
   }
 
+  public String getCategory() {
+    return category;
+  }
+
   public List<String> getTags() {
     return tags;
   }
 
-  public String getTimeRange() { // Convert fields of TimeRange to gson sttring
-    return new Gson().toJson(time_range);
+  public Boolean isDateTimeSet() {
+    return dateTimeRange != null && dateTimeRange.isDateTimeSet();
+  }
+
+  public String getDate() {
+    if (dateTimeRange != null && dateTimeRange.isDateSet()) {
+      return dateTimeRange.getDate();
+    }
+    return null;
+  }
+
+  public String getTime() {
+    if (dateTimeRange != null && dateTimeRange.isTimeSet()) {
+      return dateTimeRange.getTime();
+    }
+    return null;
+  }
+
+  public String getDateTimeAsString() { // Convert DateTime to UTC String
+    if (!dateTimeRange.isDateTimeSet()) {
+      return null;
+    }
+    return dateTimeRange.getDate() + "T" + dateTimeRange.getTime() + ":00Z";
+  }
+
+  public String getDateTimeRangeAsJSON() { // Convert fields of DateTimeRange to gson string
+    return new Gson().toJson(dateTimeRange);
   }
 
   public Long getDuration() {
@@ -87,23 +130,27 @@ public class Event {
     return links;
   }
 
-  public String getFields() { // Convert fields map to gson string
+  public Map<String, String> getFields() { // Convert fields map to gson string
+    return fields;
+  }
+
+  public String getFieldsAsJSON() { // Convert fields map to gson string
     return new Gson().toJson(fields);
   }
 
   public String getOwnerID() {
-    return owner_id;
+    return ownerId;
   }
 
   public List<String> getInvitedIDs() {
-    return invited_participants_id;
+    return invitedParticipantsId;
   }
 
   public List<String> getJoinedIDs() {
-    return joined_participants_id;
+    return joinedParticipantsId;
   }
 
   public List<String> getDeclinedIDs() {
-    return declined_participants_id;
+    return declinedParticipantsId;
   }
 }
