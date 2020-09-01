@@ -21,7 +21,7 @@ public class AuthServlet extends HttpServlet {
     UserService userService = UserServiceFactory.getUserService();
     response.setContentType("application/json;");
     Gson gson = new Gson();
-    response.getWriter().println(gson.toJson(new AuthData(false, buildAuthLink(userService, origin))));
+    response.getWriter().println(gson.toJson(new AuthData(userService.isUserLoggedIn(), buildAuthLink(userService, origin))));
   }
 
   private String buildAuthLink(UserService userService, String origin) {

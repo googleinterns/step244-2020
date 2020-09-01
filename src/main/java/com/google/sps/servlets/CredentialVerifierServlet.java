@@ -24,7 +24,6 @@ public class CredentialVerifierServlet extends HttpServlet {
       User user = UserServiceFactory.getUserService().getCurrentUser();
       if (user == null) {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        response.getWriter().print("false");
         return;
       }
       Credential credential = flow.loadCredential(user.getUserId());
