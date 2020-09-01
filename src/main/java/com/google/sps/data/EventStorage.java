@@ -41,15 +41,18 @@ public class EventStorage {
     Query query = new Query("Event");
 
     if (searchDuration != null && !searchDuration.isEmpty()) {
+      Long searchDurationLong = Long.parseLong(searchDuration);
+      if (searchDurationLong != null) {
         Filter durationFilter =
-        new FilterPredicate("duration", FilterOperator.LESS_THAN_OR_EQUAL, Long.parseLong(searchDuration));
+        new FilterPredicate("duration", FilterOperator.LESS_THAN_OR_EQUAL, searchDurationLong);
         query = query.setFilter(durationFilter);
+      }
     }
 
     if (searchLocation != null && !searchLocation.isEmpty() && !searchLocation.equals("Everywhere")) {
-        Filter locationFilter =
-        new FilterPredicate("location", FilterOperator.EQUAL, searchLocation);
-        query = query.setFilter(locationFilter);
+      Filter locationFilter =
+      new FilterPredicate("location", FilterOperator.EQUAL, searchLocation);
+      query = query.setFilter(locationFilter);
     }
  
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
