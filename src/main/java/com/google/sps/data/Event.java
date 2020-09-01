@@ -94,24 +94,18 @@ public class Event {
   }
 
   public String getDate() {
-    if (dateTimeRange != null && dateTimeRange.isDateSet()) {
-      return dateTimeRange.getDate();
-    }
-    return null;
+    return dateTimeRange != null ? dateTimeRange.getDate() : null;
   }
 
   public String getTime() {
-    if (dateTimeRange != null && dateTimeRange.isTimeSet()) {
-      return dateTimeRange.getTime();
-    }
-    return null;
+    return dateTimeRange != null ? dateTimeRange.getTime() : null;
   }
 
   public String getDateTimeAsString() { // Convert DateTime to UTC String
-    if (!dateTimeRange.isDateTimeSet()) {
-      return null;
+    if (dateTimeRange != null && dateTimeRange.isDateTimeSet()) {
+      return dateTimeRange.getDate() + "T" + dateTimeRange.getTime() + ":00Z";
     }
-    return dateTimeRange.getDate() + "T" + dateTimeRange.getTime() + ":00Z";
+    return null;
   }
 
   public String getDateTimeRangeAsJSON() { // Convert fields of DateTimeRange to gson string
