@@ -15,8 +15,8 @@
 function getEvent(event_id) {
   fetch('/events/' + event_id).then(response => response.json()).then((event) => {
     document.getElementById('title-info').innerText = event.title;
-    document.getElementById('start-date-info').innerTest = event.date_range;
-    document.getElementById('start-time-info').innerText = event.time_range;
+    document.getElementById('start-date-info').innerTest = event.date;
+    document.getElementById('start-time-info').innerText = event.time;
     document.getElementById('duration-info').innerText = event.duration;
     //   document.getElementById('tags-list-info')
     document.getElementById('description-info').innerText = event.description;

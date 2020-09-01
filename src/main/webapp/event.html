@@ -21,8 +21,7 @@
   <script src="script.js"></script>
 </head>
 
-<body onload="getEvent(0);">
-
+<body onload="getEvent(new URLSearchParams(window.location.search).get('event_id'));">
   <div id="wrapper">
     <!-- Used to include the same sidebar on each page.-->
     <div id="sideBar">
@@ -37,6 +36,7 @@
       <p id="start-date-info"></p>
       <p id="start-time-info"></p>
       <p id="duration-info"></p>
+      <p id="category-info"></p>
       <p id="tags-info"></p>
       <ul id="tags-list-info"></ul>
       <p id="description-info"></p>

@@ -73,6 +73,9 @@ public class EventServlet extends HttpServlet {
     
     response.setContentType("application/json");
     response.getWriter().println(gson.toJson(events));
+    
+    String[] pathParts = pathName.split("/");
+    getEvent(request, response, userService, pathParts[1]);
   }
 
   @Override
@@ -170,6 +173,23 @@ public class EventServlet extends HttpServlet {
     }
     
     return event.getID();
+  }
+
+  private void getEvent(HttpServletRequest request, HttpServletResponse response, UserService userService, String eventId)
+      throws IOException {
+    Event event = EventStorage.getEvent(eventId);
+    if (event == null) {
+      response.setStatus(SC_INTERNAL_SERVER_ERROR);
+    }
+    if (!hasCurrentUserAccessToEvent(event)) {
+      response.setStatus(SC_FORBIDDEN);
+    }
+    response.setContentType("application/json;");
+    response.getWriter().println(new Gson().toJson(event));
+  }
+
+  private Boolean hasCurrentUserAccessToEvent(Event event) {
+    return event.hasUserAccess(userService.getCurrentUser().getId());
   }
 
   private void getEvents(HttpServletRequest request, HttpServletResponse response, UserService userService)
