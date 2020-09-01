@@ -157,7 +157,7 @@ public class EventServlet extends HttpServlet {
 
     
     if (event.isDateTimeSet()) {
-      com.google.api.services.calendar.model.Event newEvent = createGCalendarEvent(event);
+      com.google.api.services.calendar.model.Event newEvent = Utils.createGCalendarEvent(event);
       if (newEvent == null) {
         response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         return false;
@@ -178,31 +178,6 @@ public class EventServlet extends HttpServlet {
     }
     
     return true;
-  }
-
-  private com.google.api.services.calendar.model.Event createGCalendarEvent(Event event) throws IOException {
-    com.google.api.services.calendar.model.Event gcalendarEvent = new com.google.api.services.calendar.model.Event();
-    gcalendarEvent.setDescription(event.getDescription()).setSummary(event.getTitle());
-    DateTime startDateTime = new DateTime(event.getDateTimeAsString());
-    DateTime endDateTime = new DateTime(startDateTime.getValue() + event.getDuration() * 60 * 1000);
-    gcalendarEvent.setStart(new EventDateTime().setDateTime(startDateTime));
-    gcalendarEvent.setEnd(new EventDateTime().setDateTime(endDateTime));
-
-    ExtendedProperties extendedProps = new ExtendedProperties();
-    extendedProps.setShared(event.getFields());
-    gcalendarEvent.setExtendedProperties(extendedProps);
-
-    try {
-      Calendar service = Utils.loadCalendarClient();
-      if (service == null){
-        return null;
-      }
-      service.events().insert("primary", gcalendarEvent).execute();
-      return gcalendarEvent;
-    } catch (GeneralSecurityException e) {
-      e.printStackTrace();
-    }
-    return null;
   }
 
   private List<String> parseLinks(String links) {
