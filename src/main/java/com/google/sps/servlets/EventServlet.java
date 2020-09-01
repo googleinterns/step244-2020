@@ -61,6 +61,23 @@ public class EventServlet extends HttpServlet {
       getEvents(request, response, userService);
       return;
     }
+    
+    String[] pathParts = pathName.split("/");
+    String eventId = pathParts[1];
+
+    if (pathParts[2].equals("join")) {
+      if (!userService.isUserLoggedIn()) {
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        return;
+      }
+      if (joinEvent(request, response, userService, eventId)) {
+        response.sendRedirect("/event.html?event_id=" + eventId);
+        return;
+      } else {
+        // TODO: Write message to user
+      }
+      return;
+    }
 
     String search = request.getParameter("search");
     String category = request.getParameter("category");
@@ -229,6 +246,28 @@ public class EventServlet extends HttpServlet {
     else
       response.getWriter().println(eventsInJson);
     return;
+  }
+
+  private boolean joinEvent(HttpServletRequest request, HttpServletResponse response, UserService userService, String eventId)
+      throws IOException {
+    String currentUserId = null;
+    try {
+      currentUserId = userService.getCurrentUser().getUserId();
+    } catch (Exception e) {
+      System.err.println("Can't get current user id: " + e);
+      response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+      return false;
+    }
+    
+    try {
+      UserStorage.joinEvent(currentUserId, eventId);
+    } catch (Exception e) {
+      System.err.println("Can't add new event to storage: " + e);
+      response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+      return false;
+    }
+    
+    return true;
   }
 
   private long parseLongFromString(String str) {

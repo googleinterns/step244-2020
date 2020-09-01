@@ -27,9 +27,15 @@ import java.util.List;
 import java.util.ArrayList;
 
 public class UserStorage {
-  public static User getUser(String user_id) {
-    // TODO: Query in datastore.
-    return null;
+  public static User getUser(String userId) {
+    Query query = new Query("User").setFilter(new FilterPredicate(Entity.KEY_RESERVED_PROPERTY, FilterOperator.EQUAL, "User", userId));
+
+    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+    Entity userEntity = datastore.prepare(query).asSingleEntity();
+    if (userEntity == null) {
+      return null;
+    }
+    return (String) userEntity.getProperty("id");
   }
 
   public static User getUserByUsername(String username) {
@@ -50,10 +56,10 @@ public class UserStorage {
     // TODO: Edit event in datastore.
   }
 
-  public static void deleteUser(String user_id) {
+  public static void deleteUser(String userId) {
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 
-    Key userEntityKey = KeyFactory.createKey("User", user_id);
+    Key userEntityKey = KeyFactory.createKey("User", userId);
     datastore.delete(userEntityKey);
   }
 
@@ -61,16 +67,18 @@ public class UserStorage {
     Query query = new Query("User").setFilter(new FilterPredicate("username", FilterOperator.EQUAL, username));
 
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-    Entity user_entity = datastore.prepare(query).asSingleEntity();
-    if (user_entity == null) {
+    Entity userEntity = datastore.prepare(query).asSingleEntity();
+    if (userEntity == null) {
       return null;
     }
-    return (String) user_entity.getProperty("id");
+    return (String) userEntity.getProperty("id");
   }
 
-  public static void joinEvent(String event_id) {
-    // TODO: edit info in datastore
-    EventStorage.joinEvent(event_id);
+  public static void joinEvent(String userId, String eventId) {
+    User user = getUser(userId);
+    if (!user.getInvitaions().containd(eventId)) return;
+    user.addParticipation(eventId);
+    EventStorage.joinEvent(userId, eventId);
   }
 
   public static List<Event> search() {

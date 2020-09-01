@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.Map;
 
 public class EventStorage {
-  public static Event getEvent(String event_id) {
+  public static Event getEvent(String eventId) {
     // TODO: Query in datastore.
     return null;
   }
@@ -137,7 +137,8 @@ public class EventStorage {
     datastore.delete(eventEntityKey);
   }
 
-  public static void joinEvent(String event_id) {
-    // TODO: Add current user to EventUsers
+  public static void joinEvent(String userId, String eventId) {
+    Event event = getEvent(eventId);
+    
   }
 }

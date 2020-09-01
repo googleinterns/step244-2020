@@ -34,9 +34,9 @@ public class Event {
   private final List<String> links = new ArrayList<String>();
   private final Map<String, String> fields = new HashMap<String, String>();
   private final String ownerId;
-  private final List<String> invitedParticipantsId = new ArrayList<String>();
-  private final List<String> joinedParticipantsId = new ArrayList<String>();
-  private final List<String> declinedParticipantsId = new ArrayList<String>();
+  private List<String> invitedParticipantsId = new ArrayList<String>();
+  private List<String> joinedParticipantsId = new ArrayList<String>();
+  private List<String> declinedParticipantsId = new ArrayList<String>();
 
 
   public Event(String id, String gcalendarId, 
