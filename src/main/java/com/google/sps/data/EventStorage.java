@@ -66,7 +66,7 @@ public class EventStorage {
         String category = (String) entity.getProperty("category");
 
         if (searchCategory == null || searchCategory.equals("all") || category.equals(searchCategory)) {
-          String gcalendarId = (String) entity.getProperty("gcalendarid");
+          String gcalendarId = (String) entity.getProperty("gcalendar-id");
           List<String> tags = (List<String>) entity.getProperty("tags");
           String dateTimeRangeJson = (String) entity.getProperty("date-time-range");
           // TODO: Get actual data structure from Json
@@ -101,7 +101,7 @@ public class EventStorage {
     // Make an Entity of event.
     Entity eventEntity = new Entity("Event", event.getID());
 
-    eventEntity.setProperty("gcalendarid", event.getGCalendarID());
+    eventEntity.setProperty("gcalendar-id", event.getGCalendarID());
     eventEntity.setProperty("title", event.getTitle());
     eventEntity.setProperty("description", event.getDescription());
     eventEntity.setProperty("category", event.getCategory());
