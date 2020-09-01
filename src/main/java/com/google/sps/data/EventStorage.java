@@ -25,15 +25,36 @@ import com.google.appengine.api.datastore.Query.Filter;
 import com.google.appengine.api.datastore.Query.FilterOperator;
 import com.google.appengine.api.datastore.Query.FilterPredicate;
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;  
+import com.google.gson.reflect.TypeToken;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 
 public class EventStorage {
   public static Event getEvent(String eventId) {
-    // TODO: Query in datastore.
+    Query query = new Query("Event").setFilter(new FilterPredicate(Entity.KEY_RESERVED_PROPERTY, FilterOperator.EQUAL, KeyFactory.createKey("Event", eventId)));
+
+    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+    Entity eventEntity = datastore.prepare(query).asSingleEntity();
+    if (eventEntity != null) {
+      return new Event(
+        eventId, (String) eventEntity.getProperty("gcalendar-id"),
+        (String) eventEntity.getProperty("title"),
+        (String) eventEntity.getProperty("description"),
+        (String) eventEntity.getProperty("category"),
+        (ArrayList) eventEntity.getProperty("tags"),
+        new Gson().fromJson((String) eventEntity.getProperty("date-time-range"), DateTimeRange.class),
+        (Long) eventEntity.getProperty("duration"),
+        (String) eventEntity.getProperty("location"),
+        (ArrayList) eventEntity.getProperty("links"),
+        new Gson().fromJson((String) eventEntity.getProperty("fields"), Map.class),
+        (String) eventEntity.getProperty("owner"),
+        (ArrayList) eventEntity.getProperty("invited-users"),
+        (ArrayList) eventEntity.getProperty("joined-users"),
+        (ArrayList) eventEntity.getProperty("declined-users")
+      );
+    }
     return null;
   }
 
@@ -122,8 +143,7 @@ public class EventStorage {
     eventEntity.setProperty("declined-users", event.getDeclinedIDs());
 
     // Store Entities to datastore.
-    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-    datastore.put(eventEntity);
+    DatastoreServiceFactory.getDatastoreService().put(eventEntity);
   }
 
   public static void editEvent(Event event) {
