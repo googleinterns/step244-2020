@@ -7,11 +7,16 @@ import java.security.GeneralSecurityException;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import com.google.api.client.auth.oauth2.AuthorizationCodeFlow;
 
 @WebServlet("/token")
 public class CalendarTokenServlet extends AbstractAppEngineAuthorizationCodeServlet {
+  @Override
+  protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    response.sendRedirect("/" + request.getParameter("origin") + ".html");
+  }
 
   @Override
   protected String getRedirectUri(HttpServletRequest req) throws ServletException, IOException {

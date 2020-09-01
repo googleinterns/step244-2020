@@ -87,12 +87,19 @@ function getGCalendarEvents(calendar, startTime, endTime) {
           calendar.addEventSource(fullcalendarEvents);
         });
     } else {
-      window.location.href = getCurrentUrl() + "/token?origin=calendar";
+      fetch("/auth?origin=calendar").then(authResponse => authResponse.json()).then(authInfo => {
+        if (authInfo.isLoggedIn) {
+          window.location.href = getCurrentUrl() + "/token?origin=calendar";
+        } else {
+          window.location.href = authInfo.authLink;
+        }
+      })
+      ;
     }
   });
 }
 
-function getCurrentUrl(){
+function getCurrentUrl() {
   var currentUrl = window.location.href;
   var currentUrlSlices = currentUrl.split("/");
   return currentUrlSlices[0] + "//" + currentUrlSlices[2];
@@ -211,4 +218,57 @@ function calendarRender() {
     displayEventEnd: true
   });
   calendar.render();
+}
+
+/** Add custom field to form while creating an event. */
+function showFieldName() {
+  document.getElementById('add-event-fields').hidden = true;
+  document.getElementById('add-event-field').hidden = false;
+}
+
+function addField() {
+  document.getElementById('add-event-fields').hidden = false;
+  document.getElementById('add-event-field').hidden = true;
+
+  var form = document.getElementById('add-event-form');
+  var fieldName = document.getElementById('field-name').value;
+  document.getElementById('field-name').value = '';
+
+  const FieldInput = document.createElement('input');
+  FieldInput.setAttribute('type', 'hidden');
+  FieldInput.setAttribute('name', 'fields');
+  FieldInput.setAttribute('value', fieldName);
+
+  const fieldLabel = document.createElement('label');
+  fieldLabel.setAttribute('for', fieldName);
+  fieldLabel.innerText = fieldName;
+
+  const fieldInput = document.createElement('input');
+  fieldInput.setAttribute('type', 'text');
+  fieldInput.setAttribute('id', fieldName);
+  fieldInput.setAttribute('name', fieldName);
+
+  var button = document.getElementById('add-event-fields');
+  form.insertBefore(FieldInput, button);
+  form.insertBefore(fieldLabel, button);
+  form.insertBefore(fieldInput, button);
+}
+
+function addPerson() {
+  var person = document.getElementById('person').value;
+  document.getElementById('person').value = '';
+
+  const personInput = document.createElement('input');
+  personInput.setAttribute('type', 'hidden');
+  personInput.setAttribute('name', 'people');
+  personInput.setAttribute('value', person);
+  document.getElementById('add-event-form').insertBefore(personInput, document.getElementById('event-people'));
+
+  const personLI = document.createElement('li');
+  personLI.innerText = person;
+  document.getElementById('event-people-list').appendChild(personLI);
+}
+
+function setMinDateToToday() {
+  document.getElementById("event-start-date").min = new Date().toISOString().slice(0, 10);
 }

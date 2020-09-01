@@ -21,7 +21,7 @@ public class OAuth2Callback extends AbstractAppEngineAuthorizationCodeCallbackSe
   @Override
   protected void onSuccess(HttpServletRequest req, HttpServletResponse resp, Credential credential)
       throws ServletException, IOException {
-    resp.sendRedirect("http://localhost:8080/" + req.getParameter("origin") + ".html"); //Send user back to the original page 
+    resp.sendRedirect("/" + req.getParameter("origin") + ".html"); //Send user back to the original page 
   }
 
   @Override
