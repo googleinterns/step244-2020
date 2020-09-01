@@ -72,11 +72,10 @@ public class EventServlet extends HttpServlet {
       return;
     }
 
-    addEvent(request, response, userService);
-
-    // Redirect back to the HTML page.
-    if (response.getStatus() == HttpServletResponse.SC_OK) {
+    if (addEvent(request, response, userService)) {
       response.sendRedirect("/index.html");
+    } else {
+      // TODO: Write message to user
     }
   }
 
@@ -91,7 +90,7 @@ public class EventServlet extends HttpServlet {
     response.sendRedirect("/index.html");
   }
 
-  private void addEvent(HttpServletRequest request, HttpServletResponse response, UserService userService)
+  private boolean addEvent(HttpServletRequest request, HttpServletResponse response, UserService userService)
       throws IOException, ServletException {
     String title = Objects.toString(request.getParameter("title").trim(), "");
     String description = Objects.toString(request.getParameter("description").trim(), "");
@@ -113,7 +112,7 @@ public class EventServlet extends HttpServlet {
       } catch (Exception e) {
         System.err.println(e + durationParameter);
         response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-        return;
+        return false;
       }
     }
 
@@ -134,7 +133,7 @@ public class EventServlet extends HttpServlet {
     } catch (Exception e) {
       System.err.println("Can't get current user id: " + e);
       response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-      return;
+      return false;
     }
     
     List<String> participantsIds = new ArrayList<String>();
@@ -161,7 +160,7 @@ public class EventServlet extends HttpServlet {
       com.google.api.services.calendar.model.Event newEvent = createGCalendarEvent(event);
       if (newEvent == null) {
         response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        return;
+        return false;
       }
       gcalendarId = newEvent.getId();
     }
@@ -175,8 +174,10 @@ public class EventServlet extends HttpServlet {
     } catch (Exception e) {
       System.err.println("Can't add new event to storage: " + e);
       response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-      return;
+      return false;
     }
+    
+    return true;
   }
 
   private com.google.api.services.calendar.model.Event createGCalendarEvent(Event event) throws IOException {
