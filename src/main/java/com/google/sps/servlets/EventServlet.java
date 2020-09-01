@@ -175,21 +175,31 @@ public class EventServlet extends HttpServlet {
     return event.getID();
   }
 
-  private void getEvent(HttpServletRequest request, HttpServletResponse response, UserService userService, String eventId)
+  private boolean getEvent(HttpServletRequest request, HttpServletResponse response, UserService userService, String eventId)
       throws IOException {
     Event event = EventStorage.getEvent(eventId);
     if (event == null) {
-      response.setStatus(SC_INTERNAL_SERVER_ERROR);
+      System.err.println("Can't find event with id " + eventId);
+      response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+      return false;
     }
-    if (!hasCurrentUserAccessToEvent(event)) {
-      response.setStatus(SC_FORBIDDEN);
-    }
+
+    // String currentUserId = null;
+    // try {
+    //   currentUserId = userService.getCurrentUser().getUserId();
+    // } catch (Exception e) {
+    //   System.err.println("Can't get current user id: " + e);
+    //   response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+    //   return false;
+    // }
+
+    // if (!event.hasUserAccess(currentUserId)) {
+    //   response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+    //   return false;
+    // }
     response.setContentType("application/json;");
     response.getWriter().println(new Gson().toJson(event));
-  }
-
-  private Boolean hasCurrentUserAccessToEvent(Event event) {
-    return event.hasUserAccess(userService.getCurrentUser().getId());
+    return true;
   }
 
   private void getEvents(HttpServletRequest request, HttpServletResponse response, UserService userService)

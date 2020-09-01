@@ -63,6 +63,10 @@ public class UserStorage {
     DatastoreServiceFactory.getDatastoreService().delete(KeyFactory.createKey("User", userId));
   }
 
+  public static void deleteUser(String userId) {
+    DatastoreServiceFactory.getDatastoreService().delete(KeyFactory.createKey("User", userId));
+  }
+
   public static String getIDbyUsername(String username) {
     Query query = new Query("User").setFilter(new FilterPredicate("username", FilterOperator.EQUAL, username));
 
@@ -78,6 +82,10 @@ public class UserStorage {
     user.joinEvent(eventId);
     addOrUpdateUser(user);
     EventStorage.joinEvent(userId, eventId);
+  }
+
+  public static void joinEvent(String eventId) {
+    EventStorage.joinEvent(eventId);
   }
 
   public static List<Event> search() {

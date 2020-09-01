@@ -15,15 +15,17 @@
 function getEvent(event_id) {
   fetch('/events/' + event_id).then(response => response.json()).then((event) => {
     document.getElementById('title-info').innerText = event.title;
-    document.getElementById('start-date-info').innerTest = event.date;
-    document.getElementById('start-time-info').innerText = event.time;
+    // document.getElementById('start-date-info').innerTest = event.TimeDateRange.startDate;
+    // document.getElementById('start-time-info').innerText = event.TimeDateRange.startTime;
     document.getElementById('duration-info').innerText = event.duration;
-    //   document.getElementById('tags-list-info')
+
     document.getElementById('description-info').innerText = event.description;
+    document.getElementById('category-info').innerText = event.category;
+    document.getElementById('tags-list-info').innerText = event.tags;
     document.getElementById('location-info').innerText = event.location;
-    //   document.getElementById('links-info')
-    //   document.getElementById('fields-info')
-    document.getElementById('owner-info').innerText = event.owner;
+    document.getElementById('links-info').innerText = event.links;
+    document.getElementById('fields-info').innerText = event.fields;
+    document.getElementById('owner-info').innerText = event.ownerId;
     //   document.getElementById('people-list-info')
   });
 }

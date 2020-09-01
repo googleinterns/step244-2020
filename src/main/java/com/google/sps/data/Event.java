@@ -242,7 +242,7 @@ public class Event {
     }
   }
 
-  public Boolean hasUserAccess(userId) {
+  public Boolean hasUserAccess(String userId) {
     // TODO: add isPublic
     return ownerId == userId || invitedParticipantsId.contains(userId) || joinedParticipantsId.contains(userId) || declinedParticipantsId.contains(userId);
   }
