@@ -58,13 +58,14 @@ function getGCalendarEvents(calendar, startTime, endTime) {
         .then(response => response.json()).then(events => {
           var fullcalendarEvents = [];
           events.forEach(event => {
-            var start, end;
+            var start, end, allDay = false;
             if (event.start.dateTime) {
               start = event.start.dateTime.value;
               end = event.end.dateTime.value;
             } else {
               start = event.start.date.value;
               end = event.end.date.value;
+              allDay = true;
             }
             var shared = null, private = null;
             if (event.extendedProperties)
@@ -74,6 +75,7 @@ function getGCalendarEvents(calendar, startTime, endTime) {
               title: event.summary,
               start: start,
               end: end,
+              allDay : allDay,
               location: event.location,
               description: event.description,
               shared: shared,
