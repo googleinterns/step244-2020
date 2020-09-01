@@ -20,13 +20,12 @@ public class CredentialVerifierServlet extends HttpServlet {
     AuthorizationCodeFlow flow;
     try {
       flow = Utils.newFlow();
-
+      response.setContentType("text/html");
       User user = UserServiceFactory.getUserService().getCurrentUser();
       if (user == null) {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         return;
       }
-      response.setContentType("text/html");
       Credential credential = flow.loadCredential(user.getUserId());
       if (credential == null) {
         response.getWriter().print("false");
