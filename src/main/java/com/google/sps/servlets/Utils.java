@@ -9,9 +9,13 @@ import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.GenericUrl;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.client.util.DateTime;
 import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.CalendarScopes;
+import com.google.api.services.calendar.model.EventDateTime;
+import com.google.api.services.calendar.model.Event.ExtendedProperties;
 import com.google.appengine.api.users.UserServiceFactory;
+import com.google.sps.data.Event;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -51,8 +55,36 @@ public class Utils {
   static Calendar loadCalendarClient() throws IOException, GeneralSecurityException {
     String userId = UserServiceFactory.getUserService().getCurrentUser().getUserId();
     Credential credential = newFlow().loadCredential(userId);
-    credential.refreshToken();
+    if (credential == null)
+      return null;
     return new Calendar.Builder(GoogleNetHttpTransport.newTrustedTransport(), JacksonFactory.getDefaultInstance(),
         credential).setApplicationName("SEE").build();
   }
+
+  static com.google.api.services.calendar.model.Event createGCalendarEvent(com.google.sps.data.Event event)
+      throws IOException {
+    com.google.api.services.calendar.model.Event gcalendarEvent = new com.google.api.services.calendar.model.Event();
+    gcalendarEvent.setDescription(event.getDescription()).setSummary(event.getTitle());
+    DateTime startDateTime = new DateTime(event.getDateTimeAsString());
+    DateTime endDateTime = new DateTime(startDateTime.getValue() + event.getDuration() * 60 * 1000);
+    gcalendarEvent.setStart(new EventDateTime().setDateTime(startDateTime));
+    gcalendarEvent.setEnd(new EventDateTime().setDateTime(endDateTime));
+
+    ExtendedProperties extendedProps = new ExtendedProperties();
+    extendedProps.setShared(event.getFields());
+    gcalendarEvent.setExtendedProperties(extendedProps);
+
+    try {
+      Calendar service = loadCalendarClient();
+      if (service == null){
+        return null;
+      }
+      service.events().insert("primary", gcalendarEvent).execute();
+      return gcalendarEvent;
+    } catch (GeneralSecurityException e) {
+      e.printStackTrace();
+    }
+    return null;
+  }
+
 }
