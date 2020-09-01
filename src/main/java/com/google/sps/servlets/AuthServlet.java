@@ -1,6 +1,7 @@
 package com.google.sps.servlets;
 
 import java.io.IOException;
+import java.util.Objects;
 
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -20,18 +21,11 @@ public class AuthServlet extends HttpServlet {
     UserService userService = UserServiceFactory.getUserService();
     response.setContentType("application/json;");
     Gson gson = new Gson();
-    if (userService.isUserLoggedIn()) {
-      String logoutUrl = userService.createLogoutURL("/index.html");
-      response.getWriter().println(gson.toJson(new AuthData(true, logoutUrl)));
-    } else {
-      String redirectUrl = "/token?origin=";
-      if (origin == null) {
-        redirectUrl += "index";
-      } else {
-        redirectUrl += origin;
-      }
-      String loginUrl = userService.createLoginURL(redirectUrl);
-      response.getWriter().println(gson.toJson(new AuthData(false, loginUrl)));
-    }
+    response.getWriter().println(gson.toJson(new AuthData(false, buildAuthLink(userService, origin))));
+  }
+
+  private String buildAuthLink(UserService userService, String origin) {
+    return userService.isUserLoggedIn() ? userService.createLogoutURL("/index.html")
+        : userService.createLoginURL("/token?origin=" + Objects.toString(origin, "index"));
   }
 }
