@@ -19,6 +19,17 @@ import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
+import com.google.appengine.api.datastore.PreparedQuery;
+import com.google.appengine.api.datastore.Query;
+import com.google.appengine.api.datastore.Query.Filter;
+import com.google.appengine.api.datastore.Query.FilterOperator;
+import com.google.appengine.api.datastore.Query.FilterPredicate;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;  
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class EventStorage {
   public static Event getEvent(String event_id) {
@@ -26,10 +37,71 @@ public class EventStorage {
     return null;
   }
 
+  public static List<Event> getSearchedEvents(String search, String searchCategory, String searchDuration, String searchLocation) {
+    Query query = new Query("Event");
+
+    if (searchDuration != null && !searchDuration.isEmpty()) {
+        Filter durationFilter =
+        new FilterPredicate("duration", FilterOperator.LESS_THAN_OR_EQUAL, Long.parseLong(searchDuration));
+        query = query.setFilter(durationFilter);
+    }
+
+    if (searchLocation != null && !searchLocation.isEmpty() && !searchLocation.equals("Everywhere")) {
+        Filter locationFilter =
+        new FilterPredicate("location", FilterOperator.EQUAL, searchLocation);
+        query = query.setFilter(locationFilter);
+    }
+ 
+    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+    PreparedQuery results = datastore.prepare(query);
+
+    List<Event> events = new ArrayList<>();
+    for (Entity entity : results.asIterable()) {
+      String title = (String) entity.getProperty("title");
+      String description = (String) entity.getProperty("description");
+ 
+      if (search == null || search.isEmpty() || EventStorage.isTextMatch(search, title) || EventStorage.isTextMatch(search, description)) {
+        // TODO: Likely this is an incorrect way to get id
+        String id = (String) entity.getKey().getAppId();
+        String category = (String) entity.getProperty("category");
+
+        if (searchCategory == null || searchCategory.equals("all") || category.equals(searchCategory)) {
+          String gcalendarId = (String) entity.getProperty("gcalendar-id");
+          List<String> tags = (List<String>) entity.getProperty("tags");
+          String dateTimeRangeJson = (String) entity.getProperty("date-time-range");
+          // TODO: Get actual data structure from Json
+          DateTimeRange dateTimeRange = null;
+          Long duration = (Long) entity.getProperty("duration");
+          String location = (String) entity.getProperty("location");
+          List<String> links = (List<String>) entity.getProperty("links");
+          String fieldsJson = (String) entity.getProperty("fields");
+          Map<String, String> fields = new Gson().fromJson(
+          fieldsJson, new TypeToken<HashMap<String, String>>() {}.getType()
+          );
+          String ownerId = (String) entity.getProperty("owner");
+          List<String> invitedParticipantsId = (List<String>) entity.getProperty("invited-users");
+          List<String> joinedParticipantsId = (List<String>) entity.getProperty("joined-users");
+          List<String> declinedParticipantsId = (List<String>) entity.getProperty("declined-users");
+          Event event = new Event(id, gcalendarId, title, description, category, tags, 
+               dateTimeRange, duration, location, links, fields, ownerId, invitedParticipantsId, 
+               joinedParticipantsId, declinedParticipantsId);
+          events.add(event);
+        }
+      }
+    }
+
+    return events;
+  }
+
+  private static boolean isTextMatch(String search, String text) {
+    return text.toLowerCase().contains(search.toLowerCase());
+  }
+
   public static void addEvent(Event event) {
     // Make an Entity of event.
     Entity eventEntity = new Entity("Event", event.getID());
 
+    eventEntity.setProperty("gcalendarid", event.getGCalendarID());
     eventEntity.setProperty("title", event.getTitle());
     eventEntity.setProperty("description", event.getDescription());
     eventEntity.setProperty("category", event.getCategory());

@@ -21,9 +21,27 @@ function getUser() {
 }
 
 function searchEvents() {
+  document.getElementById('events-container').innerText = "";
+  var search = document.getElementById('search').value;
+  var category = document.getElementById('category').value;
+  var duration = document.getElementById('duration').value;
+  var location = document.getElementById('location').value;
   fetch('/events?' + new URLSearchParams({
     search: search,
-  })).then(response => response.json());
+}) + '&' + new URLSearchParams({
+    category: category,
+}) + '&' + new URLSearchParams({
+    duration: duration,
+}) + '&' + new URLSearchParams({
+    location: location,
+})).then(response => response.json()).then(events => events.forEach(showEvent));
+}
+
+function showEvent(event) {
+  document.getElementById('events-container').innerHTML += "<div><h1>" 
+  + event.title + "</h1><hr><br><h2>" + event.duration + "</h2><h3>" + event.description 
+  + "</h3><br><p><i class=\"fas fa-map-marker-alt\"></i>    " + event.location 
+  + "</p><br><button type=\"button\" class=\"btn btn-success\" onclick=\"joinEvent()\">Join event!</button><br><br></div>";
 }
 
 function joinEvent(event_id) {

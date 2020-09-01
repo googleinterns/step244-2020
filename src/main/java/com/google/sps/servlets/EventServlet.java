@@ -51,17 +51,28 @@ import javax.servlet.http.HttpServletResponse;
 
 @WebServlet("/events/*")
 public class EventServlet extends HttpServlet {
+
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String pathName = request.getPathInfo();
     UserService userService = UserServiceFactory.getUserService();
 
-    if (pathName.equals("/gcalendar")) {
+    if (pathName != null && pathName.equals("/gcalendar")) {
       getEvents(request, response, userService);
       return;
     }
-    // TODO: parse "events/{event_id}" here.
-    response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
+
+    String search = request.getParameter("search");
+    String category = request.getParameter("category");
+    String duration = request.getParameter("duration");
+    String location = request.getParameter("location");
+ 
+    List<Event> events = EventStorage.getSearchedEvents(search, category, duration, location);
+
+    Gson gson = new Gson();
+    
+    response.setContentType("application/json");
+    response.getWriter().println(gson.toJson(events));
   }
 
   @Override
