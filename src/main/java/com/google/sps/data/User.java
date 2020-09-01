@@ -17,17 +17,17 @@ package com.google.sps.data;
 import java.util.Objects;
 
 public class User {
-  private final Long id;
+  private final String id;
   private final String email;
   private final String username;
 
-  public User(Long id, String email, String username) {
+  public User(String id, String email, String username) {
     this.id = Objects.requireNonNull(id, "id cannot be null");
     this.email = Objects.requireNonNull(email, "email cannot be null");
     this.username = Objects.requireNonNull(username, "username cannot be null");
   }
-  
-  public Long getID() {
+
+  public String getID() {
     return id;
   }
 }
