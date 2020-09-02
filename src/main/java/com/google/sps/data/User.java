@@ -65,8 +65,4 @@ public class User {
   public List<String> getDeclinedEventsID() {
     return declinedEventsId;
   }
-
-  public boolean hasAccessToEvent(String eventId) {
-    return invitedEventsId.contains(eventId) || joinedEventsId.contains(eventId) || declinedEventsId.contains(eventId);
-  }
 }

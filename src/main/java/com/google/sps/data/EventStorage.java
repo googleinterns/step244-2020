@@ -163,4 +163,11 @@ public class EventStorage {
     event.joinEvent(userId);
     editEvent(event);
   }
+
+  public static boolean userHasAccessToEvent(String userId, String eventId) {
+    Event event = getEvent(eventId);
+    if (event == null)
+      return false;
+    return event.userHasAccessToEvent(userId);
+  }
 }

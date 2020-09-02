@@ -88,13 +88,6 @@ public class UserStorage {
     EventStorage.joinEvent(userId, eventId);
   }
 
-  public static boolean userHasAccessToEvent(String userId, String eventId) {
-    User user = getUser(userId);
-    if (user == null)
-      return false;
-    return user.hasAccessToEvent(eventId);
-  }
-
   public static List<Event> search() {
     Query query = new Query("EventInfo");
 

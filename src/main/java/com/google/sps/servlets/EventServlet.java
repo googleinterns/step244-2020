@@ -259,7 +259,7 @@ public class EventServlet extends HttpServlet {
       return false;
     }
 
-    if (!UserStorage.userHasAccessToEvent(currentUserId, eventId)) {
+    if (!EventStorage.userHasAccessToEvent(currentUserId, eventId)) {
       response.setStatus(HttpServletResponse.SC_FORBIDDEN);
       return false;
     }

@@ -154,4 +154,8 @@ public class Event {
       this.joinedUsersId.add(userId);
     }
   }
+
+  public boolean userHasAccessToEvent(String userId) {
+    return ownerId == userId || invitedUsersId.contains(userId) || joinedUsersId.contains(userId) || declinedUsersId.contains(userId);
+  }
 }
