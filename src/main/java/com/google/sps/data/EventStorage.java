@@ -38,22 +38,7 @@ public class EventStorage {
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
     Entity eventEntity = datastore.prepare(query).asSingleEntity();
     if (eventEntity != null) {
-      return new Event(
-        eventId, (String) eventEntity.getProperty("gcalendar-id"),
-        (String) eventEntity.getProperty("title"),
-        (String) eventEntity.getProperty("description"),
-        (String) eventEntity.getProperty("category"),
-        (ArrayList) eventEntity.getProperty("tags"),
-        new Gson().fromJson((String) eventEntity.getProperty("date-time-range"), DateTimeRange.class),
-        (Long) eventEntity.getProperty("duration"),
-        (String) eventEntity.getProperty("location"),
-        (ArrayList) eventEntity.getProperty("links"),
-        new Gson().fromJson((String) eventEntity.getProperty("fields"), Map.class),
-        (String) eventEntity.getProperty("owner"),
-        (ArrayList) eventEntity.getProperty("invited-users"),
-        (ArrayList) eventEntity.getProperty("joined-users"),
-        (ArrayList) eventEntity.getProperty("declined-users")
-      );
+      return Event.fromDatastoreEntity(eventEntity);
     }
     return null;
   }
@@ -85,31 +70,10 @@ public class EventStorage {
       String description = (String) entity.getProperty("description");
  
       if (search == null || search.isEmpty() || EventStorage.isTextMatch(search, title) || EventStorage.isTextMatch(search, description)) {
-        // TODO: Likely this is an incorrect way to get id
-        String id = (String) entity.getKey().getAppId();
         String category = (String) entity.getProperty("category");
 
         if (searchCategory == null || searchCategory.equals("all") || category.equals(searchCategory)) {
-          String gcalendarId = (String) entity.getProperty("gcalendar-id");
-          List<String> tags = (List<String>) entity.getProperty("tags");
-          String dateTimeRangeJson = (String) entity.getProperty("date-time-range");
-          // TODO: Get actual data structure from Json
-          DateTimeRange dateTimeRange = null;
-          Long duration = (Long) entity.getProperty("duration");
-          String location = (String) entity.getProperty("location");
-          List<String> links = (List<String>) entity.getProperty("links");
-          String fieldsJson = (String) entity.getProperty("fields");
-          Map<String, String> fields = new Gson().fromJson(
-          fieldsJson, new TypeToken<HashMap<String, String>>() {}.getType()
-          );
-          String ownerId = (String) entity.getProperty("owner");
-          List<String> invitedParticipantsId = (List<String>) entity.getProperty("invited-users");
-          List<String> joinedParticipantsId = (List<String>) entity.getProperty("joined-users");
-          List<String> declinedParticipantsId = (List<String>) entity.getProperty("declined-users");
-          Event event = new Event(id, gcalendarId, title, description, category, tags, 
-               dateTimeRange, duration, location, links, fields, ownerId, invitedParticipantsId, 
-               joinedParticipantsId, declinedParticipantsId);
-          events.add(event);
+          events.add(Event.fromDatastoreEntity(entity));
         }
       }
     }
