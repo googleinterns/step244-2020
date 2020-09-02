@@ -12,6 +12,7 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.DateTime;
 import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.CalendarScopes;
+import com.google.api.services.calendar.model.EventAttendee;
 import com.google.api.services.calendar.model.EventDateTime;
 import com.google.api.services.calendar.model.Event.ExtendedProperties;
 import com.google.appengine.api.users.UserServiceFactory;
@@ -22,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.security.GeneralSecurityException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -73,18 +75,35 @@ public class Utils {
     ExtendedProperties extendedProps = new ExtendedProperties();
     extendedProps.setShared(event.getFields());
     gcalendarEvent.setExtendedProperties(extendedProps);
-
     try {
       Calendar service = loadCalendarClient();
-      if (service == null){
+      if (service == null) {
         return null;
       }
-      service.events().insert("primary", gcalendarEvent).execute();
+      gcalendarEvent = service.events().insert("primary", gcalendarEvent).setSendUpdates("all").execute();
       return gcalendarEvent;
     } catch (GeneralSecurityException e) {
       e.printStackTrace();
+      return null;
     }
-    return null;
+  }
+
+  static void joinGCalendarEvent(String ownerId, String eventId, String userToBeAddedEmail)
+      throws GeneralSecurityException, IOException {
+    Credential credential = newFlow().loadCredential(ownerId);
+    Calendar ownerCalendar = new Calendar.Builder(GoogleNetHttpTransport.newTrustedTransport(),
+        JacksonFactory.getDefaultInstance(), credential).setApplicationName("SEE").build();
+    com.google.api.services.calendar.model.Event originalEvent = ownerCalendar.events().get("primary", eventId)
+        .execute();
+    List<EventAttendee> currentAttendees = originalEvent.getAttendees();
+    EventAttendee newAttendee = new EventAttendee().setEmail(userToBeAddedEmail)
+        .setResponseStatus("accepted");
+    if (currentAttendees == null)
+      currentAttendees = new ArrayList<>();
+    currentAttendees.add(newAttendee);
+    originalEvent.setAttendees(currentAttendees);
+    ownerCalendar.events().patch("primary", eventId, originalEvent).setSendUpdates("all").execute();
+    return ;
   }
 
 }
