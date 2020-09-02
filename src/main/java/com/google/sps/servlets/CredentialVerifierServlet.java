@@ -3,10 +3,12 @@ package com.google.sps.servlets;
 import com.google.api.client.auth.oauth2.AuthorizationCodeFlow;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.appengine.api.users.User;
+import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 
+import javax.inject.Inject;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -15,37 +17,39 @@ import javax.servlet.http.HttpServletResponse;
 
 @WebServlet("/credentials")
 public class CredentialVerifierServlet extends HttpServlet {
+  private AuthorizationCodeFlow flow;
+  private UserService userService;
+
+  @Inject
+  CredentialVerifierServlet(AuthorizationCodeFlow flow, UserService userService) {
+    this.flow = flow;
+    this.userService = userService;
+  }
+
+  public CredentialVerifierServlet() throws IOException, GeneralSecurityException {
+    this.flow = Utils.newFlow();
+    this.userService = UserServiceFactory.getUserService();
+  }
+
   @Override
   protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-    AuthorizationCodeFlow flow;
-    try {
-      flow = Utils.newFlow();
-      response.setContentType("text/html");
-      User user = UserServiceFactory.getUserService().getCurrentUser();
-      if (user == null) {
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        return;
-      }
-      Credential credential = flow.loadCredential(user.getUserId());
-      if (credential == null) {
-        response.getWriter().print("false");
-        return;
-      }
-      if (credential.getAccessToken() == null) {
-        if (credential.refreshToken() == false) {
-          response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-          return;
-        }
-        response.getWriter().print("true");
-        return;
-      }
-      response.getWriter().print("true");
+    response.setContentType("text/html");
+    User user = userService.getCurrentUser();
+    if (user == null) {
+      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
       return;
-
-    } catch (GeneralSecurityException e) {
-      response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-      e.printStackTrace();
     }
+    Credential credential = flow.loadCredential(user.getUserId());
+    if (credential == null) {
+      response.getWriter().print("false");
+      return;
+    }
+    if (credential.getAccessToken() == null) {
+      response.getWriter().print("false");
+      return;
+    }
+    response.getWriter().print("true");
+    return;
   }
 
 }
