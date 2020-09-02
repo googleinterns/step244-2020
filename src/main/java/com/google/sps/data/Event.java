@@ -34,16 +34,16 @@ public class Event {
   private final List<String> links = new ArrayList<String>();
   private final Map<String, String> fields = new HashMap<String, String>();
   private final String ownerId;
-  private List<String> invitedParticipantsId = new ArrayList<String>();
-  private List<String> joinedParticipantsId = new ArrayList<String>();
-  private List<String> declinedParticipantsId = new ArrayList<String>();
+  private List<String> invitedUsersId = new ArrayList<String>();
+  private List<String> joinedUsersId = new ArrayList<String>();
+  private List<String> declinedUsersId = new ArrayList<String>();
 
 
   public Event(String id, String gcalendarId, 
                String title, String description, String category, List<String> tags, 
                DateTimeRange dateTimeRange, Long duration,
                String location, List<String> links, Map<String, String> fields, 
-               String ownerId, List<String> invitedParticipantsId, List<String> joinedParticipantsId, List<String> declinedParticipantsId) {
+               String ownerId, List<String> invitedUsersId, List<String> joinedUsersId, List<String> declinedUsersId) {
     this.id = Objects.requireNonNull(id, "id cannot be null");
     this.gcalendarId = gcalendarId;
     this.title = Objects.requireNonNull(title, "title cannot be null");
@@ -56,9 +56,9 @@ public class Event {
     this.links.addAll(Objects.requireNonNull(links, "links cannot be null"));
     this.fields.putAll(Objects.requireNonNull(fields, "fields cannot be null"));
     this.ownerId = Objects.requireNonNull(ownerId, "ownerId cannot be null");
-    this.invitedParticipantsId.addAll(Objects.requireNonNull(invitedParticipantsId, "invitedParticipantsId cannot be null"));
-    this.joinedParticipantsId.addAll(Objects.requireNonNull(joinedParticipantsId, "joinedParticipantsId cannot be null"));
-    this.declinedParticipantsId.addAll(Objects.requireNonNull(declinedParticipantsId, "declinedParticipantsId cannot be null"));
+    this.invitedUsersId.addAll(Objects.requireNonNull(invitedUsersId, "invitedUsersId cannot be null"));
+    this.joinedUsersId.addAll(Objects.requireNonNull(joinedUsersId, "joinedUsersId cannot be null"));
+    this.declinedUsersId.addAll(Objects.requireNonNull(declinedUsersId, "declinedUsersId cannot be null"));
   }
 
   public String getID() {
@@ -137,14 +137,21 @@ public class Event {
   }
 
   public List<String> getInvitedIDs() {
-    return invitedParticipantsId;
+    return invitedUsersId;
   }
 
   public List<String> getJoinedIDs() {
-    return joinedParticipantsId;
+    return joinedUsersId;
   }
 
   public List<String> getDeclinedIDs() {
-    return declinedParticipantsId;
+    return declinedUsersId;
+  }
+
+  public void joinEvent(String userId) {
+    if (invitedUsersId.contains(userId)) {
+      this.invitedUsersId.remove(userId);
+      this.joinedUsersId.add(userId);
+    }
   }
 }

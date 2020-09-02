@@ -250,12 +250,17 @@ public class EventServlet extends HttpServlet {
 
   private boolean joinEvent(HttpServletRequest request, HttpServletResponse response, UserService userService, String eventId)
       throws IOException {
-    String currentUserId = null;
+    String currentUserId = "";
     try {
       currentUserId = userService.getCurrentUser().getUserId();
     } catch (Exception e) {
       System.err.println("Can't get current user id: " + e);
       response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+      return false;
+    }
+
+    if (!UserStorage.userHasAccessToEvent(currentUserId, eventId)) {
+      response.setStatus(HttpServletResponse.SC_FORBIDDEN);
       return false;
     }
     

@@ -28,7 +28,7 @@ public class User {
 
   public User(String id, String email, String username, List<String> invitedEventsId, List<String> joinedEventsId, List<String> declinedEventsId) {
     this.id = Objects.requireNonNull(id, "id cannot be null");
-    this.email = Objects.requireNonNull(email, "email cannot be null");
+    this.email = email;
     this.username = Objects.requireNonNull(username, "username cannot be null");
     this.invitedEventsId.addAll(invitedEventsId);
     this.joinedEventsId.addAll(joinedEventsId);
@@ -64,5 +64,9 @@ public class User {
 
   public List<String> getDeclinedEventsID() {
     return declinedEventsId;
+  }
+
+  public boolean hasAccessToEvent(String eventId) {
+    return invitedEventsId.contains(eventId) || joinedEventsId.contains(eventId) || declinedEventsId.contains(eventId);
   }
 }

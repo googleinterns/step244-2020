@@ -28,10 +28,8 @@ import java.util.ArrayList;
 
 public class UserStorage {
   public static User getUser(String userId) {
-    Query query = new Query("User").setFilter(new FilterPredicate(Entity.KEY_RESERVED_PROPERTY, FilterOperator.EQUAL,  KeyFactory.createKey("User", userId)));
-
-    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-    Entity userEntity = datastore.prepare(query).asSingleEntity();
+    Query query = new Query("User").setFilter(new FilterPredicate(Entity.KEY_RESERVED_PROPERTY, FilterOperator.EQUAL, KeyFactory.createKey("User", userId)));
+    Entity userEntity = DatastoreServiceFactory.getDatastoreService().prepare(query).asSingleEntity();
     if (userEntity != null) {
       return new User(userId, 
         (String) userEntity.getProperty("email"),
@@ -45,6 +43,9 @@ public class UserStorage {
   }
 
   public static void addUser(User user) {
+    if (user == null)
+      return;
+
     // Make an Entity of user.
     Entity userEntity = new Entity("User", user.getID());
 
@@ -59,6 +60,9 @@ public class UserStorage {
   }
 
   public static void editUser(User user) {
+    if (user == null)
+      return;
+    
     deleteUser(user.getID());
     addUser(user);
   }
@@ -77,9 +81,18 @@ public class UserStorage {
 
   public static void joinEvent(String userId, String eventId) {
     User user = getUser(userId);
+    if (user == null)
+      return;
     user.joinEvent(eventId);
     editUser(user);
     EventStorage.joinEvent(userId, eventId);
+  }
+
+  public static boolean userHasAccessToEvent(String userId, String eventId) {
+    User user = getUser(userId);
+    if (user == null)
+      return false;
+    return user.hasAccessToEvent(eventId);
   }
 
   public static List<Event> search() {

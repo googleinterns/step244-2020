@@ -147,18 +147,20 @@ public class EventStorage {
   }
 
   public static void editEvent(Event event) {
-    // TODO: Edit event in datastore.
+    deleteEvent(event.getID());
+    addEvent(event);
   }
 
-  public static void deleteEvent(Event event) {
-    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-
-    Key eventEntityKey = KeyFactory.createKey("Event", event.getID());
-    datastore.delete(eventEntityKey);
+  public static void deleteEvent(String eventId) {
+    DatastoreServiceFactory.getDatastoreService().delete(KeyFactory.createKey("Event", eventId));
   }
 
   public static void joinEvent(String userId, String eventId) {
     Event event = getEvent(eventId);
+    if (event == null)
+      return;
     
+    event.joinEvent(userId);
+    editEvent(event);
   }
 }
