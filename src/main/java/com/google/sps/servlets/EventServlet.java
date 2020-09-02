@@ -250,7 +250,7 @@ public class EventServlet extends HttpServlet {
 
   private boolean joinEvent(HttpServletRequest request, HttpServletResponse response, UserService userService, String eventId)
       throws IOException {
-    String currentUserId = "";
+    String currentUserId = null;
     try {
       currentUserId = userService.getCurrentUser().getUserId();
     } catch (Exception e) {
