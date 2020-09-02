@@ -61,23 +61,6 @@ public class EventServlet extends HttpServlet {
       getEvents(request, response, userService);
       return;
     }
-    
-    String[] pathParts = pathName.split("/");
-    String eventId = pathParts[1];
-
-    if (pathParts[2].equals("join")) {
-      if (!userService.isUserLoggedIn()) {
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        return;
-      }
-      if (joinEvent(request, response, userService, eventId)) {
-        response.sendRedirect("/event.html?event_id=" + eventId);
-        return;
-      } else {
-        // TODO: Write message to user
-      }
-      return;
-    }
 
     String search = request.getParameter("search");
     String category = request.getParameter("category");
@@ -99,8 +82,22 @@ public class EventServlet extends HttpServlet {
       return;
     }
 
-    if (addEvent(request, response)) {
-      response.sendRedirect("/index.html");
+    String pathName = request.getPathInfo();
+    UserService userService = UserServiceFactory.getUserService();
+
+    if (pathName == null || pathName.isEmpty()) {
+      if (addEvent(request, response)) {
+        response.sendRedirect("/index.html");
+      } else {
+        // TODO: Write message to user
+      }
+    }
+
+    String[] pathParts = pathName.split("/");
+    String eventId = pathParts[1];
+
+    if (joinEvent(request, response, eventId)) {
+      response.sendRedirect("/event.html?event_id=" + eventId);
     } else {
       // TODO: Write message to user
     }
@@ -117,8 +114,7 @@ public class EventServlet extends HttpServlet {
     response.sendRedirect("/index.html");
   }
 
-  private boolean addEvent(HttpServletRequest request, HttpServletResponse response)
-      throws IOException, ServletException {
+  private boolean addEvent(HttpServletRequest request, HttpServletResponse response) {
     Long duration = parseLongFromString(request.getParameter("duration"));
     if (duration == null) {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -181,24 +177,6 @@ public class EventServlet extends HttpServlet {
     return true;
   }
 
-  private List<String> parseInvitedIDs(String[] invitedIDs) {
-    return invitedIDs != null ? 
-        Arrays.asList(invitedIDs).stream()
-            .map(person -> UserStorage.getIDbyUsername(person)).filter(Objects::nonNull).collect(Collectors.toList()) : null;
-  }
-
-  private List<String> parseTags(String[] tags) {
-    return tags != null ? Arrays.asList(Arrays.stream(tags).map(String::trim).toArray(String[]::new)) : null;
-  }
-
-  private List<String> parseLinks(String links) {
-    return Arrays.asList(links.split(","));
-  }
-
-  private DateTimeRange formatDateTimeRange(String date, String time) {
-    return new DateTimeRange(date, time);
-  }
-
   private void getEvents(HttpServletRequest request, HttpServletResponse response, UserService userService)
       throws IOException {
     String startEpochInSeconds = request.getParameter("startEpochInSeconds");
@@ -231,7 +209,7 @@ public class EventServlet extends HttpServlet {
     return;
   }
 
-  private boolean joinEvent(HttpServletRequest request, HttpServletResponse response, UserService userService, String eventId)
+  private boolean joinEvent(HttpServletRequest request, HttpServletResponse response, String eventId)
       throws IOException {
     String currentUserId = getCurrentUserId();
     if (currentUserId == null) {
@@ -261,6 +239,24 @@ public class EventServlet extends HttpServlet {
     } catch (NullPointerException e) {
       return null;
     }
+  }
+
+  private List<String> parseInvitedIDs(String[] invitedIDs) {
+    return invitedIDs != null ? 
+        Arrays.asList(invitedIDs).stream()
+            .map(person -> UserStorage.getIDbyUsername(person)).filter(Objects::nonNull).collect(Collectors.toList()) : null;
+  }
+
+  private List<String> parseTags(String[] tags) {
+    return tags != null ? Arrays.asList(Arrays.stream(tags).map(String::trim).toArray(String[]::new)) : null;
+  }
+
+  private List<String> parseLinks(String links) {
+    return Arrays.asList(links.split(","));
+  }
+
+  private DateTimeRange formatDateTimeRange(String date, String time) {
+    return new DateTimeRange(date, time);
   }
 
   private Long parseLongFromString(String str) {
