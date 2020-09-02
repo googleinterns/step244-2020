@@ -71,10 +71,6 @@ public class Event {
     return gcalendarId;
   }
 
-  public void setGCalendarID(String newGCalendarId) {
-    this.gcalendarId = newGCalendarId;
-  }
-
   public String getTitle() {
     return title;
   }

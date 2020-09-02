@@ -38,14 +38,11 @@ function searchEvents() {
 }
 
 function showEvent(event) {
-  document.getElementById('events-container').innerHTML += "<div><h1>" 
-  + event.title + "</h1><hr><br><h2>" + event.duration + "</h2><h3>" + event.description 
-  + "</h3><br><p><i class=\"fas fa-map-marker-alt\"></i>    " + event.location 
-  + "</p><br><button type=\"button\" class=\"btn btn-success\" onclick=\"joinEvent()\">Join event!</button><br><br></div>";
-}
-
-function joinEvent(event_id) {
-  fetch('/events/' + event_id + '/join').then(response => response.json());
+  document.getElementById('events-container').innerHTML += '<div><h1>'
+  + event.title + '</h1><hr><br><h2>' + event.duration + '</h2><h3>' + event.description 
+  + '</h3><br><p><i class="fas fa-map-marker-alt"></i>' + event.location 
+  + '</p><br><form action="/events/' + event.id + '" method="POST">'
+  + '<input type="submit" class="btn btn-success" value="Join event!"/></form><br><br></div>';
 }
 
 function addEventToGCalendar() { //To be modified to get fields

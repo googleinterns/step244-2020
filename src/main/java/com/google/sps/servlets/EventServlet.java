@@ -83,11 +83,11 @@ public class EventServlet extends HttpServlet {
     }
 
     String pathName = request.getPathInfo();
-    UserService userService = UserServiceFactory.getUserService();
 
-    if (pathName == null || pathName.isEmpty()) {
-      if (addEvent(request, response)) {
-        response.sendRedirect("/index.html");
+    if (pathName == null || pathName.isEmpty() || pathName.equals("/")) {
+      String eventId = addEvent(request, response);
+      if (eventId != null) {
+        response.sendRedirect("/event.html?event_id=" + eventId);
       } else {
         // TODO: Write message to user
       }
@@ -114,17 +114,17 @@ public class EventServlet extends HttpServlet {
     response.sendRedirect("/index.html");
   }
 
-  private boolean addEvent(HttpServletRequest request, HttpServletResponse response) {
+  private String addEvent(HttpServletRequest request, HttpServletResponse response) throws IOException {
     Long duration = parseLongFromString(request.getParameter("duration"));
     if (duration == null) {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-      return false;
+      return null;
     }
 
     String currentUserId = getCurrentUserId();
     if (currentUserId == null) {
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-      return false;
+      return null;
     }
 
     Map<String, String> fields = null;
@@ -158,7 +158,7 @@ public class EventServlet extends HttpServlet {
       com.google.api.services.calendar.model.Event newEvent = Utils.createGCalendarEvent(event);
       if (newEvent == null) {
         response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        return false;
+        return null;
       }
       gcalendarId = newEvent.getId();
     }
@@ -167,14 +167,14 @@ public class EventServlet extends HttpServlet {
     }
 
     try {
-      EventStorage.addEvent(event);
+      EventStorage.addOrUpdateEvent(event);
     } catch (Exception e) {
       System.err.println("Can't add new event to storage: " + e);
       response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-      return false;
+      return null;
     }
     
-    return true;
+    return event.getID();
   }
 
   private void getEvents(HttpServletRequest request, HttpServletResponse response, UserService userService)

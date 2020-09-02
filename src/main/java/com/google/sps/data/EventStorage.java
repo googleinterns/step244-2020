@@ -34,13 +34,8 @@ import java.util.Map;
 public class EventStorage {
   public static Event getEvent(String eventId) {
     Query query = new Query("Event").setFilter(new FilterPredicate(Entity.KEY_RESERVED_PROPERTY, FilterOperator.EQUAL, KeyFactory.createKey("Event", eventId)));
-
-    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-    Entity eventEntity = datastore.prepare(query).asSingleEntity();
-    if (eventEntity != null) {
-      return Event.fromDatastoreEntity(eventEntity);
-    }
-    return null;
+    Entity eventEntity = DatastoreServiceFactory.getDatastoreService().prepare(query).asSingleEntity();
+    return eventEntity != null ? Event.fromDatastoreEntity(eventEntity) : null;
   }
 
   public static List<Event> getSearchedEvents(String search, String searchCategory, String searchDuration, String searchLocation) {
@@ -85,7 +80,7 @@ public class EventStorage {
     return text.toLowerCase().contains(search.toLowerCase());
   }
 
-  public static void addEvent(Event event) {
+  public static void addOrUpdateEvent(Event event) {
     // Make an Entity of event.
     Entity eventEntity = new Entity("Event", event.getID());
 
@@ -110,11 +105,6 @@ public class EventStorage {
     DatastoreServiceFactory.getDatastoreService().put(eventEntity);
   }
 
-  public static void editEvent(Event event) {
-    deleteEvent(event.getID());
-    addEvent(event);
-  }
-
   public static void deleteEvent(String eventId) {
     DatastoreServiceFactory.getDatastoreService().delete(KeyFactory.createKey("Event", eventId));
   }
@@ -125,7 +115,7 @@ public class EventStorage {
       return;
     
     event.joinEvent(userId);
-    editEvent(event);
+    addOrUpdateEvent(event);
   }
 
   public static boolean userHasAccessToEvent(String userId, String eventId) {
