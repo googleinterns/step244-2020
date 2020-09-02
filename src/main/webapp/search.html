@@ -21,7 +21,7 @@
   <script src="script.js"></script>
 </head>
 
-<body>
+<body onload="searchEvents()">
 
   <div id="wrapper">
     <!-- Used to include the same sidebar on each page.-->
@@ -34,15 +34,61 @@
     </div>
     <div id="page-content-wrapper">
       <div id="search-bar">
+        <h1>Search event</h1>
+        <br>
         <form>
-          <input type="text" placeholder="Search.." name="search" id="search">
-          <button type="button" onclick="searchEvents()">Submit</button>
+        <div class="form-group row">
+          <div class="col-5">
+            <input class="form-control" type="text" placeholder="Search.." name="search" id="search">
+          </div>
+          <div class="col-4">
+            <select class="form-control" name="category" id="category">
+              <option value="all">All</option>
+              <option value="entertainment">Entertainment</option>
+              <option value="education">Education</option>
+              <option value="business">Business</option>
+            </select>
+          </div>
+          <div class="col-1">
+            <button class="btn btn-secondary" type="button" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
+              <i class="fas fa-caret-down"></i>
+            </button>
+          </div>
+          <div class="col-2">
+            <button class="btn btn-primary" type="button" onclick="searchEvents()">Search</button>
+          </div>
+        </div>
+          <div class="advanced-search">
+            <div class="collapse" id="collapseExample">
+              <div class="form-group row">
+                <label for="start-date" class="col-2 col-form-label">Start date</label>
+                <div class="col-4">
+                  <input class="form-control" type="date" value="2020-08-28" id="start-date">
+                </div>
+                <label for="end-date" class="col-2 col-form-label">End date</label>
+                <div class="col-4">
+                  <input class="form-control" type="date" value="2020-08-28" id="end-date">
+                </div>
+              </div>
+              <div class="form-group row">
+                <label for="duration" class="col-8 col-form-label">Maximum duration of event in minutes</label>
+                <div class="col-4">
+                  <input class="form-control" type="number" value="" id="duration">
+                </div>
+              </div>
+              <div class="form-group row">
+                <label for="location" class="col-2 col-form-label">Location</label>
+                <div class="col-10">
+                  <input class="form-control" type="text" value="Everywhere" id="location">
+                </div>
+              </div>
+            </div>
+          </div>
         </form>
       </div>
-      <div id="events">
-        <ul id="events-list">
-        </ul>
-      </div>
+      <br>
+      <br>
+      <div id="events-container"></div>
     </div>
   </div>
 

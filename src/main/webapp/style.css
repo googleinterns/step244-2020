@@ -9,6 +9,32 @@ html * {
   padding: 0;
 }
 
+.advanced-search {
+  width: 600px;
+}
+
+#events-container {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-gap: 10px;
+  grid-auto-rows: minmax(300px, auto);
+}
+
+#events-container > div {
+  border: 2px solid #ebe719;
+  border-radius: 15px;
+  padding: 1em;
+}
+
+#search-bar {
+  left: 30%;
+  margin-bottom: 50px;
+  margin-right: -50%;
+  position: relative;
+  width: 800px;
+}
+
 #wrapper {
   padding-left: 0;
   -webkit-transition: all 0.5s ease;
