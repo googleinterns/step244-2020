@@ -214,6 +214,7 @@ public class EventServlet extends HttpServlet {
     try {
       UserStorage.joinEvent(currentUserId, eventId);
     } catch (Exception e) {
+      // TODO: specify exception
       System.err.println("Can't add new event to storage: " + e);
       response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
       return false;
