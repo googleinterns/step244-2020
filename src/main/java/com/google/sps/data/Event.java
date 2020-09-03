@@ -29,16 +29,16 @@ public class Event {
   private String title;
   private String description;
   private String category;
-  private List<String> tags; // = new ArrayList<String>();
+  private List<String> tags;
   private DateTimeRange dateTimeRange;
   private Long duration; // in minutes
   private String location;
-  private List<String> links; // = new ArrayList<String>();
-  private Map<String, String> fields; // = new HashMap<String, String>();
+  private List<String> links;
+  private Map<String, String> fields;
   private String ownerId;
-  private List<String> invitedUsersId; // = new ArrayList<String>();
-  private List<String> joinedUsersId; // = new ArrayList<String>();
-  private List<String> declinedUsersId; // = new ArrayList<String>();
+  private List<String> invitedUsersId;
+  private List<String> joinedUsersId;
+  private List<String> declinedUsersId;
 
   private Event() {
   }
