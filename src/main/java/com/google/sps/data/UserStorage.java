@@ -42,7 +42,7 @@ public class UserStorage {
     return null;
   }
 
-  public static void addUser(User user) {
+  public static void addOrUpdateUser(User user) {
     if (user == null)
       return;
 
@@ -57,14 +57,6 @@ public class UserStorage {
     
     // Store Entities to datastore.
     DatastoreServiceFactory.getDatastoreService().put(userEntity);
-  }
-
-  public static void editUser(User user) {
-    if (user == null)
-      return;
-    
-    deleteUser(user.getID());
-    addUser(user);
   }
 
   public static void deleteUser(String userId) {
@@ -84,7 +76,7 @@ public class UserStorage {
     if (user == null)
       return;
     user.joinEvent(eventId);
-    editUser(user);
+    addOrUpdateUser(user);
     EventStorage.joinEvent(userId, eventId);
   }
 
