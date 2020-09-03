@@ -81,11 +81,12 @@ public class EventServlet extends HttpServlet {
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
       return;
     }
+    String currentUserId = UserServiceFactory.getUserService().getCurrentUser().getUserId();
 
     String pathName = request.getPathInfo();
 
     if (pathName == null || pathName.isEmpty() || pathName.equals("/")) {
-      String eventId = addEvent(request, response);
+      String eventId = addEvent(request, response, currentUserId);
       if (eventId != null) {
         response.sendRedirect("/event.html?event_id=" + eventId);
       } else {
@@ -96,7 +97,7 @@ public class EventServlet extends HttpServlet {
     String[] pathParts = pathName.split("/");
     String eventId = pathParts[1];
 
-    if (joinEvent(request, response, eventId)) {
+    if (joinEvent(request, response, currentUserId, eventId)) {
       response.sendRedirect("/event.html?event_id=" + eventId);
     } else {
       // TODO: Write message to user
@@ -114,16 +115,10 @@ public class EventServlet extends HttpServlet {
     response.sendRedirect("/index.html");
   }
 
-  private String addEvent(HttpServletRequest request, HttpServletResponse response) throws IOException {
+  private String addEvent(HttpServletRequest request, HttpServletResponse response, String currentUserId) throws IOException {
     Long duration = parseLongFromString(request.getParameter("duration"));
     if (duration == null) {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-      return null;
-    }
-
-    String currentUserId = getCurrentUserId();
-    if (currentUserId == null) {
-      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
       return null;
     }
 
@@ -209,14 +204,8 @@ public class EventServlet extends HttpServlet {
     return;
   }
 
-  private boolean joinEvent(HttpServletRequest request, HttpServletResponse response, String eventId)
+  private boolean joinEvent(HttpServletRequest request, HttpServletResponse response, String currentUserId, String eventId)
       throws IOException {
-    String currentUserId = getCurrentUserId();
-    if (currentUserId == null) {
-      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-      return false;
-    }
-
     if (!EventStorage.userHasAccessToEvent(currentUserId, eventId)) {
       response.setStatus(HttpServletResponse.SC_FORBIDDEN);
       return false;
@@ -231,14 +220,6 @@ public class EventServlet extends HttpServlet {
     }
     
     return true;
-  }
-
-  private String getCurrentUserId() {
-    try {
-      return UserServiceFactory.getUserService().getCurrentUser().getUserId();
-    } catch (NullPointerException e) {
-      return null;
-    }
   }
 
   private List<String> parseInvitedIDs(String[] invitedIDs) {
