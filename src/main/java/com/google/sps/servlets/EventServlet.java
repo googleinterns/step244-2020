@@ -75,7 +75,9 @@ public class EventServlet extends HttpServlet {
     response.getWriter().println(gson.toJson(events));
     
     String[] pathParts = pathName.split("/");
-    getEvent(request, response, userService, pathParts[1]);
+    if (!getEvent(request, response, userService.getCurrentUser().getUserId(), pathParts[1])) {
+      // TODO: Write message to user
+    }
   }
 
   @Override
@@ -175,7 +177,7 @@ public class EventServlet extends HttpServlet {
     return event.getID();
   }
 
-  private boolean getEvent(HttpServletRequest request, HttpServletResponse response, UserService userService, String eventId)
+  private boolean getEvent(HttpServletRequest request, HttpServletResponse response, String currentUserId, String eventId)
       throws IOException {
     Event event = EventStorage.getEvent(eventId);
     if (event == null) {
@@ -184,19 +186,10 @@ public class EventServlet extends HttpServlet {
       return false;
     }
 
-    // String currentUserId = null;
-    // try {
-    //   currentUserId = userService.getCurrentUser().getUserId();
-    // } catch (Exception e) {
-    //   System.err.println("Can't get current user id: " + e);
-    //   response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-    //   return false;
-    // }
-
-    // if (!event.hasUserAccess(currentUserId)) {
-    //   response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-    //   return false;
-    // }
+    if (!event.userHasAccessToEvent(currentUserId)) {
+      response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+      return false;
+    }
     response.setContentType("application/json;");
     response.getWriter().println(new Gson().toJson(event));
     return true;

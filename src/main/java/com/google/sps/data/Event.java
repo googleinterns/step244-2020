@@ -29,16 +29,16 @@ public class Event {
   private String title;
   private String description;
   private String category;
-  private List<String> tags = new ArrayList<String>();
+  private List<String> tags; // = new ArrayList<String>();
   private DateTimeRange dateTimeRange;
   private Long duration; // in minutes
   private String location;
-  private List<String> links = new ArrayList<String>();
-  private Map<String, String> fields = new HashMap<String, String>();
+  private List<String> links; // = new ArrayList<String>();
+  private Map<String, String> fields; // = new HashMap<String, String>();
   private String ownerId;
-  private List<String> invitedUsersId = new ArrayList<String>();
-  private List<String> joinedUsersId = new ArrayList<String>();
-  private List<String> declinedUsersId = new ArrayList<String>();
+  private List<String> invitedUsersId; // = new ArrayList<String>();
+  private List<String> joinedUsersId; // = new ArrayList<String>();
+  private List<String> declinedUsersId; // = new ArrayList<String>();
 
   private Event() {
   }
@@ -151,6 +151,7 @@ public class Event {
   }
 
   public boolean userHasAccessToEvent(String userId) {
+    // TODO: add isPublic
     return ownerId == userId || invitedUsersId.contains(userId) || joinedUsersId.contains(userId) || declinedUsersId.contains(userId);
   }
 
@@ -163,7 +164,7 @@ public class Event {
     }
 
     public Builder setID(String id) {
-      Event.this.id = id;
+      Event.this.id = Objects.requireNonNull(id, "id must not be null");
       return this;
     }
 
@@ -188,7 +189,10 @@ public class Event {
     }
 
     public Builder setTags(List<String> tags) {
-      Event.this.tags.addAll(tags);
+      if (tags != null) {
+        Event.this.tags = new ArrayList<>();
+        Event.this.tags.addAll(tags);
+      }
       return this;
     }
 
@@ -208,42 +212,52 @@ public class Event {
     }
 
     public Builder setLinks(List<String> links) {
-      Event.this.links.addAll(links);
+      if (links != null) {
+        Event.this.links = new ArrayList<>();
+        Event.this.links.addAll(links);
+      }
       return this;
     }
 
     public Builder setFields(Map<String, String> fields) {
-      Event.this.fields.putAll(fields);
+      if (fields != null) {
+        Event.this.fields = new HashMap<>();
+        Event.this.fields.putAll(fields);
+      }
       return this;
     }
 
     public Builder setOwnerID(String ownerId) {
-      Event.this.ownerId = ownerId;
+      Event.this.ownerId = Objects.requireNonNull(ownerId, "ownerId must not be null");;
       return this;
     }
 
     public Builder setInvitedIDs(List<String> invitedUsersId) {
-      Event.this.invitedUsersId.addAll(invitedUsersId);
+      if (invitedUsersId != null) {
+        Event.this.invitedUsersId = new ArrayList<>();
+        Event.this.invitedUsersId.addAll(invitedUsersId);
+      }
       return this;
     }
 
     public Builder setJoinedIDs(List<String> joinedUsersId) {
-      Event.this.joinedUsersId.addAll(joinedUsersId);
+      if (joinedUsersId != null) {
+        Event.this.joinedUsersId = new ArrayList<>();
+        Event.this.joinedUsersId.addAll(joinedUsersId);
+      }
       return this;
     }
 
     public Builder setDeclinedIDs(List<String> declinedUsersId) {
-      Event.this.declinedUsersId.addAll(declinedUsersId);
+      if (declinedUsersId != null) {
+        Event.this.declinedUsersId = new ArrayList<>();
+        Event.this.declinedUsersId.addAll(declinedUsersId);
+      }
       return this;
     }
     
     public Event build() {
       return Event.this;
     }
-  }
-
-  public Boolean hasUserAccess(String userId) {
-    // TODO: add isPublic
-    return ownerId == userId || invitedParticipantsId.contains(userId) || joinedParticipantsId.contains(userId) || declinedParticipantsId.contains(userId);
   }
 }
