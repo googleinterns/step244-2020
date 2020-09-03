@@ -27,50 +27,57 @@ import java.util.List;
 import java.util.ArrayList;
 
 public class UserStorage {
-  public static User getUser(String user_id) {
-    // TODO: Query in datastore.
+  public static User getUser(String userId) {
+    Query query = new Query("User").setFilter(new FilterPredicate(Entity.KEY_RESERVED_PROPERTY, FilterOperator.EQUAL, KeyFactory.createKey("User", userId)));
+    Entity userEntity = DatastoreServiceFactory.getDatastoreService().prepare(query).asSingleEntity();
+    if (userEntity != null) {
+      return new User(userId, 
+        (String) userEntity.getProperty("email"),
+        (String) userEntity.getProperty("username"),
+        (ArrayList) userEntity.getProperty("invited-events"),
+        (ArrayList) userEntity.getProperty("joined-events"),
+        (ArrayList) userEntity.getProperty("declined-events")
+      );
+    }
     return null;
   }
 
-  public static User getUserByUsername(String username) {
-    // TODO: Query in datastore.
-    return null;
-  }
+  public static void addOrUpdateUser(User user) {
+    if (user == null)
+      return;
 
-  public static void addUser(User user) {
     // Make an Entity of user.
     Entity userEntity = new Entity("User", user.getID());
 
+    userEntity.setProperty("email", user.getEmail());
+    userEntity.setProperty("username", user.getUsername());
+    userEntity.setProperty("invited-events", user.getInvitedEventsID());
+    userEntity.setProperty("joined-events", user.getJoinedEventsID());
+    userEntity.setProperty("declined-events", user.getDeclinedEventsID());
+    
     // Store Entities to datastore.
-    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-    datastore.put(userEntity);
+    DatastoreServiceFactory.getDatastoreService().put(userEntity);
   }
 
-  public static void editUser(User user) {
-    // TODO: Edit event in datastore.
-  }
-
-  public static void deleteUser(String user_id) {
-    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-
-    Key userEntityKey = KeyFactory.createKey("User", user_id);
-    datastore.delete(userEntityKey);
+  public static void deleteUser(String userId) {
+    DatastoreServiceFactory.getDatastoreService().delete(KeyFactory.createKey("User", userId));
   }
 
   public static String getIDbyUsername(String username) {
     Query query = new Query("User").setFilter(new FilterPredicate("username", FilterOperator.EQUAL, username));
 
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-    Entity user_entity = datastore.prepare(query).asSingleEntity();
-    if (user_entity == null) {
-      return null;
-    }
-    return (String) user_entity.getProperty("id");
+    Entity userEntity = datastore.prepare(query).asSingleEntity();
+    return userEntity != null ? (String) userEntity.getProperty("id") : null;
   }
 
-  public static void joinEvent(String event_id) {
-    // TODO: edit info in datastore
-    EventStorage.joinEvent(event_id);
+  public static void joinEvent(String userId, String eventId) {
+    User user = getUser(userId);
+    if (user == null)
+      return;
+    user.joinEvent(eventId);
+    addOrUpdateUser(user);
+    EventStorage.joinEvent(userId, eventId);
   }
 
   public static List<Event> search() {
