@@ -213,6 +213,17 @@ public class EventServlet extends HttpServlet {
     
     try {
       UserStorage.joinEvent(currentUserId, eventId);
+      User user = UserStorage.getUser(currentUserId);
+      Event event = EventStorage.getEvent(eventId);
+      if (user == null) {
+        System.err.println("Can't find user with id " + currentUserId);
+        response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+      }
+      if (event == null) {
+        System.err.println("Can't find event with id " + eventId);
+        response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+      }
+      Utils.joinGCalendarEvent(event.getOwnerID(), eventId, user.getEmail());
     } catch (Exception e) {
       // TODO: specify exception
       System.err.println("Can't add new event to storage: " + e);
