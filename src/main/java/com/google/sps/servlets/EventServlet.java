@@ -214,7 +214,8 @@ public class EventServlet extends HttpServlet {
     try {
       UserStorage.joinEvent(currentUserId, eventId);
       User user = UserStorage.getUser(currentUserId);
-      Utils.joinGCalendarEvent(currentUserId, eventId, user.getEmail());
+      Event event = EventStorage.getEvent(eventId);
+      Utils.joinGCalendarEvent(event.getOwnerID(), eventId, user.getEmail());
     } catch (Exception e) {
       // TODO: specify exception
       System.err.println("Can't add new event to storage: " + e);
