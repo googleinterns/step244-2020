@@ -20,6 +20,12 @@ function getUser() {
   fetch('/users').then(response => response.json());
 }
 
+function prepareSearch() {
+  document.getElementById("start-date").min = new Date().toISOString().slice(0, 10);
+  document.getElementById("end-date").min = new Date().toISOString().slice(0, 10);
+  searchEvents();
+}
+
 function searchEvents() {
   document.getElementById('events-container').innerText = "";
   var search = document.getElementById('search').value;
