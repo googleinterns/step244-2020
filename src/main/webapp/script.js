@@ -28,21 +28,21 @@ function searchEvents() {
   var location = document.getElementById('location').value;
   fetch('/events?' + new URLSearchParams({
     search: search,
-}) + '&' + new URLSearchParams({
+  }) + '&' + new URLSearchParams({
     category: category,
-}) + '&' + new URLSearchParams({
+  }) + '&' + new URLSearchParams({
     duration: duration,
-}) + '&' + new URLSearchParams({
+  }) + '&' + new URLSearchParams({
     location: location,
-})).then(response => response.json()).then(events => events.forEach(showEvent));
+  })).then(response => response.json()).then(events => events.forEach(showEvent));
 }
 
 function showEvent(event) {
   document.getElementById('events-container').innerHTML += '<div><h1>'
-  + event.title + '</h1><hr><br><h2>' + event.duration + '</h2><h3>' + event.description 
-  + '</h3><br><p><i class="fas fa-map-marker-alt"></i>' + event.location 
-  + '</p><br><form action="/events/' + event.id + '" method="POST">'
-  + '<input type="submit" class="btn btn-success" value="Join event!"/></form><br><br></div>';
+    + event.title + '</h1><hr><br><h2>' + event.duration + '</h2><h3>' + event.description
+    + '</h3><br><p><i class="fas fa-map-marker-alt"></i>' + event.location
+    + '</p><br><form action="/events/' + event.id + '" method="POST">'
+    + '<input type="submit" class="btn btn-success" value="Join event!"/></form><br><br></div>';
 }
 
 function addEventToGCalendar() { //To be modified to get fields
@@ -90,7 +90,7 @@ function getGCalendarEvents(calendar, startTime, endTime) {
               title: event.summary,
               start: start,
               end: end,
-              allDay : allDay,
+              allDay: allDay,
               location: event.location,
               description: event.description,
               shared: shared,
@@ -109,7 +109,7 @@ function getGCalendarEvents(calendar, startTime, endTime) {
           window.location.href = authInfo.authLink;
         }
       })
-      ;
+        ;
     }
   });
 }
@@ -286,4 +286,32 @@ function addPerson() {
 
 function setMinDateToToday() {
   document.getElementById("event-start-date").min = new Date().toISOString().slice(0, 10);
+}
+
+function fetchUserInfo() {
+  fetch("/users").then(response => response.json()).then(userInfo => {
+    console.log(userInfo);
+    const email = userInfo.email;
+    var username = userInfo.username;
+    if (username == null) {
+      document.getElementById("username-placeholder").innerText = "You currently do not have an username. If you want to set one, click ";
+      username = email;
+    } else {
+      document.getElementById("username-placeholder").innerText = "Your username is currently: " + username + ". If you want to change it click ";
+    }
+    var displayBoxButton = document.createElement("a");
+    displayBoxButton.setAttribute("href", "#");
+    displayBoxButton.setAttribute("onclick", "hideElementById('username-placeholder'); showElementById('username-setter')");
+    displayBoxButton.innerText = "here";
+    document.getElementById("username-placeholder").appendChild(displayBoxButton);
+    document.getElementById("user-header").innerText = "Hello, " + username + "!";
+  });
+}
+
+function showElementById(Id) {
+  document.getElementById(Id).style.display = "";
+}
+
+function hideElementById(Id) {
+  document.getElementById(Id).style.display = "none";
 }
