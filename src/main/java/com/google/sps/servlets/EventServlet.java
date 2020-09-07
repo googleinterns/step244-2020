@@ -71,6 +71,8 @@ public class EventServlet extends HttpServlet {
     
       response.setContentType("application/json");
       response.getWriter().println(gson.toJson(events));
+      
+      return;
     }
 
     if (pathName.equals("/gcalendar")) {
