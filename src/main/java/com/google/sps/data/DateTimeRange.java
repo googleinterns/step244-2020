@@ -50,6 +50,14 @@ public final class DateTimeRange {
     return isDateSet() ? startDate : null;
   }
 
+  public String getStartDate() {
+    return startDate;
+  }
+
+  public String getEndDate() {
+    return endDate;
+  }
+
   public String getTime() {
     return isTimeSet() ? startTime : null;
   }
