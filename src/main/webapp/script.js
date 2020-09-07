@@ -13,7 +13,54 @@
 // limitations under the License.
 
 function getEvent(event_id) {
-  fetch('/events/' + event_id).then(response => response.json());
+  fetch('/events/' + event_id).then(response => response.json()).then((event) => {
+    document.getElementById('title-info').innerText = event.title;
+    document.getElementById('start-date-info').innerText = event.dateTimeRange.startDate;
+    document.getElementById('start-time-info').innerText = event.dateTimeRange.startTime;
+    if (event.duration != null)
+        document.getElementById('duration-info').innerText = 'Duration: ' + event.duration + 'minutes';
+
+    document.getElementById('category-info').innerText = event.category;
+    for (tag in event.tags) {
+      const tagLI = document.createElement('li');
+      tagLI.innerText = event.tags[tag];
+      document.getElementById('tags-info').appendChild(tagLI);
+    }
+
+    document.getElementById('description-info').innerText = event.description;
+    document.getElementById('location-info').innerText = 'Location: ' + event.location;
+    for (link in event.links) {
+      const linkA = document.createElement('a');
+      linkA.innerText = event.links[link];
+      linkA.href = "https://" + event.links[link];
+      document.getElementById('links-info').appendChild(linkA);
+    }
+    for (field in event.fields) {
+      const fieldLI = document.createElement('li');
+      fieldLI.innerText = field + ': ' + event.fields[field];
+      document.getElementById('fields-info').appendChild(fieldLI);
+    }
+
+    document.getElementById('owner-info').innerText = 'Owner of event: ' + event.ownerId;
+    for (person in event.joinedUsersId) {
+      const personLI = document.createElement('li');
+      personLI.innerText = event.joinedUsersId[person];
+      personLI.setAttribute('class', 'joined');
+      document.getElementById('people-list-info').appendChild(personLI);
+    }
+    for (person in event.invitedUsersId) {
+      const personLI = document.createElement('li');
+      personLI.innerText = event.invitedUsersId[person];
+      personLI.setAttribute('class', 'invited');
+      document.getElementById('people-list-info').appendChild(personLI);
+    }
+    for (person in event.declinedUsersId) {
+      const personLI = document.createElement('li');
+      personLI.innerText = event.declinedUsersId[person];
+      personLI.setAttribute('class', 'declined');
+      document.getElementById('people-list-info').appendChild(personLI);
+    }
+  });
 }
 
 function getUser() {
@@ -28,21 +75,21 @@ function searchEvents() {
   var location = document.getElementById('location').value;
   fetch('/events?' + new URLSearchParams({
     search: search,
-}) + '&' + new URLSearchParams({
+  }) + '&' + new URLSearchParams({
     category: category,
-}) + '&' + new URLSearchParams({
+  }) + '&' + new URLSearchParams({
     duration: duration,
-}) + '&' + new URLSearchParams({
+  }) + '&' + new URLSearchParams({
     location: location,
-})).then(response => response.json()).then(events => events.forEach(showEvent));
+  })).then(response => response.json()).then(events => events.forEach(showEvent));
 }
 
 function showEvent(event) {
   document.getElementById('events-container').innerHTML += '<div><h1>'
-  + event.title + '</h1><hr><br><h2>' + event.duration + '</h2><h3>' + event.description 
-  + '</h3><br><p><i class="fas fa-map-marker-alt"></i>' + event.location 
-  + '</p><br><form action="/events/' + event.id + '" method="POST">'
-  + '<input type="submit" class="btn btn-success" value="Join event!"/></form><br><br></div>';
+    + event.title + '</h1><hr><br><h2>' + event.duration + '</h2><h3>' + event.description
+    + '</h3><br><p><i class="fas fa-map-marker-alt"></i>' + event.location
+    + '</p><br><form action="/events/' + event.id + '" method="POST">'
+    + '<input type="submit" class="btn btn-success" value="Join event!"/></form><br><br></div>';
 }
 
 function addEventToGCalendar() { //To be modified to get fields
@@ -90,7 +137,7 @@ function getGCalendarEvents(calendar, startTime, endTime) {
               title: event.summary,
               start: start,
               end: end,
-              allDay : allDay,
+              allDay: allDay,
               location: event.location,
               description: event.description,
               shared: shared,
@@ -109,7 +156,7 @@ function getGCalendarEvents(calendar, startTime, endTime) {
           window.location.href = authInfo.authLink;
         }
       })
-      ;
+        ;
     }
   });
 }
@@ -286,4 +333,32 @@ function addPerson() {
 
 function setMinDateToToday() {
   document.getElementById("event-start-date").min = new Date().toISOString().slice(0, 10);
+}
+
+function fetchUserInfo() {
+  fetch("/users").then(response => response.json()).then(userInfo => {
+    console.log(userInfo);
+    const email = userInfo.email;
+    var username = userInfo.username;
+    if (username == null) {
+      document.getElementById("username-placeholder").innerText = "You currently do not have an username. If you want to set one, click ";
+      username = email;
+    } else {
+      document.getElementById("username-placeholder").innerText = "Your username is currently: " + username + ". If you want to change it click ";
+    }
+    var displayBoxButton = document.createElement("a");
+    displayBoxButton.setAttribute("href", "#");
+    displayBoxButton.setAttribute("onclick", "hideElementById('username-placeholder'); showElementById('username-setter')");
+    displayBoxButton.innerText = "here";
+    document.getElementById("username-placeholder").appendChild(displayBoxButton);
+    document.getElementById("user-header").innerText = "Hello, " + username + "!";
+  });
+}
+
+function showElementById(Id) {
+  document.getElementById(Id).style.display = "";
+}
+
+function hideElementById(Id) {
+  document.getElementById(Id).style.display = "none";
 }
