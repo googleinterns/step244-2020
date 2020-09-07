@@ -57,25 +57,29 @@ public class EventServlet extends HttpServlet {
     String pathName = request.getPathInfo();
     UserService userService = UserServiceFactory.getUserService();
 
-    if (pathName != null && pathName.equals("/gcalendar")) {
+    if (pathName == null || pathName.isEmpty() || pathName.equals("/")) {
+      String search = request.getParameter("search");
+      String category = request.getParameter("category");
+      String duration = request.getParameter("duration");
+      String location = request.getParameter("location");
+
+      List<Event> events = EventStorage.getSearchedEvents(search, category, duration, location);
+
+      Gson gson = new Gson();
+    
+      response.setContentType("application/json");
+      response.getWriter().println(gson.toJson(events));
+    }
+
+    if (pathName.equals("/gcalendar")) {
       getEvents(request, response, userService);
       return;
     }
 
-    String search = request.getParameter("search");
-    String category = request.getParameter("category");
-    String duration = request.getParameter("duration");
-    String location = request.getParameter("location");
- 
-    List<Event> events = EventStorage.getSearchedEvents(search, category, duration, location);
-
-    Gson gson = new Gson();
-    
-    response.setContentType("application/json");
-    response.getWriter().println(gson.toJson(events));
-    
     String[] pathParts = pathName.split("/");
-    if (!getEvent(request, response, userService.getCurrentUser().getUserId(), pathParts[1])) {
+    String eventId = pathParts[1];
+
+    if (!getEvent(request, response, userService.getCurrentUser().getUserId(), eventId)) {
       // TODO: Write message to user
     }
   }
@@ -94,6 +98,7 @@ public class EventServlet extends HttpServlet {
       String eventId = addEvent(request, response, currentUserId);
       if (eventId != null) {
         response.sendRedirect("/event.html?event_id=" + eventId);
+        return;
       } else {
         // TODO: Write message to user
       }

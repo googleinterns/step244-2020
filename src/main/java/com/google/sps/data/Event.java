@@ -152,7 +152,7 @@ public class Event {
 
   public boolean userHasAccessToEvent(String userId) {
     // TODO: add isPublic
-    return ownerId == userId || invitedUsersId.contains(userId) || joinedUsersId.contains(userId) || declinedUsersId.contains(userId);
+    return ownerId.equals(userId) || invitedUsersId.contains(userId) || joinedUsersId.contains(userId) || declinedUsersId.contains(userId);
   }
 
   public static Builder newBuilder() {
@@ -189,8 +189,8 @@ public class Event {
     }
 
     public Builder setTags(List<String> tags) {
+      Event.this.tags = new ArrayList<>();
       if (tags != null) {
-        Event.this.tags = new ArrayList<>();
         Event.this.tags.addAll(tags);
       }
       return this;
@@ -212,16 +212,16 @@ public class Event {
     }
 
     public Builder setLinks(List<String> links) {
+      Event.this.links = new ArrayList<>();
       if (links != null) {
-        Event.this.links = new ArrayList<>();
         Event.this.links.addAll(links);
       }
       return this;
     }
 
     public Builder setFields(Map<String, String> fields) {
+      Event.this.fields = new HashMap<>();
       if (fields != null) {
-        Event.this.fields = new HashMap<>();
         Event.this.fields.putAll(fields);
       }
       return this;
@@ -233,24 +233,24 @@ public class Event {
     }
 
     public Builder setInvitedIDs(List<String> invitedUsersId) {
+      Event.this.invitedUsersId = new ArrayList<>();
       if (invitedUsersId != null) {
-        Event.this.invitedUsersId = new ArrayList<>();
         Event.this.invitedUsersId.addAll(invitedUsersId);
       }
       return this;
     }
 
     public Builder setJoinedIDs(List<String> joinedUsersId) {
+      Event.this.joinedUsersId = new ArrayList<>();
       if (joinedUsersId != null) {
-        Event.this.joinedUsersId = new ArrayList<>();
         Event.this.joinedUsersId.addAll(joinedUsersId);
       }
       return this;
     }
 
     public Builder setDeclinedIDs(List<String> declinedUsersId) {
+      Event.this.declinedUsersId = new ArrayList<>();
       if (declinedUsersId != null) {
-        Event.this.declinedUsersId = new ArrayList<>();
         Event.this.declinedUsersId.addAll(declinedUsersId);
       }
       return this;
