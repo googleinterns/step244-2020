@@ -33,6 +33,7 @@ public class Event {
   private DateTimeRange dateTimeRange;
   private Long duration; // in minutes
   private String location;
+  private String locationId;
   private List<String> links = new ArrayList<String>();
   private Map<String, String> fields = new HashMap<String, String>();
   private String ownerId;
@@ -54,6 +55,7 @@ public class Event {
         .setDateTimeRange(new Gson().fromJson((String) eventEntity.getProperty("date-time-range"), DateTimeRange.class))
         .setDuration((Long) eventEntity.getProperty("duration"))
         .setLocation((String) eventEntity.getProperty("location"))
+        .setLocationId((String) eventEntity.getProperty("location-id"))
         .setLinks((ArrayList) eventEntity.getProperty("links"))
         .setFields(new Gson().fromJson((String) eventEntity.getProperty("fields"), Map.class))
         .setOwnerID((String) eventEntity.getProperty("owner"))
@@ -113,6 +115,10 @@ public class Event {
 
   public String getLocation() {
     return location;
+  }
+
+  public String getLocationId() {
+    return locationId;
   }
 
   public List<String> getLinks() {
@@ -204,6 +210,11 @@ public class Event {
 
     public Builder setLocation(String location) {
       Event.this.location = location;
+      return this;
+    }
+
+    public Builder setLocationId(String locationId) {
+      Event.this.locationId = locationId;
       return this;
     }
 
