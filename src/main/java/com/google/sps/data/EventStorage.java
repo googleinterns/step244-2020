@@ -38,7 +38,7 @@ public class EventStorage {
     return eventEntity != null ? Event.fromDatastoreEntity(eventEntity) : null;
   }
 
-  public static List<Event> getSearchedEvents(String search, String searchCategory, String searchDuration, String searchLocation) {
+  public static List<Event> getSearchedEvents(String search, String searchCategory, String searchStart, String searchEnd, String searchDuration, String searchLocation) {
     Query query = new Query("Event");
 
     if (searchDuration != null && !searchDuration.isEmpty()) {
@@ -63,6 +63,11 @@ public class EventStorage {
     for (Entity entity : results.asIterable()) {
       String title = (String) entity.getProperty("title");
       String description = (String) entity.getProperty("description");
+      DateTimeRange dateTimeRange = new Gson().fromJson((String) entity.getProperty("date-time-range"), DateTimeRange.class);
+
+      if (!eventInRange(searchStart, searchEnd, dateTimeRange)) {
+        continue;
+      }
  
       if (search == null || search.isEmpty() || EventStorage.isTextMatch(search, title) || EventStorage.isTextMatch(search, description)) {
         String category = (String) entity.getProperty("category");
@@ -78,6 +83,12 @@ public class EventStorage {
 
   private static boolean isTextMatch(String search, String text) {
     return text.toLowerCase().contains(search.toLowerCase());
+  }
+
+  private static boolean eventInRange(String start, String end, DateTimeRange range) {
+    return range == null || ((start == null || start.isEmpty() || range.getStartDate() == null 
+    || start.compareTo(range.getStartDate()) <= 0) && (end == null || end.isEmpty() 
+    || range.getEndDate() == null || end.compareTo(range.getEndDate()) >= 0));
   }
 
   public static void addOrUpdateEvent(Event event) {

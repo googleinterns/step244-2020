@@ -60,10 +60,12 @@ public class EventServlet extends HttpServlet {
     if (pathName == null || pathName.isEmpty() || pathName.equals("/")) {
       String search = request.getParameter("search");
       String category = request.getParameter("category");
+      String start = request.getParameter("start");
+      String end = request.getParameter("end");
       String duration = request.getParameter("duration");
       String location = request.getParameter("location");
 
-      List<Event> events = EventStorage.getSearchedEvents(search, category, duration, location);
+      List<Event> events = EventStorage.getSearchedEvents(search, category, start, end, duration, location);
 
       Gson gson = new Gson();
     

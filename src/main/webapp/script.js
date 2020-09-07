@@ -67,16 +67,28 @@ function getUser() {
   fetch('/users').then(response => response.json());
 }
 
+function prepareSearch() {
+  document.getElementById("start-date").min = new Date().toISOString().slice(0, 10);
+  document.getElementById("end-date").min = new Date().toISOString().slice(0, 10);
+  searchEvents();
+}
+
 function searchEvents() {
   document.getElementById('events-container').innerText = "";
   var search = document.getElementById('search').value;
   var category = document.getElementById('category').value;
+  var start = document.getElementById('start-date').value;
+  var end = document.getElementById('end-date').value;
   var duration = document.getElementById('duration').value;
   var location = document.getElementById('location').value;
   fetch('/events?' + new URLSearchParams({
     search: search,
 }) + '&' + new URLSearchParams({
     category: category,
+}) + '&' + new URLSearchParams({
+    start: start,
+}) + '&' + new URLSearchParams({
+    end: end,
 }) + '&' + new URLSearchParams({
     duration: duration,
 }) + '&' + new URLSearchParams({
