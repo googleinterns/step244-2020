@@ -36,11 +36,34 @@ public class Event {
   private List<String> links;
   private Map<String, String> fields;
   private String ownerId;
-  private List<String> invitedUsersId;
-  private List<String> joinedUsersId;
-  private List<String> declinedUsersId;
+  private List<String> invitedUsersId = new ArrayList<>();
+  private List<String> joinedUsersId = new ArrayList<>();
+  private List<String> declinedUsersId = new ArrayList<>();
 
   private Event() {
+  }
+
+  @Override
+  public boolean equals(Object other) {
+    return other instanceof Event && equals(this, (Event) other);
+  }
+
+  private static boolean equals(Event a, Event b) {
+    return Objects.equals(a.id, b.id)
+        && Objects.equals(a.gcalendarId, b.gcalendarId)
+        && Objects.equals(a.title, b.title)
+        && Objects.equals(a.description, b.description)
+        && Objects.equals(a.category, b.category)
+        && Objects.equals(a.tags, b.tags)
+        && Objects.equals(a.dateTimeRange, b.dateTimeRange)
+        && Objects.equals(a.duration, b.duration)
+        && Objects.equals(a.location, b.location)
+        && Objects.equals(a.links, b.links)
+        && Objects.equals(a.fields, b.fields)
+        && Objects.equals(a.ownerId, b.ownerId)
+        && Objects.equals(a.invitedUsersId, b.invitedUsersId)
+        && Objects.equals(a.joinedUsersId, b.joinedUsersId)
+        && Objects.equals(a.declinedUsersId, b.declinedUsersId);
   }
 
   public static Event fromDatastoreEntity(Entity eventEntity) {
@@ -144,6 +167,10 @@ public class Event {
   }
 
   public void joinEvent(String userId) {
+    if (invitedUsersId == null)
+        return;
+    if (joinedUsersId == null)
+        this.joinedUsersId = new ArrayList<>();
     if (invitedUsersId.contains(userId)) {
       this.invitedUsersId.remove(userId);
       this.joinedUsersId.add(userId);
@@ -257,6 +284,10 @@ public class Event {
     }
     
     public Event build() {
+      if (Event.this.id == null)
+        throw new IllegalArgumentException("ID of event should be specified"); 
+      if (Event.this.ownerId == null)
+        throw new IllegalArgumentException("Owner of event should be specified"); 
       return Event.this;
     }
   }
