@@ -19,6 +19,25 @@
     integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm"
     crossorigin="anonymous"></script>
   <script src="script.js"></script>
+  <script
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAuorvbt5Lvgu9eEIpzVjXQpeD6EvqssIA&callback=initLocation&libraries=places"
+      defer
+    ></script>
+  <script>
+    "use strict";
+    let autocomplete;
+
+    function initLocation() {
+      autocomplete = new google.maps.places.Autocomplete(
+      document.getElementById('event-location'),{});
+      autocomplete.addListener("place_changed", onPlaceChanged);
+    }
+
+    function onPlaceChanged() {
+      const place = autocomplete.getPlace();
+      document.getElementById('event-location-id').value = place.place_id;
+    }
+  </script>
 </head>
 
 <body onload="setMinDateToToday();">
@@ -86,6 +105,7 @@
           <ul id="event-people-list">
           </ul>
         </div>
+        <div id="event-location-id" name="event-location-id"></div>
 
         <input type="submit" value="Done">
       </form>

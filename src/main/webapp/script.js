@@ -25,7 +25,7 @@ function searchEvents() {
   var search = document.getElementById('search').value;
   var category = document.getElementById('category').value;
   var duration = document.getElementById('duration').value;
-  var location = document.getElementById('location').value;
+  var location = document.getElementById('location-id').value;
   fetch('/events?' + new URLSearchParams({
     search: search,
 }) + '&' + new URLSearchParams({
@@ -35,6 +35,7 @@ function searchEvents() {
 }) + '&' + new URLSearchParams({
     location: location,
 })).then(response => response.json()).then(events => events.forEach(showEvent));
+  document.getElementById('location-id').value = "all";
 }
 
 function showEvent(event) {

@@ -50,7 +50,7 @@ public class EventStorage {
       }
     }
 
-    if (searchLocation != null && !searchLocation.isEmpty() && !searchLocation.equals("Everywhere")) {
+    if (searchLocation != null && !searchLocation.isEmpty() && !searchLocation.equals("all")) {
       Filter locationFilter =
       new FilterPredicate("location", FilterOperator.EQUAL, searchLocation);
       query = query.setFilter(locationFilter);
