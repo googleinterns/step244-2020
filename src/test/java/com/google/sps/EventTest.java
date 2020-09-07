@@ -57,18 +57,6 @@ public final class EventTest {
     {"f1", "v1"}, 
   }).collect(Collectors.toMap(data -> data[0], data -> data[1]));
 
-
-//   private static Event event;
-
-//   @Before
-//   public void setUp() {
-//     event = Event.newBuilder()
-//         .setOwnerID(USER_ID1)
-//         .setID(EVENT_ID1)
-//         .setInvitedIDs({USER_ID2})
-//         .build();
-//   }
-
   @Test
   public void equalityOfEmptyEvents() {
     Event event1 = Event.newBuilder()
