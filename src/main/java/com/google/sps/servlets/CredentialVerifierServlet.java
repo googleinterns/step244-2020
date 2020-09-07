@@ -40,11 +40,7 @@ public class CredentialVerifierServlet extends HttpServlet {
       return;
     }
     Credential credential = flow.loadCredential(user.getUserId());
-    if (credential == null) {
-      response.getWriter().print("false");
-      return;
-    }
-    if (credential.getAccessToken() == null) {
+    if (credential == null || credential.getAccessToken() == null) {
       response.getWriter().print("false");
       return;
     }
