@@ -13,7 +13,54 @@
 // limitations under the License.
 
 function getEvent(event_id) {
-  fetch('/events/' + event_id).then(response => response.json());
+  fetch('/events/' + event_id).then(response => response.json()).then((event) => {
+    document.getElementById('title-info').innerText = event.title;
+    document.getElementById('start-date-info').innerText = event.dateTimeRange.startDate;
+    document.getElementById('start-time-info').innerText = event.dateTimeRange.startTime;
+    if (event.duration != null)
+        document.getElementById('duration-info').innerText = 'Duration: ' + event.duration + 'minutes';
+
+    document.getElementById('category-info').innerText = event.category;
+    for (tag in event.tags) {
+      const tagLI = document.createElement('li');
+      tagLI.innerText = event.tags[tag];
+      document.getElementById('tags-info').appendChild(tagLI);
+    }
+
+    document.getElementById('description-info').innerText = event.description;
+    document.getElementById('location-info').innerText = 'Location: ' + event.location;
+    for (link in event.links) {
+      const linkA = document.createElement('a');
+      linkA.innerText = event.links[link];
+      linkA.href = "https://" + event.links[link];
+      document.getElementById('links-info').appendChild(linkA);
+    }
+    for (field in event.fields) {
+      const fieldLI = document.createElement('li');
+      fieldLI.innerText = field + ': ' + event.fields[field];
+      document.getElementById('fields-info').appendChild(fieldLI);
+    }
+
+    document.getElementById('owner-info').innerText = 'Owner of event: ' + event.ownerId;
+    for (person in event.joinedUsersId) {
+      const personLI = document.createElement('li');
+      personLI.innerText = event.joinedUsersId[person];
+      personLI.setAttribute('class', 'joined');
+      document.getElementById('people-list-info').appendChild(personLI);
+    }
+    for (person in event.invitedUsersId) {
+      const personLI = document.createElement('li');
+      personLI.innerText = event.invitedUsersId[person];
+      personLI.setAttribute('class', 'invited');
+      document.getElementById('people-list-info').appendChild(personLI);
+    }
+    for (person in event.declinedUsersId) {
+      const personLI = document.createElement('li');
+      personLI.innerText = event.declinedUsersId[person];
+      personLI.setAttribute('class', 'declined');
+      document.getElementById('people-list-info').appendChild(personLI);
+    }
+  });
 }
 
 function getUser() {
