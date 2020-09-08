@@ -25,19 +25,20 @@ import com.google.appengine.api.datastore.Query.Filter;
 import com.google.appengine.api.datastore.Query.FilterOperator;
 import com.google.appengine.api.datastore.Query.FilterPredicate;
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;  
+import com.google.gson.reflect.TypeToken;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 
 public class EventStorage {
-  public static Event getEvent(String event_id) {
-    // TODO: Query in datastore.
-    return null;
+  public static Event getEvent(String eventId) {
+    Query query = new Query("Event").setFilter(new FilterPredicate(Entity.KEY_RESERVED_PROPERTY, FilterOperator.EQUAL, KeyFactory.createKey("Event", eventId)));
+    Entity eventEntity = DatastoreServiceFactory.getDatastoreService().prepare(query).asSingleEntity();
+    return eventEntity != null ? Event.fromDatastoreEntity(eventEntity) : null;
   }
 
-  public static List<Event> getSearchedEvents(String search, String searchCategory, String searchDuration, String searchLocation) {
+  public static List<Event> getSearchedEvents(String search, String searchCategory, String searchStart, String searchEnd, String searchDuration, String searchLocation) {
     Query query = new Query("Event");
 
     if (searchDuration != null && !searchDuration.isEmpty()) {
@@ -62,33 +63,17 @@ public class EventStorage {
     for (Entity entity : results.asIterable()) {
       String title = (String) entity.getProperty("title");
       String description = (String) entity.getProperty("description");
+      DateTimeRange dateTimeRange = new Gson().fromJson((String) entity.getProperty("date-time-range"), DateTimeRange.class);
+
+      if (!eventInRange(searchStart, searchEnd, dateTimeRange)) {
+        continue;
+      }
  
       if (search == null || search.isEmpty() || EventStorage.isTextMatch(search, title) || EventStorage.isTextMatch(search, description)) {
-        // TODO: Likely this is an incorrect way to get id
-        String id = (String) entity.getKey().getAppId();
         String category = (String) entity.getProperty("category");
 
         if (searchCategory == null || searchCategory.equals("all") || category.equals(searchCategory)) {
-          String gcalendarId = (String) entity.getProperty("gcalendar-id");
-          List<String> tags = (List<String>) entity.getProperty("tags");
-          String dateTimeRangeJson = (String) entity.getProperty("date-time-range");
-          // TODO: Get actual data structure from Json
-          DateTimeRange dateTimeRange = null;
-          Long duration = (Long) entity.getProperty("duration");
-          String location = (String) entity.getProperty("location");
-          List<String> links = (List<String>) entity.getProperty("links");
-          String fieldsJson = (String) entity.getProperty("fields");
-          Map<String, String> fields = new Gson().fromJson(
-          fieldsJson, new TypeToken<HashMap<String, String>>() {}.getType()
-          );
-          String ownerId = (String) entity.getProperty("owner");
-          List<String> invitedParticipantsId = (List<String>) entity.getProperty("invited-users");
-          List<String> joinedParticipantsId = (List<String>) entity.getProperty("joined-users");
-          List<String> declinedParticipantsId = (List<String>) entity.getProperty("declined-users");
-          Event event = new Event(id, gcalendarId, title, description, category, tags, 
-               dateTimeRange, duration, location, links, fields, ownerId, invitedParticipantsId, 
-               joinedParticipantsId, declinedParticipantsId);
-          events.add(event);
+          events.add(Event.fromDatastoreEntity(entity));
         }
       }
     }
@@ -100,7 +85,13 @@ public class EventStorage {
     return text.toLowerCase().contains(search.toLowerCase());
   }
 
-  public static void addEvent(Event event) {
+  private static boolean eventInRange(String start, String end, DateTimeRange range) {
+    return range == null || ((start == null || start.isEmpty() || range.getStartDate() == null 
+    || start.compareTo(range.getStartDate()) <= 0) && (end == null || end.isEmpty() 
+    || range.getEndDate() == null || end.compareTo(range.getEndDate()) >= 0));
+  }
+
+  public static void addOrUpdateEvent(Event event) {
     // Make an Entity of event.
     Entity eventEntity = new Entity("Event", event.getID());
 
@@ -122,22 +113,26 @@ public class EventStorage {
     eventEntity.setProperty("declined-users", event.getDeclinedIDs());
 
     // Store Entities to datastore.
-    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-    datastore.put(eventEntity);
+    DatastoreServiceFactory.getDatastoreService().put(eventEntity);
   }
 
-  public static void editEvent(Event event) {
-    // TODO: Edit event in datastore.
+  public static void deleteEvent(String eventId) {
+    DatastoreServiceFactory.getDatastoreService().delete(KeyFactory.createKey("Event", eventId));
   }
 
-  public static void deleteEvent(Event event) {
-    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-
-    Key eventEntityKey = KeyFactory.createKey("Event", event.getID());
-    datastore.delete(eventEntityKey);
+  public static void joinEvent(String userId, String eventId) {
+    Event event = getEvent(eventId);
+    if (event == null)
+      return;
+    
+    event.joinEvent(userId);
+    addOrUpdateEvent(event);
   }
 
-  public static void joinEvent(String event_id) {
-    // TODO: Add current user to EventUsers
+  public static boolean userHasAccessToEvent(String userId, String eventId) {
+    Event event = getEvent(eventId);
+    if (event == null)
+      return false;
+    return event.userHasAccessToEvent(userId);
   }
 }

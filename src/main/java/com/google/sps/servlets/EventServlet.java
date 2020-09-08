@@ -57,34 +57,62 @@ public class EventServlet extends HttpServlet {
     String pathName = request.getPathInfo();
     UserService userService = UserServiceFactory.getUserService();
 
-    if (pathName != null && pathName.equals("/gcalendar")) {
+    if (pathName == null || pathName.isEmpty() || pathName.equals("/")) {
+      String search = request.getParameter("search");
+      String category = request.getParameter("category");
+      String start = request.getParameter("start");
+      String end = request.getParameter("end");
+      String duration = request.getParameter("duration");
+      String location = request.getParameter("location");
+
+      List<Event> events = EventStorage.getSearchedEvents(search, category, start, end, duration, location);
+
+      Gson gson = new Gson();
+    
+      response.setContentType("application/json");
+      response.getWriter().println(gson.toJson(events));
+      
+      return;
+    }
+
+    if (pathName.equals("/gcalendar")) {
       getEvents(request, response, userService);
       return;
     }
 
-    String search = request.getParameter("search");
-    String category = request.getParameter("category");
-    String duration = request.getParameter("duration");
-    String location = request.getParameter("location");
- 
-    List<Event> events = EventStorage.getSearchedEvents(search, category, duration, location);
+    String[] pathParts = pathName.split("/");
+    String eventId = pathParts[1];
 
-    Gson gson = new Gson();
-    
-    response.setContentType("application/json");
-    response.getWriter().println(gson.toJson(events));
+    if (!getEvent(request, response, userService.getCurrentUser().getUserId(), eventId)) {
+      // TODO: Write message to user
+    }
   }
 
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-    UserService userService = UserServiceFactory.getUserService();
-    if (!userService.isUserLoggedIn()) {
+    if (!UserServiceFactory.getUserService().isUserLoggedIn()) {
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
       return;
     }
+    String currentUserId = UserServiceFactory.getUserService().getCurrentUser().getUserId();
 
-    if (addEvent(request, response, userService)) {
-      response.sendRedirect("/index.html");
+    String pathName = request.getPathInfo();
+
+    if (pathName == null || pathName.isEmpty() || pathName.equals("/")) {
+      String eventId = addEvent(request, response, currentUserId);
+      if (eventId != null) {
+        response.sendRedirect("/event.html?event_id=" + eventId);
+        return;
+      } else {
+        // TODO: Write message to user
+      }
+    }
+
+    String[] pathParts = pathName.split("/");
+    String eventId = pathParts[1];
+
+    if (joinEvent(request, response, currentUserId, eventId)) {
+      response.sendRedirect("/event.html?event_id=" + eventId);
     } else {
       // TODO: Write message to user
     }
@@ -101,102 +129,79 @@ public class EventServlet extends HttpServlet {
     response.sendRedirect("/index.html");
   }
 
-  private boolean addEvent(HttpServletRequest request, HttpServletResponse response, UserService userService)
-      throws IOException, ServletException {
-    String title = Objects.toString(request.getParameter("title").trim(), "");
-    String description = Objects.toString(request.getParameter("description").trim(), "");
-    String category = Objects.toString(request.getParameter("category").trim(), "");
-
-    List<String> tags = new ArrayList<String>();
-    if (request.getParameterValues("tags") != null) {
-      tags = Arrays.asList(Arrays.stream(request.getParameterValues("tags")).map(String::trim).toArray(String[]::new));
-    }
-    
-    String startDate = request.getParameter("start-date");
-    String startTime = request.getParameter("start-time");
-    
-    String durationParameter = request.getParameter("duration").trim();
-    Long duration = 0L;
-    if (durationParameter != null && !durationParameter.isEmpty()) {
-      try {
-        duration = Long.parseLong(durationParameter);
-      } catch (Exception e) {
-        System.err.println(e + durationParameter);
-        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-        return false;
-      }
+  private String addEvent(HttpServletRequest request, HttpServletResponse response, String currentUserId) throws IOException {
+    Long duration = parseLongFromString(request.getParameter("duration"));
+    if (duration == null) {
+      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      return null;
     }
 
-    String location = Objects.toString(request.getParameter("location").trim(), "");
-
-    Map<String, String> fields = new HashMap<String, String>();
+    Map<String, String> fields = null;
     if (request.getParameterValues("fields") != null) {
+      fields = new HashMap<String, String>();
       for (String field : request.getParameterValues("fields")) {
         if (request.getParameter(field) != null) {
           fields.put(field.trim(), request.getParameter(field).trim());
         }
       }
     }
-
-    String currentUserId = null;
-    try {
-      currentUserId = userService.getCurrentUser().getUserId();
-    } catch (Exception e) {
-      System.err.println("Can't get current user id: " + e);
-      response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-      return false;
-    }
     
-    List<String> participantsIds = new ArrayList<String>();
-    if (request.getParameterValues("people") != null) {
-      participantsIds = Arrays.asList(request.getParameterValues("people"))
-                               .stream().map(person -> UserStorage.getIDbyUsername(person)).filter(Objects::nonNull).collect(Collectors.toList());
-    }
-
+    Event.Builder eventBuilder = Event.newBuilder()
+        .setID(UUID.randomUUID().toString())
+        .setOwnerID(currentUserId)
+        .setTitle(request.getParameter("title"))
+        .setDescription(request.getParameter("description"))
+        .setCategory(request.getParameter("category"))
+        .setTags(parseTags(request.getParameterValues("tags")))
+        .setLocation(request.getParameter("location"))
+        .setDateTimeRange(formatDateTimeRange(request.getParameter("start-date"), request.getParameter("start-time")))
+        .setDuration(duration)
+        .setLinks(parseLinks(request.getParameter("links")))
+        .setFields(fields)
+        .setInvitedIDs(parseInvitedIDs(request.getParameterValues("people")));
     
+    Event event = eventBuilder.build();
+
     String gcalendarId = null;
-
-    Event event = new Event(UUID.randomUUID().toString(), gcalendarId, title, description, 
-        category, tags,
-        formatDateTimeRange(startDate, startTime),
-        duration,
-        location, 
-        parseLinks(request.getParameter("links")), 
-        fields,
-        currentUserId, participantsIds, new ArrayList<String>(), new ArrayList<String>()
-    );
-
-    
     if (event.isDateTimeSet()) {
       com.google.api.services.calendar.model.Event newEvent = Utils.createGCalendarEvent(event);
       if (newEvent == null) {
         response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        return false;
+        return null;
       }
       gcalendarId = newEvent.getId();
     }
-
     if (gcalendarId != null) {
-      event.setGCalendarID(gcalendarId);
+      event = eventBuilder.setGCalendarID(gcalendarId).build();
     }
 
     try {
-      EventStorage.addEvent(event);
+      EventStorage.addOrUpdateEvent(event);
     } catch (Exception e) {
       System.err.println("Can't add new event to storage: " + e);
       response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-      return false;
+      return null;
     }
     
+    return event.getID();
+  }
+
+  private boolean getEvent(HttpServletRequest request, HttpServletResponse response, String currentUserId, String eventId)
+      throws IOException {
+    Event event = EventStorage.getEvent(eventId);
+    if (event == null) {
+      System.err.println("Can't find event with id " + eventId);
+      response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+      return false;
+    }
+
+    if (!event.userHasAccessToEvent(currentUserId)) {
+      response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+      return false;
+    }
+    response.setContentType("application/json;");
+    response.getWriter().println(new Gson().toJson(event));
     return true;
-  }
-
-  private List<String> parseLinks(String links) {
-    return Arrays.asList(links.split(","));
-  }
-
-  private DateTimeRange formatDateTimeRange(String date, String time) {
-    return new DateTimeRange(date, time);
   }
 
   private void getEvents(HttpServletRequest request, HttpServletResponse response, UserService userService)
@@ -217,7 +222,7 @@ public class EventServlet extends HttpServlet {
     Long startEpochInSecondsParsed = parseLongFromString(startEpochInSeconds);
     Long endEpochInSecondsParsed = parseLongFromString(endEpochInSeconds);
 
-    if (startEpochInSecondsParsed < 0 || endEpochInSecondsParsed < 0
+    if (startEpochInSecondsParsed == null || endEpochInSecondsParsed == null
         || startEpochInSecondsParsed > endEpochInSecondsParsed) {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       return;
@@ -231,12 +236,59 @@ public class EventServlet extends HttpServlet {
     return;
   }
 
-  private long parseLongFromString(String str) {
+  private boolean joinEvent(HttpServletRequest request, HttpServletResponse response, String currentUserId, String eventId)
+      throws IOException {
+    if (!EventStorage.userHasAccessToEvent(currentUserId, eventId)) {
+      response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+      return false;
+    }
+    
     try {
-      long nr = Long.parseLong(str);
-      return nr;
+      UserStorage.joinEvent(currentUserId, eventId);
+      User user = UserStorage.getUser(currentUserId);
+      Event event = EventStorage.getEvent(eventId);
+      if (user == null) {
+        System.err.println("Can't find user with id " + currentUserId);
+        response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+      }
+      if (event == null) {
+        System.err.println("Can't find event with id " + eventId);
+        response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+      }
+      Utils.joinGCalendarEvent(event.getOwnerID(), eventId, user.getEmail());
+    } catch (Exception e) {
+      // TODO: specify exception
+      System.err.println("Can't add new event to storage: " + e);
+      response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+      return false;
+    }
+    
+    return true;
+  }
+
+  private List<String> parseInvitedIDs(String[] invitedIDs) {
+    return invitedIDs != null ? 
+        Arrays.asList(invitedIDs).stream()
+            .map(person -> UserStorage.getIDbyUsername(person)).filter(Objects::nonNull).collect(Collectors.toList()) : null;
+  }
+
+  private List<String> parseTags(String[] tags) {
+    return tags != null ? Arrays.asList(Arrays.stream(tags).map(String::trim).toArray(String[]::new)) : null;
+  }
+
+  private List<String> parseLinks(String links) {
+    return Arrays.asList(links.split(","));
+  }
+
+  private DateTimeRange formatDateTimeRange(String date, String time) {
+    return new DateTimeRange(date, time);
+  }
+
+  private Long parseLongFromString(String str) {
+    try {
+      return Long.parseLong(str);
     } catch (NumberFormatException e) {
-      return -1;
+      return null;
     }
   }
 

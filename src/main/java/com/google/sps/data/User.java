@@ -14,20 +14,55 @@
 
 package com.google.sps.data;
 
+import java.util.ArrayList;
 import java.util.Objects;
+import java.util.List;
 
 public class User {
   private final String id;
-  private final String email;
-  private final String username;
+  private String email;
+  private String username;
+  private List<String> invitedEventsId = new ArrayList<String>();
+  private List<String> joinedEventsId = new ArrayList<String>();
+  private List<String> declinedEventsId = new ArrayList<String>();
 
-  public User(String id, String email, String username) {
+  public User(String id, String email, String username, List<String> invitedEventsId, List<String> joinedEventsId, List<String> declinedEventsId) {
     this.id = Objects.requireNonNull(id, "id cannot be null");
-    this.email = Objects.requireNonNull(email, "email cannot be null");
+    this.email = email;
     this.username = Objects.requireNonNull(username, "username cannot be null");
+    this.invitedEventsId.addAll(invitedEventsId);
+    this.joinedEventsId.addAll(joinedEventsId);
+    this.declinedEventsId.addAll(declinedEventsId);
+  }
+
+  public void joinEvent(String eventId) {
+    if (invitedEventsId.contains(eventId)) {
+      this.invitedEventsId.remove(eventId);
+      this.joinedEventsId.add(eventId);
+    }
   }
 
   public String getID() {
     return id;
+  }
+
+  public String getEmail() {
+    return email;
+  }
+
+  public String getUsername() {
+    return username;
+  }
+
+  public List<String> getInvitedEventsID() {
+    return invitedEventsId;
+  }
+
+  public List<String> getJoinedEventsID() {
+    return joinedEventsId;
+  }
+
+  public List<String> getDeclinedEventsID() {
+    return declinedEventsId;
   }
 }
