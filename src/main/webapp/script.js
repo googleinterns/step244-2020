@@ -179,6 +179,12 @@ function getCurrentUrl() {
   return currentUrlSlices[0] + "//" + currentUrlSlices[2];
 }
 
+function getCurrentLocation() {
+  var currentUrl = window.location.pathname;
+  var currentUrlSlices = currentUrl.split("/");
+  return currentUrlSlices[1].split(".")[0];
+}
+
 function createCalendarElements(givenProperties) {
   var eventWrapper = document.createElement("div");
   eventWrapper.classList.add("event-wrapper");
@@ -348,7 +354,7 @@ function setMinDateToToday() {
 }
 
 function fetchUserInfo() {
-  fetch("/users").then(response => response.json()).then(userInfo => {
+  fetch("/users").then(handleError).then(response => response.json()).then(userInfo => {
     console.log(userInfo);
     const email = userInfo.email;
     var username = userInfo.username;
@@ -367,7 +373,17 @@ function fetchUserInfo() {
     createPopoverForEventTypes("invited-events", userInfo.invitedEvents, "Events you are invited to");
     createPopoverForEventTypes("joined-events", userInfo.joinedEvents, "Events you joined");
     createPopoverForEventTypes("declined-events", userInfo.declinedEvents, "Events you declined");
+  }).catch(error => {
+    if (error == 401)
+      alert("Please login first, using the button on the sidebar");
+    else alert(error);
   });
+}
+
+function handleError(response) {
+  if (!response.ok)
+    throw response.status;
+  return response;
 }
 
 function createPopoverForEventTypes(givenId, givenContent, givenTitle) {
@@ -384,7 +400,9 @@ function createPopoverForEventTypes(givenId, givenContent, givenTitle) {
 
 function createElementsForEvents(givenElements) {
   var ulElement = document.createElement("ul");
+  var eventsExist = false;
   givenElements.forEach(event => {
+    eventsExist = true;
     var liElement = document.createElement("li");
     var aElement = document.createElement("a");
     aElement.href = getCurrentUrl() + "/event.html?event_id=" + event.id;
@@ -392,6 +410,9 @@ function createElementsForEvents(givenElements) {
     liElement.appendChild(aElement);
     ulElement.appendChild(liElement);
   });
+  if (!eventsExist) {
+    ulElement.innerText = "There are no events to be displayed";
+  }
   return ulElement;
 }
 
