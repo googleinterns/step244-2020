@@ -20,18 +20,19 @@ import com.google.sps.data.UserStorage;
 @WebServlet("/auth")
 public class AuthServlet extends HttpServlet {
   UserService userService;
-
+  UserStorage userStorageObject;
   @Inject
-  AuthServlet(UserService userService) {
+  AuthServlet(UserService userService, UserStorage userStorageObject) {
     this.userService = userService;
+    this.userStorageObject = userStorageObject;
   }
 
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String origin = request.getParameter("origin");
-    UserService userService = UserServiceFactory.getUserService();
-    if (userService.isUserLoggedIn() && UserStorage.getUser(userService.getCurrentUser().getUserId()) == null) {
-      UserStorage.addOrUpdateUser(new User(userService.getCurrentUser().getUserId(),
+    
+    if (userService.isUserLoggedIn() && userStorageObject.getUser(userService.getCurrentUser().getUserId()) == null) {
+      userStorageObject.addOrUpdateUser(new User(userService.getCurrentUser().getUserId(),
                                            userService.getCurrentUser().getEmail(),
                                            null,
                                            new ArrayList<>(),

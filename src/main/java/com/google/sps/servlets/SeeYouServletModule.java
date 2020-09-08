@@ -1,6 +1,7 @@
 package com.google.sps.servlets;
 
 import com.google.inject.servlet.ServletModule;
+import com.google.sps.data.UserStorage;
 import com.google.api.client.auth.oauth2.AuthorizationCodeFlow;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
@@ -36,5 +37,10 @@ public class SeeYouServletModule extends ServletModule {
   @Provides
   AuthorizationCodeFlow provideFlow() throws IOException, GeneralSecurityException {
     return Utils.newFlow();
+  }
+
+  @Provides
+  UserStorage provideUserStorage() {
+    return new UserStorage();
   }
 }

@@ -43,7 +43,7 @@ public class UserServlet extends HttpServlet {
       return;
     }
 
-    User user = UserStorage.getUser(userService.getCurrentUser().getUserId());
+    User user = new UserStorage().getUser(userService.getCurrentUser().getUserId());
     if (user == null) {
       response.setContentType("text/html");
       response.getWriter().print("<script>alert(\"Please login first.\")</script>");
@@ -84,13 +84,13 @@ public class UserServlet extends HttpServlet {
         response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         return;
       }
-      User user = UserStorage.getUser(userService.getCurrentUser().getUserId());
+      User user = new UserStorage().getUser(userService.getCurrentUser().getUserId());
       if (user == null) {
         response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         return;
       }
       user.setUsername(nickname);
-      UserStorage.addOrUpdateUser(user);
+      new UserStorage().addOrUpdateUser(user);
       response.sendRedirect("/user.html");
       return ;
     }

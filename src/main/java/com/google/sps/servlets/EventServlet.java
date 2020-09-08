@@ -242,8 +242,9 @@ public class EventServlet extends HttpServlet {
     }
     
     try {
-      UserStorage.joinEvent(currentUserId, eventId);
-      User user = UserStorage.getUser(currentUserId);
+      UserStorage userStorage = new UserStorage();
+      userStorage.joinEvent(currentUserId, eventId);
+      User user = userStorage.getUser(currentUserId);
       Event event = EventStorage.getEvent(eventId);
       if (user == null) {
         System.err.println("Can't find user with id " + currentUserId);

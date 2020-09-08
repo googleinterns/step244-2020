@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.ArrayList;
 
 public class UserStorage {
-  public static User getUser(String userId) {
+  public User getUser(String userId) {
     Query query = new Query("User").setFilter(
         new FilterPredicate(Entity.KEY_RESERVED_PROPERTY, FilterOperator.EQUAL, KeyFactory.createKey("User", userId)));
     Entity userEntity = DatastoreServiceFactory.getDatastoreService().prepare(query).asSingleEntity();
@@ -46,7 +46,7 @@ public class UserStorage {
     return (List) toConvert;
   }
 
-  public static void addOrUpdateUser(User user) {
+  public void addOrUpdateUser(User user) {
     if (user == null)
       return;
 
@@ -75,7 +75,7 @@ public class UserStorage {
     return userEntity != null ? (String) userEntity.getProperty("id") : null;
   }
 
-  public static void joinEvent(String userId, String eventId) {
+  public void joinEvent(String userId, String eventId) {
     User user = getUser(userId);
     if (user == null)
       return;
