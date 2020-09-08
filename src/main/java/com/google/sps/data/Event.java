@@ -43,11 +43,6 @@ public class Event {
   private Event() {
   }
 
-  @Override
-  public boolean equals(Object other) {
-    return other instanceof Event && equals(this, (Event) other);
-  }
-
   private static boolean equals(Event a, Event b) {
     return Objects.equals(a.id, b.id)
         && Objects.equals(a.gcalendarId, b.gcalendarId)
@@ -170,10 +165,10 @@ public class Event {
     if (invitedUsersId == null)
         return;
     if (joinedUsersId == null)
-        this.joinedUsersId = new ArrayList<>();
+        joinedUsersId = new ArrayList<>();
     if (invitedUsersId.contains(userId)) {
-      this.invitedUsersId.remove(userId);
-      this.joinedUsersId.add(userId);
+      invitedUsersId.remove(userId);
+      joinedUsersId.add(userId);
     }
   }
 
@@ -191,7 +186,7 @@ public class Event {
     }
 
     public Builder setID(String id) {
-      Event.this.id = Objects.requireNonNull(id, "id must not be null");
+      Event.this.id = id;
       return this;
     }
 
@@ -284,8 +279,6 @@ public class Event {
     }
     
     public Event build() {
-      if (Event.this.id == null)
-        throw new IllegalArgumentException("ID of event should be specified"); 
       if (Event.this.ownerId == null)
         throw new IllegalArgumentException("Owner of event should be specified"); 
       return Event.this;

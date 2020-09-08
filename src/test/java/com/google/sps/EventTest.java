@@ -58,14 +58,12 @@ public final class EventTest {
   }).collect(Collectors.toMap(data -> data[0], data -> data[1]));
 
   @Test
-  public void equalityOfEmptyEvents() {
+  public void testEvent_equals_withEmptyEvents() {
     Event event1 = Event.newBuilder()
-      .setID(EVENT_ID1)
       .setOwnerID(USER_ID1)
       .build();
 
     Event event2 = Event.newBuilder()
-      .setID(EVENT_ID1)
       .setOwnerID(USER_ID1)
       .build();
 
