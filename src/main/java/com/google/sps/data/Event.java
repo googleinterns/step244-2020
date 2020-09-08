@@ -44,26 +44,25 @@ public class Event {
   }
 
   @Override
-  public boolean equals(Object other) {
-    return other instanceof Event && equals(this, (Event) other);
-  }
-
-  private static boolean equals(Event a, Event b) {
-    return Objects.equals(a.id, b.id)
-        && Objects.equals(a.gcalendarId, b.gcalendarId)
-        && Objects.equals(a.title, b.title)
-        && Objects.equals(a.description, b.description)
-        && Objects.equals(a.category, b.category)
-        && Objects.equals(a.tags, b.tags)
-        && Objects.equals(a.dateTimeRange, b.dateTimeRange)
-        && Objects.equals(a.duration, b.duration)
-        && Objects.equals(a.location, b.location)
-        && Objects.equals(a.links, b.links)
-        && Objects.equals(a.fields, b.fields)
-        && Objects.equals(a.ownerId, b.ownerId)
-        && Objects.equals(a.invitedUsersId, b.invitedUsersId)
-        && Objects.equals(a.joinedUsersId, b.joinedUsersId)
-        && Objects.equals(a.declinedUsersId, b.declinedUsersId);
+  public boolean equals(Object other_object) {
+    if (!(other_object instanceof Event))
+        return false;
+    Event other = (Event) other_object;
+    return Objects.equals(id, other.id)
+        && Objects.equals(gcalendarId, other.gcalendarId)
+        && Objects.equals(title, other.title)
+        && Objects.equals(description, other.description)
+        && Objects.equals(category, other.category)
+        && Objects.equals(tags, other.tags)
+        && Objects.equals(dateTimeRange, other.dateTimeRange)
+        && Objects.equals(duration, other.duration)
+        && Objects.equals(location, other.location)
+        && Objects.equals(links, other.links)
+        && Objects.equals(fields, other.fields)
+        && Objects.equals(ownerId, other.ownerId)
+        && Objects.equals(invitedUsersId, other.invitedUsersId)
+        && Objects.equals(joinedUsersId, other.joinedUsersId)
+        && Objects.equals(declinedUsersId, other.declinedUsersId);
   }
 
   public static Event fromDatastoreEntity(Entity eventEntity) {
