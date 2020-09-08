@@ -28,18 +28,22 @@ import java.util.ArrayList;
 
 public class UserStorage {
   public static User getUser(String userId) {
-    Query query = new Query("User").setFilter(new FilterPredicate(Entity.KEY_RESERVED_PROPERTY, FilterOperator.EQUAL, KeyFactory.createKey("User", userId)));
+    Query query = new Query("User").setFilter(
+        new FilterPredicate(Entity.KEY_RESERVED_PROPERTY, FilterOperator.EQUAL, KeyFactory.createKey("User", userId)));
     Entity userEntity = DatastoreServiceFactory.getDatastoreService().prepare(query).asSingleEntity();
     if (userEntity != null) {
-      return new User(userId, 
-        (String) userEntity.getProperty("email"),
-        (String) userEntity.getProperty("username"),
-        (ArrayList) userEntity.getProperty("invited-events"),
-        (ArrayList) userEntity.getProperty("joined-events"),
-        (ArrayList) userEntity.getProperty("declined-events")
-      );
+      return new User(userId, (String) userEntity.getProperty("email"), (String) userEntity.getProperty("username"),
+          convertPropertyToList(userEntity.getProperty("invited-events")),
+          convertPropertyToList(userEntity.getProperty("joined-events")),
+          convertPropertyToList(userEntity.getProperty("declined-events")));
     }
     return null;
+  }
+
+  private static List<String> convertPropertyToList(Object toConvert) {
+    if (toConvert == null)
+      return null;
+    return (List) toConvert;
   }
 
   public static void addOrUpdateUser(User user) {
@@ -54,7 +58,7 @@ public class UserStorage {
     userEntity.setProperty("invited-events", user.getInvitedEventsID());
     userEntity.setProperty("joined-events", user.getJoinedEventsID());
     userEntity.setProperty("declined-events", user.getDeclinedEventsID());
-    
+
     // Store Entities to datastore.
     DatastoreServiceFactory.getDatastoreService().put(userEntity);
   }
@@ -89,7 +93,7 @@ public class UserStorage {
     List<Event> events = new ArrayList<>();
     for (Entity entity : results.asIterable()) {
     }
-    //TODO: Search with parameters.
+    // TODO: Search with parameters.
     return events;
   }
 }
