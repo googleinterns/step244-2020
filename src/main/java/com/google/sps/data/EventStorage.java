@@ -14,6 +14,8 @@
 
 package com.google.sps.data;
 
+import com.google.appengine.api.datastore.EntityNotFoundException;
+
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
@@ -33,8 +35,13 @@ import java.util.Map;
 
 public class EventStorage {
   public static Event getEvent(String eventId) {
-    Query query = new Query("Event").setFilter(new FilterPredicate(Entity.KEY_RESERVED_PROPERTY, FilterOperator.EQUAL, KeyFactory.createKey("Event", eventId)));
-    Entity eventEntity = DatastoreServiceFactory.getDatastoreService().prepare(query).asSingleEntity();
+    Entity eventEntity = null;
+    try {
+      eventEntity = DatastoreServiceFactory.getDatastoreService().get(KeyFactory.stringToKey(eventId));
+    } catch (EntityNotFoundException e) {
+      System.err.println("Cannot get event " + eventId + ": " + e.getMessage());
+      return null;
+    }
     return eventEntity != null ? Event.fromDatastoreEntity(eventEntity) : null;
   }
 
@@ -91,9 +98,20 @@ public class EventStorage {
     || range.getEndDate() == null || end.compareTo(range.getEndDate()) >= 0));
   }
 
-  public static void addOrUpdateEvent(Event event) {
+  public static String addOrUpdateEvent(Event event) {
     // Make an Entity of event.
-    Entity eventEntity = new Entity("Event", event.getID());
+    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+    Entity eventEntity = null;
+    if (event.getID() == null) {
+      eventEntity = new Entity("Event");
+    } else {
+      try {
+        eventEntity = datastore.get(KeyFactory.createKey("Event", event.getID()));
+      } catch (EntityNotFoundException e) {
+        System.err.println("Cannot get event " + event.getID() + ": " + e.getMessage());
+        return null;
+      }
+    }
 
     eventEntity.setProperty("gcalendar-id", event.getGCalendarID());
     eventEntity.setProperty("title", event.getTitle());
@@ -113,7 +131,8 @@ public class EventStorage {
     eventEntity.setProperty("declined-users", event.getDeclinedIDs());
 
     // Store Entities to datastore.
-    DatastoreServiceFactory.getDatastoreService().put(eventEntity);
+    datastore.put(eventEntity);
+    return KeyFactory.keyToString(eventEntity.getKey());
   }
 
   public static void deleteEvent(String eventId) {

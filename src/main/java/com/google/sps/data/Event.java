@@ -164,7 +164,7 @@ public class Event {
     }
 
     public Builder setID(String id) {
-      Event.this.id = Objects.requireNonNull(id, "id must not be null");
+      Event.this.id = id;
       return this;
     }
 
@@ -228,7 +228,7 @@ public class Event {
     }
 
     public Builder setOwnerID(String ownerId) {
-      Event.this.ownerId = Objects.requireNonNull(ownerId, "ownerId must not be null");;
+      Event.this.ownerId = Objects.requireNonNull(ownerId, "ownerId must not be null");
       return this;
     }
 
