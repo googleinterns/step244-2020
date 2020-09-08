@@ -23,10 +23,6 @@ public class AuthServlet extends HttpServlet {
     this.userService = userService;
   }
 
-  public AuthServlet() {
-    userService = UserServiceFactory.getUserService();
-  }
-
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String origin = request.getParameter("origin");

@@ -28,7 +28,7 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
 public class TestCredVerifierServlet {
-  Credential mockCredential;
+  Credential userCredential;
   StringWriter stringWriter;
   PrintWriter writer;
   @Mock
@@ -44,18 +44,19 @@ public class TestCredVerifierServlet {
   public void setUp() throws IOException {
     stringWriter = new StringWriter();
     writer = new PrintWriter(stringWriter);
-    mockCredential = new Credential(BearerToken.authorizationHeaderAccessMethod());
-    when(mockUserService.getCurrentUser()).thenReturn(new User("email", "authDomain", "1234"));
-    when(mockFlow.loadCredential("1234")).thenReturn(mockCredential);
-    when(mockResponse.getWriter()).thenReturn(writer);
+    userCredential = new Credential(BearerToken.authorizationHeaderAccessMethod());
   }
 
   @Rule
   public MockitoRule mockitoRule = MockitoJUnit.rule();
 
   @Test
-  public void credentialIsTrueIfUserHasToken() throws IOException, ServletException {
-    mockCredential.setAccessToken("valid");
+  public void testCredentialServlet_doGet_WithUserHavingToken_ReturnsCredentialTrue() throws IOException, ServletException {
+    userCredential.setAccessToken("valid");
+    when(mockUserService.getCurrentUser()).thenReturn(new User("email", "authDomain", "1234"));
+    when(mockFlow.loadCredential("1234")).thenReturn(userCredential);
+    when(mockResponse.getWriter()).thenReturn(writer);
+
     new CredentialVerifierServlet(mockFlow, mockUserService).doGet(mockRequest, mockResponse);
 
     verify(mockUserService, atLeast(1)).getCurrentUser();
@@ -65,8 +66,12 @@ public class TestCredVerifierServlet {
   }
 
   @Test
-  public void credentialIsFalseIfNoToken() throws ServletException, IOException {
-    mockCredential.setAccessToken(null);
+  public void testCredentialServlet_doGet_WithUserNotHavingToken_ReturnsCredentialFalse() throws ServletException, IOException {
+    userCredential.setAccessToken(null);
+    when(mockUserService.getCurrentUser()).thenReturn(new User("email", "authDomain", "1234"));
+    when(mockFlow.loadCredential("1234")).thenReturn(userCredential);
+    when(mockResponse.getWriter()).thenReturn(writer);
+    
     new CredentialVerifierServlet(mockFlow, mockUserService).doGet(mockRequest, mockResponse);
 
     verify(mockUserService, atLeast(1)).getCurrentUser();

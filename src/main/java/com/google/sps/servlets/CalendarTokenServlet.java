@@ -27,16 +27,6 @@ public class CalendarTokenServlet extends AbstractAppEngineAuthorizationCodeServ
     this.userService = userService;
   }
 
-  public CalendarTokenServlet() throws IOException {
-    this.userService = UserServiceFactory.getUserService();
-    try {
-      this.flow = Utils.newFlow();
-    } catch (GeneralSecurityException e) {
-      this.flow = null;
-      e.printStackTrace();
-    }
-  }
-
   @Override
   protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     response.sendRedirect("/" + request.getParameter("origin") + ".html");

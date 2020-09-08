@@ -32,7 +32,7 @@ public class TestAuthServlet {
   public MockitoRule mockitoRule = MockitoJUnit.rule();
 
   @Test
-  public void testUserLoggedInCreatesLogOutLink() throws IOException {
+  public void testAuthServlet_doGet_WithLoggedInUser_ReturnsLogoutLink() throws IOException {
     when(mockUserService.isUserLoggedIn()).thenReturn(true);
     when(mockRequest.getParameter("origin")).thenReturn("someOrigin");
 
@@ -47,7 +47,7 @@ public class TestAuthServlet {
   }
 
   @Test
-  public void testUserLoggedOutCreatesLogInLink() throws IOException {
+  public void testAuthServlet_doGet_WithLoggedOutUser_ReturnsLoginLink() throws IOException {
     when(mockUserService.isUserLoggedIn()).thenReturn(false);
     when(mockRequest.getParameter("origin")).thenReturn("someOrigin");
 

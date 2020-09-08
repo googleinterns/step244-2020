@@ -26,11 +26,6 @@ public class CredentialVerifierServlet extends HttpServlet {
     this.userService = userService;
   }
 
-  public CredentialVerifierServlet() throws IOException, GeneralSecurityException {
-    this.flow = Utils.newFlow();
-    this.userService = UserServiceFactory.getUserService();
-  }
-
   @Override
   protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     response.setContentType("text/html");

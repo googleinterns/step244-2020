@@ -37,13 +37,14 @@ public class TestTokenServlet {
   public MockitoRule mockitoRule = MockitoJUnit.rule();
 
   @Test
-  public void testReturnTokenIfUserHasOne() throws IOException, ServletException {
+  public void testTokenServlet_doGet_WithUserHavingToken_ReturnsToken() throws IOException, ServletException {
     Credential fakeCredential = new Credential(BearerToken.authorizationHeaderAccessMethod())
         .setAccessToken("validToken");
     when(mockUserService.getCurrentUser()).thenReturn(new User("email", "authDomain", "1234"));
     when(mockFlow.loadCredential("1234")).thenReturn(fakeCredential);
     when(mockRequest.getParameter("origin")).thenReturn("testOrigin");
     when(mockRequest.getMethod()).thenReturn("GET");
+
     new CalendarTokenServlet(mockFlow, mockUserService).service(mockRequest, mockResponse);
 
     verify(mockUserService, atLeast(1)).getCurrentUser();
@@ -52,7 +53,7 @@ public class TestTokenServlet {
   }
 
   @Test
-  public void testRedirectToGrantPermissionIfNoToken() throws IOException, ServletException {
+  public void testTokenServlet_doGet_WithUserNotHavingToken_RedirectsToGrantingToken() throws IOException, ServletException {
     AuthorizationCodeRequestUrl fakeAuthUrl = new AuthorizationCodeRequestUrl(
         "https://accounts.google.com/o/oauth2/auth", "someId");
     when(mockUserService.getCurrentUser()).thenReturn(new User("email", "authDomain", "1234"));
@@ -60,6 +61,7 @@ public class TestTokenServlet {
     when(mockRequest.getParameter("origin")).thenReturn("testOrigin");
     when(mockFlow.newAuthorizationUrl()).thenReturn(fakeAuthUrl);
     when(mockRequest.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/token"));
+    
     new CalendarTokenServlet(mockFlow, mockUserService).service(mockRequest, mockResponse);
 
     verify(mockFlow, atLeast(1)).newAuthorizationUrl();
