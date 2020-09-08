@@ -18,7 +18,7 @@ function getEvent(event_id) {
     document.getElementById('start-date-info').innerText = event.dateTimeRange.startDate;
     document.getElementById('start-time-info').innerText = event.dateTimeRange.startTime;
     if (event.duration != null)
-        document.getElementById('duration-info').innerText = 'Duration: ' + event.duration + 'minutes';
+      document.getElementById('duration-info').innerText = 'Duration: ' + event.duration + 'minutes';
 
     document.getElementById('category-info').innerText = event.category;
     for (tag in event.tags) {
@@ -85,11 +85,11 @@ function searchEvents() {
     search: search,
   }) + '&' + new URLSearchParams({
     category: category,
-}) + '&' + new URLSearchParams({
+  }) + '&' + new URLSearchParams({
     start: start,
-}) + '&' + new URLSearchParams({
+  }) + '&' + new URLSearchParams({
     end: end,
-}) + '&' + new URLSearchParams({
+  }) + '&' + new URLSearchParams({
     duration: duration,
   }) + '&' + new URLSearchParams({
     location: location,
@@ -364,7 +364,35 @@ function fetchUserInfo() {
     displayBoxButton.innerText = "here";
     document.getElementById("username-placeholder").appendChild(displayBoxButton);
     document.getElementById("user-header").innerText = "Hello, " + username + "!";
+    createPopoverForEventTypes("invited-events", userInfo.invitedEvents, "Events you are invited to");
+    createPopoverForEventTypes("joined-events", userInfo.joinedEvents, "Events you joined");
+    createPopoverForEventTypes("declined-events", userInfo.declinedEvents, "Events you declined");
   });
+}
+
+function createPopoverForEventTypes(givenId, givenContent, givenTitle) {
+  $("#" + givenId).popover({
+    animation: true,
+    html: true,
+    title: givenTitle,
+    content: createElementsForEvents(givenContent),
+    trigger: 'click',
+    container: 'body',
+    placement: 'top',
+  });
+}
+
+function createElementsForEvents(givenElements) {
+  var ulElement = document.createElement("ul");
+  givenElements.forEach(event => {
+    var liElement = document.createElement("li");
+    var aElement = document.createElement("a");
+    aElement.href = getCurrentUrl() + "/event.html?event_id=" + event.id;
+    aElement.innerText = event.title;
+    liElement.appendChild(aElement);
+    ulElement.appendChild(liElement);
+  });
+  return ulElement;
 }
 
 function showElementById(Id) {
@@ -373,4 +401,16 @@ function showElementById(Id) {
 
 function hideElementById(Id) {
   document.getElementById(Id).style.display = "none";
+}
+
+function changePopoverColorTo(color) {
+  var styleNode = document.getElementById("stylesheetId");
+  if (styleNode == null) {
+    styleNode = document.createElement("style");
+    styleNode.id = "stylesheetId";
+  } else {
+    document.body.removeChild(styleNode);
+  }
+  styleNode.innerHTML = ".popover-header {background: " + color + ";}";
+  document.body.appendChild(styleNode);
 }

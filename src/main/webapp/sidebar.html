@@ -13,6 +13,9 @@
       </button>
     </li>
     <li>
+      <a href="user.html">My profile</a>
+    </li>
+    <li>
       <a href="search.html">Search</a>
     </li>
     <li>
@@ -32,6 +35,10 @@
 <script>
   $(function() {
     fetch("/auth").then(response => response.json()).then(authInfo => {
+      if (window.location.pathname == "/user.html"){
+        //Call it from here to be sure new users are added to storage
+        fetchUserInfo();
+      }
       if (authInfo.isLoggedIn) {
         var liElement = document.createElement("li");
         var hrefElement = document.createElement("a");
