@@ -11,7 +11,7 @@ import java.security.GeneralSecurityException;
 
 import javax.inject.Singleton;
 
-public class SEEYouServletModule extends ServletModule {
+public class SeeYouServletModule extends ServletModule {
   @Override
   protected void configureServlets() {
     bind(AuthServlet.class).in(Singleton.class);

@@ -17,6 +17,6 @@
   </filter-mapping>
 
   <listener>
-    <listener-class>com.google.sps.servlets.SEEYouGuiceServletContextListener</listener-class>
+    <listener-class>com.google.sps.servlets.SeeYouGuiceServletContextListener</listener-class>
   </listener>
 </web-app>
