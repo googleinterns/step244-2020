@@ -96,8 +96,8 @@ public final class EventTest {
     Assert.assertEquals(LINKS1, event.getLinks());
     Assert.assertEquals(FIELDS10, event.getFields());
     Assert.assertEquals(Arrays.asList(USER_ID2), event.getInvitedIDs());
-    Assert.assertNull(event.getJoinedIDs());
-    Assert.assertNull(event.getDeclinedIDs());
+    Assert.assertEquals(new ArrayList<>(), event.getJoinedIDs());
+    Assert.assertEquals(new ArrayList<>(), event.getDeclinedIDs());
   }
 
   @Test
