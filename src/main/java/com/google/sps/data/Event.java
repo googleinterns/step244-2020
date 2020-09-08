@@ -43,6 +43,11 @@ public class Event {
   private Event() {
   }
 
+  @Override
+  public boolean equals(Object other) {
+    return other instanceof Event && equals(this, (Event) other);
+  }
+
   private static boolean equals(Event a, Event b) {
     return Objects.equals(a.id, b.id)
         && Objects.equals(a.gcalendarId, b.gcalendarId)
@@ -110,15 +115,15 @@ public class Event {
   }
 
   public String getDate() {
-    return (dateTimeRange != null && dateTimeRange.isDateSet()) ? dateTimeRange.getDate() : null;
+    return dateTimeRange != null && dateTimeRange.isDateSet() ? dateTimeRange.getDate() : null;
   }
 
   public String getTime() {
-    return (dateTimeRange != null && dateTimeRange.isTimeSet()) ? dateTimeRange.getTime() : null;
+    return dateTimeRange != null && dateTimeRange.isTimeSet() ? dateTimeRange.getTime() : null;
   }
 
   public String getDateTimeAsString() { // Convert DateTime to UTC String
-    return (dateTimeRange != null && dateTimeRange.isDateTimeSet()) ? dateTimeRange.getDate() + "T" + dateTimeRange.getTime() + ":00Z" : null;
+    return dateTimeRange != null && dateTimeRange.isDateTimeSet() ? dateTimeRange.getDate() + "T" + dateTimeRange.getTime() + ":00Z" : null;
   }
 
   public String getDateTimeRangeAsJSON() { // Convert fields of DateTimeRange to gson string
@@ -161,15 +166,17 @@ public class Event {
     return declinedUsersId;
   }
 
-  public void joinEvent(String userId) {
+  public boolean joinEvent(String userId) {
     if (invitedUsersId == null)
-        return;
+        return false;
     if (joinedUsersId == null)
         joinedUsersId = new ArrayList<>();
     if (invitedUsersId.contains(userId)) {
       invitedUsersId.remove(userId);
       joinedUsersId.add(userId);
+      return true;
     }
+    return false;
   }
 
   public boolean userHasAccessToEvent(String userId) {
