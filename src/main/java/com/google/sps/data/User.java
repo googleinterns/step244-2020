@@ -26,13 +26,14 @@ public class User {
   private List<String> joinedEventsId = new ArrayList<String>();
   private List<String> declinedEventsId = new ArrayList<String>();
 
-  public User(String id, String email, String username, List<String> invitedEventsId, List<String> joinedEventsId, List<String> declinedEventsId) {
+  public User(String id, String email, String username, List<String> invitedEventsId, List<String> joinedEventsId,
+      List<String> declinedEventsId) {
     this.id = Objects.requireNonNull(id, "id cannot be null");
     this.email = email;
-    this.username = Objects.requireNonNull(username, "username cannot be null");
-    this.invitedEventsId.addAll(invitedEventsId);
-    this.joinedEventsId.addAll(joinedEventsId);
-    this.declinedEventsId.addAll(declinedEventsId);
+    this.username = username;
+    addAllIfNotNull(this.invitedEventsId, invitedEventsId);
+    addAllIfNotNull(this.joinedEventsId, joinedEventsId);
+    addAllIfNotNull(this.declinedEventsId, declinedEventsId);
   }
 
   public void joinEvent(String eventId) {
@@ -40,6 +41,13 @@ public class User {
       this.invitedEventsId.remove(eventId);
       this.joinedEventsId.add(eventId);
     }
+  }
+
+  private void addAllIfNotNull(List<String> list1, List<String> list2) {
+    if (list2 != null) {
+      list1.addAll(list2);
+    }
+    return;
   }
 
   public String getID() {
@@ -64,5 +72,9 @@ public class User {
 
   public List<String> getDeclinedEventsID() {
     return declinedEventsId;
+  }
+
+  public void setUsername(String username) {
+    this.username = username;
   }
 }
