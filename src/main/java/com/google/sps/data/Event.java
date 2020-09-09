@@ -29,19 +29,41 @@ public class Event {
   private String title;
   private String description;
   private String category;
-  private List<String> tags = new ArrayList<String>();
+  private List<String> tags;
   private DateTimeRange dateTimeRange;
   private Long duration; // in minutes
   private String location;
   private String locationId;
-  private List<String> links = new ArrayList<String>();
-  private Map<String, String> fields = new HashMap<String, String>();
+  private List<String> links;
+  private Map<String, String> fields;
   private String ownerId;
-  private List<String> invitedUsersId = new ArrayList<String>();
-  private List<String> joinedUsersId = new ArrayList<String>();
-  private List<String> declinedUsersId = new ArrayList<String>();
+  private List<String> invitedUsersId = new ArrayList<>();
+  private List<String> joinedUsersId = new ArrayList<>();
+  private List<String> declinedUsersId = new ArrayList<>();
 
   private Event() {
+  }
+
+  @Override
+  public boolean equals(Object other_object) {
+    if (!(other_object instanceof Event))
+        return false;
+    Event other = (Event) other_object;
+    return Objects.equals(id, other.id)
+        && Objects.equals(gcalendarId, other.gcalendarId)
+        && Objects.equals(title, other.title)
+        && Objects.equals(description, other.description)
+        && Objects.equals(category, other.category)
+        && Objects.equals(tags, other.tags)
+        && Objects.equals(dateTimeRange, other.dateTimeRange)
+        && Objects.equals(duration, other.duration)
+        && Objects.equals(location, other.location)
+        && Objects.equals(links, other.links)
+        && Objects.equals(fields, other.fields)
+        && Objects.equals(ownerId, other.ownerId)
+        && Objects.equals(invitedUsersId, other.invitedUsersId)
+        && Objects.equals(joinedUsersId, other.joinedUsersId)
+        && Objects.equals(declinedUsersId, other.declinedUsersId);
   }
 
   public static Event fromDatastoreEntity(Entity eventEntity) {
@@ -94,15 +116,15 @@ public class Event {
   }
 
   public String getDate() {
-    return (dateTimeRange != null && dateTimeRange.isDateSet()) ? dateTimeRange.getDate() : null;
+    return dateTimeRange != null && dateTimeRange.isDateSet() ? dateTimeRange.getDate() : null;
   }
 
   public String getTime() {
-    return (dateTimeRange != null && dateTimeRange.isTimeSet()) ? dateTimeRange.getTime() : null;
+    return dateTimeRange != null && dateTimeRange.isTimeSet() ? dateTimeRange.getTime() : null;
   }
 
   public String getDateTimeAsString() { // Convert DateTime to UTC String
-    return (dateTimeRange != null && dateTimeRange.isDateTimeSet()) ? dateTimeRange.getDate() + "T" + dateTimeRange.getTime() + ":00Z" : null;
+    return dateTimeRange != null && dateTimeRange.isDateTimeSet() ? dateTimeRange.getDate() + "T" + dateTimeRange.getTime() + ":00Z" : null;
   }
 
   public String getDateTimeRangeAsJSON() { // Convert fields of DateTimeRange to gson string
@@ -149,15 +171,22 @@ public class Event {
     return declinedUsersId;
   }
 
-  public void joinEvent(String userId) {
+  public boolean joinEvent(String userId) {
+    if (invitedUsersId == null)
+        return false;
+    if (joinedUsersId == null)
+        joinedUsersId = new ArrayList<>();
     if (invitedUsersId.contains(userId)) {
-      this.invitedUsersId.remove(userId);
-      this.joinedUsersId.add(userId);
+      invitedUsersId.remove(userId);
+      joinedUsersId.add(userId);
+      return true;
     }
+    return false;
   }
 
-  public boolean userHasAccessToEvent(String userId) {
-    return ownerId == userId || invitedUsersId.contains(userId) || joinedUsersId.contains(userId) || declinedUsersId.contains(userId);
+  public boolean hasUserAccessToEvent(String userId) {
+    // TODO: add isPublic
+    return ownerId.equals(userId) || invitedUsersId.contains(userId) || joinedUsersId.contains(userId) || declinedUsersId.contains(userId);
   }
 
   public static Builder newBuilder() {
@@ -194,7 +223,10 @@ public class Event {
     }
 
     public Builder setTags(List<String> tags) {
-      Event.this.tags.addAll(tags);
+      Event.this.tags = new ArrayList<>();
+      if (tags != null) {
+        Event.this.tags.addAll(tags);
+      }
       return this;
     }
 
@@ -219,36 +251,53 @@ public class Event {
     }
 
     public Builder setLinks(List<String> links) {
-      Event.this.links.addAll(links);
+      Event.this.links = new ArrayList<>();
+      if (links != null) {
+        Event.this.links.addAll(links);
+      }
       return this;
     }
 
     public Builder setFields(Map<String, String> fields) {
-      Event.this.fields.putAll(fields);
+      Event.this.fields = new HashMap<>();
+      if (fields != null) {
+        Event.this.fields.putAll(fields);
+      }
       return this;
     }
 
     public Builder setOwnerID(String ownerId) {
-      Event.this.ownerId = ownerId;
+      Event.this.ownerId = Objects.requireNonNull(ownerId, "ownerId must not be null");
       return this;
     }
 
     public Builder setInvitedIDs(List<String> invitedUsersId) {
-      Event.this.invitedUsersId.addAll(invitedUsersId);
+      Event.this.invitedUsersId = new ArrayList<>();
+      if (invitedUsersId != null) {
+        Event.this.invitedUsersId.addAll(invitedUsersId);
+      }
       return this;
     }
 
     public Builder setJoinedIDs(List<String> joinedUsersId) {
-      Event.this.joinedUsersId.addAll(joinedUsersId);
+      Event.this.joinedUsersId = new ArrayList<>();
+      if (joinedUsersId != null) {
+        Event.this.joinedUsersId.addAll(joinedUsersId);
+      }
       return this;
     }
 
     public Builder setDeclinedIDs(List<String> declinedUsersId) {
-      Event.this.declinedUsersId.addAll(declinedUsersId);
+      Event.this.declinedUsersId = new ArrayList<>();
+      if (declinedUsersId != null) {
+        Event.this.declinedUsersId.addAll(declinedUsersId);
+      }
       return this;
     }
     
     public Event build() {
+      if (Event.this.ownerId == null)
+        throw new IllegalArgumentException("Owner of event should be specified"); 
       return Event.this;
     }
   }
