@@ -22,6 +22,7 @@ import com.google.api.services.calendar.model.Event.ExtendedProperties;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.google.gson.Gson;
+import com.google.inject.Inject;
 import com.google.sps.data.Event;
 import com.google.sps.data.EventStorage;
 import com.google.sps.data.DateTimeRange;
@@ -50,6 +51,14 @@ import javax.servlet.http.HttpServletResponse;
 
 @WebServlet("/events/*")
 public class EventServlet extends HttpServlet {
+  UserStorage userStorageObject;
+  EventStorage eventStorageObject;
+  
+  @Inject
+  EventServlet(UserStorage userStorageObject, EventStorage eventStorageObject) {
+    this.userStorageObject = userStorageObject;
+    this.eventStorageObject = eventStorageObject;
+  }
 
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -64,7 +73,7 @@ public class EventServlet extends HttpServlet {
       String duration = request.getParameter("duration");
       String location = request.getParameter("location");
 
-      List<Event> events = EventStorage.getSearchedEvents(search, category, start, end, duration, location);
+      List<Event> events = eventStorageObject.getSearchedEvents(search, category, start, end, duration, location);
 
       Gson gson = new Gson();
     
@@ -176,7 +185,7 @@ public class EventServlet extends HttpServlet {
 
     String eventId = null;
     try {
-      eventId = EventStorage.addOrUpdateEvent(event);
+      eventId = eventStorageObject.addOrUpdateEvent(event);
     } catch (Exception e) {
       System.err.println("Can't add new event to storage: " + e);
       response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
@@ -187,7 +196,7 @@ public class EventServlet extends HttpServlet {
 
   private boolean getEvent(HttpServletRequest request, HttpServletResponse response, String currentUserId, String eventId)
       throws IOException {
-    Event event = EventStorage.getEvent(eventId);
+    Event event = eventStorageObject.getEvent(eventId);
     if (event == null) {
       System.err.println("Can't find event with id " + eventId);
       response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
@@ -237,15 +246,15 @@ public class EventServlet extends HttpServlet {
 
   private boolean joinEvent(HttpServletRequest request, HttpServletResponse response, String currentUserId, String eventId)
       throws IOException {
-    if (!EventStorage.hasUserAccessToEvent(currentUserId, eventId)) {
+    if (!eventStorageObject.hasUserAccessToEvent(currentUserId, eventId)) {
       response.setStatus(HttpServletResponse.SC_FORBIDDEN);
       return false;
     }
     
     try {
-      UserStorage.joinEvent(currentUserId, eventId);
-      User user = UserStorage.getUser(currentUserId);
-      Event event = EventStorage.getEvent(eventId);
+      userStorageObject.joinEvent(currentUserId, eventId);
+      User user = userStorageObject.getUser(currentUserId);
+      Event event = eventStorageObject.getEvent(eventId);
       if (user == null) {
         System.err.println("Can't find user with id " + currentUserId);
         response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
@@ -268,7 +277,7 @@ public class EventServlet extends HttpServlet {
   private List<String> parseInvitedIDs(String[] invitedIDs) {
     return invitedIDs != null ? 
         Arrays.asList(invitedIDs).stream()
-            .map(person -> UserStorage.getIDbyUsername(person)).filter(Objects::nonNull).collect(Collectors.toList()) : null;
+            .map(person -> userStorageObject.getIDbyUsername(person)).filter(Objects::nonNull).collect(Collectors.toList()) : null;
   }
 
   private List<String> parseTags(String[] tags) {
