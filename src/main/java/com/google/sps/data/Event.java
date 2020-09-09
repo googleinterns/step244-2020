@@ -33,14 +33,37 @@ public class Event {
   private DateTimeRange dateTimeRange;
   private Long duration; // in minutes
   private String location;
+  private String locationId;
   private List<String> links;
   private Map<String, String> fields;
   private String ownerId;
-  private List<String> invitedUsersId;
-  private List<String> joinedUsersId;
-  private List<String> declinedUsersId;
+  private List<String> invitedUsersId = new ArrayList<>();
+  private List<String> joinedUsersId = new ArrayList<>();
+  private List<String> declinedUsersId = new ArrayList<>();
 
   private Event() {
+  }
+
+  @Override
+  public boolean equals(Object other_object) {
+    if (!(other_object instanceof Event))
+        return false;
+    Event other = (Event) other_object;
+    return Objects.equals(id, other.id)
+        && Objects.equals(gcalendarId, other.gcalendarId)
+        && Objects.equals(title, other.title)
+        && Objects.equals(description, other.description)
+        && Objects.equals(category, other.category)
+        && Objects.equals(tags, other.tags)
+        && Objects.equals(dateTimeRange, other.dateTimeRange)
+        && Objects.equals(duration, other.duration)
+        && Objects.equals(location, other.location)
+        && Objects.equals(links, other.links)
+        && Objects.equals(fields, other.fields)
+        && Objects.equals(ownerId, other.ownerId)
+        && Objects.equals(invitedUsersId, other.invitedUsersId)
+        && Objects.equals(joinedUsersId, other.joinedUsersId)
+        && Objects.equals(declinedUsersId, other.declinedUsersId);
   }
 
   public static Event fromDatastoreEntity(Entity eventEntity) {
@@ -54,6 +77,7 @@ public class Event {
         .setDateTimeRange(new Gson().fromJson((String) eventEntity.getProperty("date-time-range"), DateTimeRange.class))
         .setDuration((Long) eventEntity.getProperty("duration"))
         .setLocation((String) eventEntity.getProperty("location"))
+        .setLocationId((String) eventEntity.getProperty("location-id"))
         .setLinks((ArrayList) eventEntity.getProperty("links"))
         .setFields(new Gson().fromJson((String) eventEntity.getProperty("fields"), Map.class))
         .setOwnerID((String) eventEntity.getProperty("owner"))
@@ -92,15 +116,15 @@ public class Event {
   }
 
   public String getDate() {
-    return (dateTimeRange != null && dateTimeRange.isDateSet()) ? dateTimeRange.getDate() : null;
+    return dateTimeRange != null && dateTimeRange.isDateSet() ? dateTimeRange.getDate() : null;
   }
 
   public String getTime() {
-    return (dateTimeRange != null && dateTimeRange.isTimeSet()) ? dateTimeRange.getTime() : null;
+    return dateTimeRange != null && dateTimeRange.isTimeSet() ? dateTimeRange.getTime() : null;
   }
 
   public String getDateTimeAsString() { // Convert DateTime to UTC String
-    return (dateTimeRange != null && dateTimeRange.isDateTimeSet()) ? dateTimeRange.getDate() + "T" + dateTimeRange.getTime() + ":00Z" : null;
+    return dateTimeRange != null && dateTimeRange.isDateTimeSet() ? dateTimeRange.getDate() + "T" + dateTimeRange.getTime() + ":00Z" : null;
   }
 
   public String getDateTimeRangeAsJSON() { // Convert fields of DateTimeRange to gson string
@@ -113,6 +137,10 @@ public class Event {
 
   public String getLocation() {
     return location;
+  }
+
+  public String getLocationId() {
+    return locationId;
   }
 
   public List<String> getLinks() {
@@ -143,14 +171,20 @@ public class Event {
     return declinedUsersId;
   }
 
-  public void joinEvent(String userId) {
+  public boolean joinEvent(String userId) {
+    if (invitedUsersId == null)
+        return false;
+    if (joinedUsersId == null)
+        joinedUsersId = new ArrayList<>();
     if (invitedUsersId.contains(userId)) {
-      this.invitedUsersId.remove(userId);
-      this.joinedUsersId.add(userId);
+      invitedUsersId.remove(userId);
+      joinedUsersId.add(userId);
+      return true;
     }
+    return false;
   }
 
-  public boolean userHasAccessToEvent(String userId) {
+  public boolean hasUserAccessToEvent(String userId) {
     // TODO: add isPublic
     return ownerId.equals(userId) || invitedUsersId.contains(userId) || joinedUsersId.contains(userId) || declinedUsersId.contains(userId);
   }
@@ -211,6 +245,11 @@ public class Event {
       return this;
     }
 
+    public Builder setLocationId(String locationId) {
+      Event.this.locationId = locationId;
+      return this;
+    }
+
     public Builder setLinks(List<String> links) {
       Event.this.links = new ArrayList<>();
       if (links != null) {
@@ -257,6 +296,8 @@ public class Event {
     }
     
     public Event build() {
+      if (Event.this.ownerId == null)
+        throw new IllegalArgumentException("Owner of event should be specified"); 
       return Event.this;
     }
   }

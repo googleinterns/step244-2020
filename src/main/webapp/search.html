@@ -18,7 +18,25 @@
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js"
     integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm"
     crossorigin="anonymous"></script>
+  <script type='text/javascript' src='config.js'></script>
   <script src="script.js"></script>
+  <script src="places_api.js"></script>
+  <script>
+    "use strict";
+    let autocomplete;
+
+    function initLocation() {
+      autocomplete = new google.maps.places.Autocomplete(
+      document.getElementById('location'),{});
+      document.getElementById('location-id').value = "all";
+      autocomplete.addListener("place_changed", onPlaceChanged);
+    }
+
+    function onPlaceChanged() {
+      const place = autocomplete.getPlace();
+      document.getElementById('location-id').value = place.place_id;
+    }
+  </script>
 </head>
 
 <body onload="prepareSearch()">
@@ -79,11 +97,12 @@
               <div class="form-group row">
                 <label for="location" class="col-2 col-form-label">Location</label>
                 <div class="col-10">
-                  <input class="form-control" type="text" value="Everywhere" id="location">
+                  <input class="form-control" type="text" id="location">
                 </div>
               </div>
             </div>
           </div>
+          <div  value="" id="location-id"></div>
         </form>
       </div>
       <br>

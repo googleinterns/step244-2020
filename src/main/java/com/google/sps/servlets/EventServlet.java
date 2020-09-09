@@ -152,6 +152,7 @@ public class EventServlet extends HttpServlet {
         .setCategory(request.getParameter("category"))
         .setTags(parseTags(request.getParameterValues("tags")))
         .setLocation(request.getParameter("location"))
+        .setLocationId(request.getParameter("location-id"))
         .setDateTimeRange(formatDateTimeRange(request.getParameter("start-date"), request.getParameter("start-time")))
         .setDuration(duration)
         .setLinks(parseLinks(request.getParameter("links")))
@@ -193,7 +194,7 @@ public class EventServlet extends HttpServlet {
       return false;
     }
 
-    if (!event.userHasAccessToEvent(currentUserId)) {
+    if (!event.hasUserAccessToEvent(currentUserId)) {
       response.setStatus(HttpServletResponse.SC_FORBIDDEN);
       return false;
     }
@@ -236,7 +237,7 @@ public class EventServlet extends HttpServlet {
 
   private boolean joinEvent(HttpServletRequest request, HttpServletResponse response, String currentUserId, String eventId)
       throws IOException {
-    if (!EventStorage.userHasAccessToEvent(currentUserId, eventId)) {
+    if (!EventStorage.hasUserAccessToEvent(currentUserId, eventId)) {
       response.setStatus(HttpServletResponse.SC_FORBIDDEN);
       return false;
     }
