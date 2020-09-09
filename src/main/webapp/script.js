@@ -80,7 +80,7 @@ function searchEvents() {
   var start = document.getElementById('start-date').value;
   var end = document.getElementById('end-date').value;
   var duration = document.getElementById('duration').value;
-  var location = document.getElementById('location').value;
+  var location = document.getElementById('location-id').value;
   fetch('/events?' + new URLSearchParams({
     search: search,
 }) + '&' + new URLSearchParams({
@@ -94,6 +94,7 @@ function searchEvents() {
 }) + '&' + new URLSearchParams({
     location: location,
 })).then(response => response.json()).then(events => events.forEach(showEvent));
+  document.getElementById('location-id').value = "all";
 }
 
 function showEvent(event) {

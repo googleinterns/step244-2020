@@ -57,9 +57,9 @@ public class EventStorage {
       }
     }
 
-    if (searchLocation != null && !searchLocation.isEmpty() && !searchLocation.equals("Everywhere")) {
+    if (searchLocation != null && !searchLocation.isEmpty() && !searchLocation.equals("all")) {
       Filter locationFilter =
-      new FilterPredicate("location", FilterOperator.EQUAL, searchLocation);
+      new FilterPredicate("location-id", FilterOperator.EQUAL, searchLocation);
       query = query.setFilter(locationFilter);
     }
  
@@ -123,6 +123,7 @@ public class EventStorage {
     eventEntity.setProperty("date-time-range", event.getDateTimeRangeAsJSON());
     eventEntity.setProperty("duration", event.getDuration());
     eventEntity.setProperty("location", event.getLocation());
+    eventEntity.setProperty("location-id", event.getLocationId());
     eventEntity.setProperty("links", event.getLinks());
     eventEntity.setProperty("fields", event.getFieldsAsJSON());
     eventEntity.setProperty("owner", event.getOwnerID());

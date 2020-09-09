@@ -152,6 +152,7 @@ public class EventServlet extends HttpServlet {
         .setCategory(request.getParameter("category"))
         .setTags(parseTags(request.getParameterValues("tags")))
         .setLocation(request.getParameter("location"))
+        .setLocationId(request.getParameter("location-id"))
         .setDateTimeRange(formatDateTimeRange(request.getParameter("start-date"), request.getParameter("start-time")))
         .setDuration(duration)
         .setLinks(parseLinks(request.getParameter("links")))
