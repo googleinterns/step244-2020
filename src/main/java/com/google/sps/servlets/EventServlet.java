@@ -39,7 +39,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.UUID;
 import com.google.api.client.http.HttpHeaders;
 
 import javax.servlet.RequestDispatcher;
@@ -60,15 +59,19 @@ public class EventServlet extends HttpServlet {
     if (pathName == null || pathName.isEmpty() || pathName.equals("/")) {
       String search = request.getParameter("search");
       String category = request.getParameter("category");
+      String start = request.getParameter("start");
+      String end = request.getParameter("end");
       String duration = request.getParameter("duration");
       String location = request.getParameter("location");
 
-      List<Event> events = EventStorage.getSearchedEvents(search, category, duration, location);
+      List<Event> events = EventStorage.getSearchedEvents(search, category, start, end, duration, location);
 
       Gson gson = new Gson();
     
       response.setContentType("application/json");
       response.getWriter().println(gson.toJson(events));
+      
+      return;
     }
 
     if (pathName.equals("/gcalendar")) {
@@ -98,10 +101,10 @@ public class EventServlet extends HttpServlet {
       String eventId = addEvent(request, response, currentUserId);
       if (eventId != null) {
         response.sendRedirect("/event.html?event_id=" + eventId);
-        return;
       } else {
         // TODO: Write message to user
       }
+      return;
     }
 
     String[] pathParts = pathName.split("/");
@@ -143,7 +146,6 @@ public class EventServlet extends HttpServlet {
     }
     
     Event.Builder eventBuilder = Event.newBuilder()
-        .setID(UUID.randomUUID().toString())
         .setOwnerID(currentUserId)
         .setTitle(request.getParameter("title"))
         .setDescription(request.getParameter("description"))
@@ -171,15 +173,15 @@ public class EventServlet extends HttpServlet {
       event = eventBuilder.setGCalendarID(gcalendarId).build();
     }
 
+    String eventId = null;
     try {
-      EventStorage.addOrUpdateEvent(event);
+      eventId = EventStorage.addOrUpdateEvent(event);
     } catch (Exception e) {
       System.err.println("Can't add new event to storage: " + e);
       response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-      return null;
     }
     
-    return event.getID();
+    return eventId;
   }
 
   private boolean getEvent(HttpServletRequest request, HttpServletResponse response, String currentUserId, String eventId)

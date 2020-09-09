@@ -256,7 +256,7 @@ public class Event {
     }
 
     public Builder setOwnerID(String ownerId) {
-      Event.this.ownerId = Objects.requireNonNull(ownerId, "ownerId must not be null");;
+      Event.this.ownerId = Objects.requireNonNull(ownerId, "ownerId must not be null");
       return this;
     }
 

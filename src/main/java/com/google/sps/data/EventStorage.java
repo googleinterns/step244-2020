@@ -14,6 +14,8 @@
 
 package com.google.sps.data;
 
+import com.google.appengine.api.datastore.EntityNotFoundException;
+
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
@@ -33,12 +35,17 @@ import java.util.Map;
 
 public class EventStorage {
   public static Event getEvent(String eventId) {
-    Query query = new Query("Event").setFilter(new FilterPredicate(Entity.KEY_RESERVED_PROPERTY, FilterOperator.EQUAL, KeyFactory.createKey("Event", eventId)));
-    Entity eventEntity = DatastoreServiceFactory.getDatastoreService().prepare(query).asSingleEntity();
+    Entity eventEntity = null;
+    try {
+      eventEntity = DatastoreServiceFactory.getDatastoreService().get(KeyFactory.stringToKey(eventId));
+    } catch (EntityNotFoundException e) {
+      System.err.println("Cannot get event " + eventId + ": " + e.getMessage());
+      return null;
+    }
     return eventEntity != null ? Event.fromDatastoreEntity(eventEntity) : null;
   }
 
-  public static List<Event> getSearchedEvents(String search, String searchCategory, String searchDuration, String searchLocation) {
+  public static List<Event> getSearchedEvents(String search, String searchCategory, String searchStart, String searchEnd, String searchDuration, String searchLocation) {
     Query query = new Query("Event");
 
     if (searchDuration != null && !searchDuration.isEmpty()) {
@@ -63,6 +70,11 @@ public class EventStorage {
     for (Entity entity : results.asIterable()) {
       String title = (String) entity.getProperty("title");
       String description = (String) entity.getProperty("description");
+      DateTimeRange dateTimeRange = new Gson().fromJson((String) entity.getProperty("date-time-range"), DateTimeRange.class);
+
+      if (!eventInRange(searchStart, searchEnd, dateTimeRange)) {
+        continue;
+      }
  
       if (search == null || search.isEmpty() || EventStorage.isTextMatch(search, title) || EventStorage.isTextMatch(search, description)) {
         String category = (String) entity.getProperty("category");
@@ -80,9 +92,26 @@ public class EventStorage {
     return text.toLowerCase().contains(search.toLowerCase());
   }
 
-  public static void addOrUpdateEvent(Event event) {
+  private static boolean eventInRange(String start, String end, DateTimeRange range) {
+    return range == null || ((start == null || start.isEmpty() || range.getStartDate() == null 
+    || start.compareTo(range.getStartDate()) <= 0) && (end == null || end.isEmpty() 
+    || range.getEndDate() == null || end.compareTo(range.getEndDate()) >= 0));
+  }
+
+  public static String addOrUpdateEvent(Event event) {
     // Make an Entity of event.
-    Entity eventEntity = new Entity("Event", event.getID());
+    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+    Entity eventEntity = null;
+    if (event.getID() == null) {
+      eventEntity = new Entity("Event");
+    } else {
+      try {
+        eventEntity = datastore.get(KeyFactory.createKey("Event", event.getID()));
+      } catch (EntityNotFoundException e) {
+        System.err.println("Cannot get event " + event.getID() + ": " + e.getMessage());
+        return null;
+      }
+    }
 
     eventEntity.setProperty("gcalendar-id", event.getGCalendarID());
     eventEntity.setProperty("title", event.getTitle());
@@ -102,7 +131,8 @@ public class EventStorage {
     eventEntity.setProperty("declined-users", event.getDeclinedIDs());
 
     // Store Entities to datastore.
-    DatastoreServiceFactory.getDatastoreService().put(eventEntity);
+    datastore.put(eventEntity);
+    return KeyFactory.keyToString(eventEntity.getKey());
   }
 
   public static void deleteEvent(String eventId) {
