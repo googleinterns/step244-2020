@@ -178,7 +178,7 @@ public class Event {
     return false;
   }
 
-  public boolean userHasAccessToEvent(String userId) {
+  public boolean hasUserAccessToEvent(String userId) {
     // TODO: add isPublic
     return ownerId.equals(userId) || invitedUsersId.contains(userId) || joinedUsersId.contains(userId) || declinedUsersId.contains(userId);
   }

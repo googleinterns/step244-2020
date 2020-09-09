@@ -115,7 +115,7 @@ public final class EventTest {
   }
 
   @Test
-  public void testEvent_equals_withParameters_returnsTrue() {
+  public void testEvent_equals_withIdenticalParameters_returnsTrue() {
     Event event1 = Event.newBuilder()
       .setOwnerID(USER_ID1)
       .setGCalendarID(G_ID1)
@@ -149,7 +149,7 @@ public final class EventTest {
   }
 
   @Test
-  public void testEvent_equals_withParameters_returnsNotEqual() {
+  public void testEvent_equals_withDifferentParameters_returnsFalse() {
     Event event1 = Event.newBuilder()
       .setOwnerID(USER_ID1)
       .setGCalendarID(G_ID1)
@@ -183,7 +183,7 @@ public final class EventTest {
   }
 
   @Test
-  public void testEvent_equals_withDifferentNumberParameters_returnsNotEqual() {
+  public void testEvent_equals_withDifferentNumberParameters_returnsFalse() {
     Event event1 = Event.newBuilder()
       .setID(EVENT_ID1)
       .setOwnerID(USER_ID1)
@@ -263,7 +263,7 @@ public final class EventTest {
   }
 
   @Test
-  public void testEvent_hasAccessToEvent_withDifferentStatus() {
+  public void testEvent_hasUserAccessToEvent() {
     Event event = Event.newBuilder()
       .setID(EVENT_ID1)
       .setOwnerID(USER_ID1)
@@ -272,10 +272,10 @@ public final class EventTest {
       .setDeclinedIDs(Arrays.asList(USER_ID4))
       .build();
 
-    Assert.assertTrue(event.userHasAccessToEvent(USER_ID1));
-    Assert.assertTrue(event.userHasAccessToEvent(USER_ID2));
-    Assert.assertTrue(event.userHasAccessToEvent(USER_ID3));
-    Assert.assertTrue(event.userHasAccessToEvent(USER_ID4));
-    Assert.assertFalse(event.userHasAccessToEvent(USER_ID5));
+    Assert.assertTrue(event.hasUserAccessToEvent(USER_ID1));
+    Assert.assertTrue(event.hasUserAccessToEvent(USER_ID2));
+    Assert.assertTrue(event.hasUserAccessToEvent(USER_ID3));
+    Assert.assertTrue(event.hasUserAccessToEvent(USER_ID4));
+    Assert.assertFalse(event.hasUserAccessToEvent(USER_ID5));
   }
 }
