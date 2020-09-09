@@ -12,9 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-var key  = config.PLACES_API_KEY;
 var script = document.createElement('script');
-script.src = 'https://maps.googleapis.com/maps/api/js?key=' + key + '&callback=initLocation&libraries=places';
+script.src = 'https://maps.googleapis.com/maps/api/js?key=' + config.PLACES_API_KEY + '&callback=initLocation&libraries=places';
 script.defer = true;
 
 document.head.appendChild(script);
