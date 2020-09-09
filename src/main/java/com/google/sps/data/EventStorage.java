@@ -148,10 +148,10 @@ public class EventStorage {
     addOrUpdateEvent(event);
   }
 
-  public static boolean userHasAccessToEvent(String userId, String eventId) {
+  public static boolean hasUserAccessToEvent(String userId, String eventId) {
     Event event = getEvent(eventId);
     if (event == null)
       return false;
-    return event.userHasAccessToEvent(userId);
+    return event.hasUserAccessToEvent(userId);
   }
 }
