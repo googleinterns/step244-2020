@@ -40,7 +40,7 @@ public class UserStorage {
     return null;
   }
 
-  private static List<String> convertPropertyToList(Object toConvert) {
+  private List<String> convertPropertyToList(Object toConvert) {
     if (toConvert == null)
       return null;
     return (List) toConvert;
@@ -63,11 +63,11 @@ public class UserStorage {
     DatastoreServiceFactory.getDatastoreService().put(userEntity);
   }
 
-  public static void deleteUser(String userId) {
+  public void deleteUser(String userId) {
     DatastoreServiceFactory.getDatastoreService().delete(KeyFactory.createKey("User", userId));
   }
 
-  public static String getIDbyUsername(String username) {
+  public String getIDbyUsername(String username) {
     Query query = new Query("User").setFilter(new FilterPredicate("username", FilterOperator.EQUAL, username));
 
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
@@ -81,10 +81,10 @@ public class UserStorage {
       return;
     user.joinEvent(eventId);
     addOrUpdateUser(user);
-    EventStorage.joinEvent(userId, eventId);
+    new EventStorage().joinEvent(userId, eventId);
   }
 
-  public static List<Event> search() {
+  public List<Event> search() {
     Query query = new Query("EventInfo");
 
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();

@@ -17,6 +17,7 @@ package com.google.sps.servlets;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.google.gson.JsonElement;
+import com.google.inject.Inject;
 import com.google.gson.Gson;
 import com.google.sps.data.Event;
 import com.google.sps.data.EventStorage;
@@ -35,15 +36,25 @@ import javax.servlet.http.HttpServletResponse;
 
 @WebServlet("/users/*")
 public class UserServlet extends HttpServlet {
+  UserStorage userStorageObject;
+  EventStorage eventStorageObject;
+  UserService userService;
+
+  @Inject
+  UserServlet(UserStorage userStorageObject, EventStorage eventStorageObject, UserService userService) {
+    this.userStorageObject = userStorageObject;
+    this.eventStorageObject = eventStorageObject;
+    this.userService = userService;
+  }
+
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-    UserService userService = UserServiceFactory.getUserService();
     if (!userService.isUserLoggedIn()) {
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
       return;
     }
 
-    User user = new UserStorage().getUser(userService.getCurrentUser().getUserId());
+    User user = userStorageObject.getUser(userService.getCurrentUser().getUserId());
     if (user == null) {
       response.setContentType("text/html");
       response.getWriter().print("<script>alert(\"Please login first.\")</script>");
@@ -65,7 +76,7 @@ public class UserServlet extends HttpServlet {
     userJson.getAsJsonObject().add("joinedEvents", joinedEventsJson);
     userJson.getAsJsonObject().add("invitedEvents", invitedEventsJson);
     userJson.getAsJsonObject().add("declinedEvents", declinedEventsJson);
-    
+
     response.setContentType("application/json");
     response.getWriter().println(gson.toJson(userJson));
     return;
@@ -73,7 +84,6 @@ public class UserServlet extends HttpServlet {
 
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-    UserService userService = UserServiceFactory.getUserService();
     if (!userService.isUserLoggedIn()) {
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
       return;
@@ -84,26 +94,14 @@ public class UserServlet extends HttpServlet {
         response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         return;
       }
-      User user = new UserStorage().getUser(userService.getCurrentUser().getUserId());
+      User user = userStorageObject.getUser(userService.getCurrentUser().getUserId());
       if (user == null) {
         response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         return;
       }
       user.setUsername(nickname);
-      new UserStorage().addOrUpdateUser(user);
+      userStorageObject.addOrUpdateUser(user);
       response.sendRedirect("/user.html");
-      return ;
-    }
-
-    // Redirect back to the HTML page.
-    response.sendRedirect("/index.html");
-  }
-
-  @Override
-  public void doPut(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    UserService userService = UserServiceFactory.getUserService();
-    if (!userService.isUserLoggedIn()) {
-      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
       return;
     }
 
@@ -111,10 +109,10 @@ public class UserServlet extends HttpServlet {
     response.sendRedirect("/index.html");
   }
 
-  private List<Event> getEventsFromIds(List<String> idList){
+  private List<Event> getEventsFromIds(List<String> idList) {
     List<Event> eventList = new ArrayList<>();
     for (String id : idList) {
-      Event queriedEvent = EventStorage.getEvent(id);
+      Event queriedEvent = eventStorageObject.getEvent(id);
       if (queriedEvent == null)
         continue;
       eventList.add(queriedEvent);

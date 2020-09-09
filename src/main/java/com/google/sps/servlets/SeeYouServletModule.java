@@ -1,6 +1,7 @@
 package com.google.sps.servlets;
 
 import com.google.inject.servlet.ServletModule;
+import com.google.sps.data.EventStorage;
 import com.google.sps.data.UserStorage;
 import com.google.api.client.auth.oauth2.AuthorizationCodeFlow;
 import com.google.appengine.api.users.UserService;
@@ -42,5 +43,10 @@ public class SeeYouServletModule extends ServletModule {
   @Provides
   UserStorage provideUserStorage() {
     return new UserStorage();
+  }
+
+  @Provides
+  EventStorage provideEventStorage() {
+    return new EventStorage();
   }
 }
