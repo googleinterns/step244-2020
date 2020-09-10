@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.ArrayList;
 
 public class UserStorage {
-  public static User getUser(String userId) {
+  public User getUser(String userId) {
     Query query = new Query("User").setFilter(new FilterPredicate(Entity.KEY_RESERVED_PROPERTY, FilterOperator.EQUAL, KeyFactory.createKey("User", userId)));
     Entity userEntity = DatastoreServiceFactory.getDatastoreService().prepare(query).asSingleEntity();
     if (userEntity != null) {
@@ -42,7 +42,7 @@ public class UserStorage {
     return null;
   }
 
-  public static void addOrUpdateUser(User user) {
+  public void addOrUpdateUser(User user) {
     if (user == null)
       return;
 
@@ -59,11 +59,11 @@ public class UserStorage {
     DatastoreServiceFactory.getDatastoreService().put(userEntity);
   }
 
-  public static void deleteUser(String userId) {
+  public void deleteUser(String userId) {
     DatastoreServiceFactory.getDatastoreService().delete(KeyFactory.createKey("User", userId));
   }
 
-  public static String getIDbyUsername(String username) {
+  public String getIDbyUsername(String username) {
     Query query = new Query("User").setFilter(new FilterPredicate("username", FilterOperator.EQUAL, username));
 
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
@@ -71,16 +71,16 @@ public class UserStorage {
     return userEntity != null ? (String) userEntity.getProperty("id") : null;
   }
 
-  public static void joinEvent(String userId, String eventId) {
+  public void joinEvent(String userId, String eventId) {
     User user = getUser(userId);
     if (user == null)
       return;
     user.joinEvent(eventId);
     addOrUpdateUser(user);
-    EventStorage.joinEvent(userId, eventId);
+    new EventStorage().joinEvent(userId, eventId);
   }
 
-  public static List<Event> search() {
+  public List<Event> search() {
     Query query = new Query("EventInfo");
 
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
