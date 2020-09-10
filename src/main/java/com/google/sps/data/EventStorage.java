@@ -50,6 +50,7 @@ public class EventStorage {
 
     if (searchDuration != null && !searchDuration.isEmpty()) {
       Long searchDurationLong = Long.parseLong(searchDuration);
+
       if (searchDurationLong != null) {
         Filter durationFilter =
         new FilterPredicate("duration", FilterOperator.LESS_THAN_OR_EQUAL, searchDurationLong);
@@ -68,24 +69,33 @@ public class EventStorage {
 
     List<Event> events = new ArrayList<>();
     for (Entity entity : results.asIterable()) {
-      String title = (String) entity.getProperty("title");
-      String description = (String) entity.getProperty("description");
       DateTimeRange dateTimeRange = new Gson().fromJson((String) entity.getProperty("date-time-range"), DateTimeRange.class);
 
       if (!eventInRange(searchStart, searchEnd, dateTimeRange)) {
         continue;
       }
+
+      String title = (String) entity.getProperty("title");
+      String description = (String) entity.getProperty("description");
  
-      if (search == null || search.isEmpty() || isTextMatch(search, title) || isTextMatch(search, description)) {
-        String category = (String) entity.getProperty("category");
-
-        if (searchCategory == null || searchCategory.equals("all") || category.equals(searchCategory)) {
-          events.add(Event.fromDatastoreEntity(entity));
-        }
+      if (!isSearchedTextMath(search, title, description)) {
+        continue;
       }
-    }
 
+      String category = (String) entity.getProperty("category");
+
+      if (!eventInCategory(searchCategory, category)) {
+        continue;
+      }
+
+      events.add(Event.fromDatastoreEntity(entity));
+    }
+    
     return events;
+  }
+
+  private boolean isSearchedTextMath(String search, String title, String description) {
+    return search == null || search.isEmpty() || isTextMatch(search, title) || isTextMatch(search, description);
   }
 
   private boolean isTextMatch(String search, String text) {
@@ -96,6 +106,10 @@ public class EventStorage {
     return range == null || ((start == null || start.isEmpty() || range.getStartDate() == null 
     || start.compareTo(range.getStartDate()) <= 0) && (end == null || end.isEmpty() 
     || range.getEndDate() == null || end.compareTo(range.getEndDate()) >= 0));
+  }
+
+  private boolean eventInCategory(String searchCategory, String category) {
+    return searchCategory == null || searchCategory.equals("all") || category.equals(searchCategory);
   }
 
   public String addOrUpdateEvent(Event event) {
