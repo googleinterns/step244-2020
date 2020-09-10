@@ -31,6 +31,11 @@ public class WeatherServlet extends HttpServlet {
     String location = request.getParameter("location");
     Integer hours = parseIntegerFromString(request.getParameter("hours"));
     Integer days = parseIntegerFromString(request.getParameter("days"));
+    if (location == null || location.isEmpty()) {
+      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      response.getWriter().println("Location cannot be null or empty");
+      return;
+    }
     LatLng latlng = GeoCodingObject.fromAddressToLatLng(location);
     if (days != null) {
       if (days < 0 || days >= 8) {

@@ -25,6 +25,8 @@ public class LatLngServlet extends HttpServlet {
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String location = request.getParameter("location");
     response.setContentType("application/json");
-    response.getWriter().println(new Gson().toJson(GeoCodingObject.fromAddressToLatLng(location)));
+    if (GeoCodingObject != null) {
+      response.getWriter().println(new Gson().toJson(GeoCodingObject.fromAddressToLatLng(location)));
+    }
   }
 }

@@ -44,23 +44,27 @@ public class Weather {
   private Weather fromOpenWeatherApiJsonObject(JsonObject openWeatherApiJsonObject) {
     if (openWeatherApiJsonObject == null)
       return null;
-    JsonElement temperatureElement = openWeatherApiJsonObject.get("temp");
-    Double temperature = null;
-    Double feelsLike = null;
-    if (temperatureElement.isJsonPrimitive()) {
-      temperature = temperatureElement.getAsDouble();
-      feelsLike = openWeatherApiJsonObject.get("feels_like").getAsDouble();
-    } else {
-      temperature = temperatureElement.getAsJsonObject().get("day").getAsDouble();
-      feelsLike = openWeatherApiJsonObject.get("feels_like").getAsJsonObject().get("day").getAsDouble();
+    try {
+      JsonElement temperatureElement = openWeatherApiJsonObject.get("temp");
+      Double temperature = null;
+      Double feelsLike = null;
+      if (temperatureElement.isJsonPrimitive()) {
+        temperature = temperatureElement.getAsDouble();
+        feelsLike = openWeatherApiJsonObject.get("feels_like").getAsDouble();
+      } else {
+        temperature = temperatureElement.getAsJsonObject().get("day").getAsDouble();
+        feelsLike = openWeatherApiJsonObject.get("feels_like").getAsJsonObject().get("day").getAsDouble();
+      }
+      return new Weather(temperature,
+                         feelsLike, 
+                         openWeatherApiJsonObject.get("pressure").getAsInt(), 
+                         openWeatherApiJsonObject.get("humidity").getAsInt(),
+                         openWeatherApiJsonObject.get("clouds").getAsInt(),
+                         openWeatherApiJsonObject.getAsJsonArray("weather").get(0).getAsJsonObject().get("main").getAsString(), 
+                         openWeatherApiJsonObject.getAsJsonArray("weather").get(0).getAsJsonObject().get("icon").getAsString());
+    } catch (Exception e) {
+      return null;
     }
-    return new Weather(temperature,
-                       feelsLike, 
-                       openWeatherApiJsonObject.get("pressure").getAsInt(), 
-                       openWeatherApiJsonObject.get("humidity").getAsInt(),
-                       openWeatherApiJsonObject.get("clouds").getAsInt(),
-                       openWeatherApiJsonObject.getAsJsonArray("weather").get(0).getAsJsonObject().get("main").getAsString(), 
-                       openWeatherApiJsonObject.getAsJsonArray("weather").get(0).getAsJsonObject().get("icon").getAsString());
   }
 
   private JsonObject getOpenWeatherApiJsonObject(LatLng latlng) {
