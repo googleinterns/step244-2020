@@ -1,5 +1,3 @@
-//https://api.openweathermap.org/data/2.5/onecall?lat={lat}&lon={lon}&exclude={part}&appid={YOUR API KEY}
-
 package com.google.sps.data;
 
 import com.google.maps.errors.ApiException;
@@ -68,7 +66,8 @@ public class Weather {
   private JsonObject getOpenWeatherApiJsonObject(LatLng latlng) {
     if (latlng == null)
       return null;
-    
+
+    //https://api.openweathermap.org/data/2.5/onecall?lat={lat}&lon={lon}&exclude={part}&units=metric&appid={YOUR API KEY}
     URL openWeatherApiUrl = null;
     try {
       openWeatherApiUrl = new URL(String.format(
