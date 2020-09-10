@@ -1,5 +1,6 @@
 package com.google.sps;
 
+import com.google.sps.data.ApiKeys;
 import com.google.sps.data.GeoCoding;
 import com.google.maps.model.LatLng;
 import org.junit.Assert;
@@ -20,10 +21,12 @@ public final class GeoCodingTest {
 
   @Test
   public void testGeoCoding_fromAddressToLatLng_withLocations() {
-    Assert.assertEquals(RUSSIA_MOSCOW_LATLNG.lat, new GeoCoding().fromAddressToLatLng(RUSSIA_MOSCOW_ADDRESS).lat, EPSILON);
-    Assert.assertEquals(RUSSIA_MOSCOW_LATLNG.lng, new GeoCoding().fromAddressToLatLng(RUSSIA_MOSCOW_ADDRESS).lng, EPSILON);
-    Assert.assertEquals(USA_NEW_YORK_LATLNG.lat, new GeoCoding().fromAddressToLatLng(USA_NEW_YORK_ADDRESS).lat, EPSILON);
-    Assert.assertEquals(USA_NEW_YORK_LATLNG.lng, new GeoCoding().fromAddressToLatLng(USA_NEW_YORK_ADDRESS).lng, EPSILON);
+    if (!ApiKeys.MAPS_API_KEY.isEmpty()) {
+      Assert.assertEquals(RUSSIA_MOSCOW_LATLNG.lat, new GeoCoding().fromAddressToLatLng(RUSSIA_MOSCOW_ADDRESS).lat, EPSILON);
+      Assert.assertEquals(RUSSIA_MOSCOW_LATLNG.lng, new GeoCoding().fromAddressToLatLng(RUSSIA_MOSCOW_ADDRESS).lng, EPSILON);
+      Assert.assertEquals(USA_NEW_YORK_LATLNG.lat, new GeoCoding().fromAddressToLatLng(USA_NEW_YORK_ADDRESS).lat, EPSILON);
+      Assert.assertEquals(USA_NEW_YORK_LATLNG.lng, new GeoCoding().fromAddressToLatLng(USA_NEW_YORK_ADDRESS).lng, EPSILON);
+    }
   }
 
   @Test

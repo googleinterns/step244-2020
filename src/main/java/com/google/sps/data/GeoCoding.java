@@ -1,6 +1,7 @@
 package com.google.sps.data;
 
 import com.google.maps.errors.ApiException;
+import java.lang.IllegalStateException;
 import java.lang.InterruptedException;
 import java.io.IOException;
 
@@ -14,13 +15,13 @@ public class GeoCoding {
     if (placeId == null) {
       return null;
     }
-    GeoApiContext context = new GeoApiContext.Builder()
-        .apiKey(ApiKeys.MAPS_API_KEY)
-        .build();
+    GeoApiContext context = new GeoApiContext.Builder().apiKey(ApiKeys.MAPS_API_KEY).build();
     
     GeocodingResult[] results = null;
     try {
       results = GeocodingApi.geocode(context, placeId).await();
+    } catch (IllegalStateException e) {
+      System.err.println("Smth wrong with API key: " + e.getMessage());
     } catch (InterruptedException e) {
       System.err.println("Smth wrong with threads: " + e.getMessage());
     } catch (ApiException e) {
@@ -40,20 +41,20 @@ public class GeoCoding {
     if (address == null) {
       return null;
     }
-    GeoApiContext context = new GeoApiContext.Builder()
-        .apiKey(ApiKeys.MAPS_API_KEY)
-        .build();
+    GeoApiContext context = new GeoApiContext.Builder().apiKey(ApiKeys.MAPS_API_KEY).build();
     
     GeocodingResult[] results = null;
     try {
       results = GeocodingApi.geocode(context, address).await();
+    } catch (IllegalStateException e) {
+      System.err.println("Smth wrong with API key: " + e.getMessage());
     } catch (InterruptedException e) {
       System.err.println("Smth wrong with threads: " + e.getMessage());
     } catch (ApiException e) {
       System.err.println("Smth wrong with api call by address" + address + ": " + e.getMessage());
     } catch (IOException e) {
       System.err.println(e.getMessage());
-    }
+    } 
 
     LatLng latlng = null;
     if (results != null && results.length != 0) {
