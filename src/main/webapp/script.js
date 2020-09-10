@@ -356,7 +356,6 @@ function setMinDateToToday() {
 
 function fetchUserInfo() {
   fetch("/users").then(handleError).then(response => response.json()).then(userInfo => {
-    console.log(userInfo);
     const email = userInfo.email;
     var username = userInfo.username;
     if (username == null) {
