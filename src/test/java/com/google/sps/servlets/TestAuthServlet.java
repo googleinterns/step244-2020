@@ -1,5 +1,6 @@
 package com.google.sps.servlets;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.atLeast;
@@ -20,6 +21,7 @@ import com.google.sps.data.UserStorage;
 
 import org.junit.Rule;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
@@ -33,13 +35,14 @@ public class TestAuthServlet {
   HttpServletResponse mockResponse;
   @Mock
   UserStorage mockUserStorage;
-  
+
   @Rule
   public MockitoRule mockitoRule = MockitoJUnit.rule();
 
   @Test
   public void testAuthServlet_doGet_WithLoggedInUser_ReturnsLogoutLink() throws IOException {
-    com.google.sps.data.User fakeUser = new com.google.sps.data.User("user1", null, null, null, null, null);
+    com.google.sps.data.User fakeUser = com.google.sps.data.User.newBuilder().setId("user1").setEmail(null)
+        .setUsername(null).setInvitedEventsId(null).setJoinedEventsId(null).setDeclinedEventsId(null).build();
     when(mockUserService.isUserLoggedIn()).thenReturn(true);
     when(mockRequest.getParameter("origin")).thenReturn("someOrigin");
     when(mockUserService.getCurrentUser()).thenReturn(new User("email", "domain", "user1"));
@@ -81,6 +84,9 @@ public class TestAuthServlet {
 
     new AuthServlet(mockUserService, mockUserStorage).doGet(mockRequest, mockResponse);
 
-    verify(mockUserStorage, atLeast(1)).addOrUpdateUser(any());
+    ArgumentCaptor<com.google.sps.data.User> argument = ArgumentCaptor.forClass(com.google.sps.data.User.class);
+    verify(mockUserStorage, atLeast(1)).addOrUpdateUser(argument.capture());
+    assertEquals(com.google.sps.data.User.newBuilder().setId("user1").setEmail("email").setUsername(null)
+        .setInvitedEventsId(null).setJoinedEventsId(null).setDeclinedEventsId(null).build(), argument.getValue());
   }
 }

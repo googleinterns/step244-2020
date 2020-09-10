@@ -1,6 +1,9 @@
 package com.google.sps.servlets;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
@@ -24,12 +27,12 @@ import com.google.sps.data.*;
 
 import org.junit.Rule;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
 public class TestUserServlet {
-  com.google.sps.data.User fakeUser;
   @Mock
   UserService mockUserService;
   @Mock
@@ -45,8 +48,9 @@ public class TestUserServlet {
 
   @Test
   public void testUserServlet_doGet_WithUserHavingEvents_ReturnEventLists() throws IOException, ServletException {
-    fakeUser = new com.google.sps.data.User("123", "email", "username", Arrays.asList(new String[] { "firstId" }), null,
-        null);
+    com.google.sps.data.User fakeUser = com.google.sps.data.User.newBuilder().setId("123").setEmail("email")
+        .setUsername("username").setInvitedEventsId(Arrays.asList(new String[] { "firstId" })).setJoinedEventsId(null)
+        .setDeclinedEventsId(null).build();
 
     when(mockUserService.isUserLoggedIn()).thenReturn(true);
     when(mockUserService.getCurrentUser()).thenReturn(new User("email", "authDomain", "123"));
@@ -77,8 +81,9 @@ public class TestUserServlet {
   @Test
   public void testUserServlet_doGet_WithInvitedAndJoinedEvents_RemovesJoinedFromInvited()
       throws IOException, ServletException {
-    fakeUser = new com.google.sps.data.User("123", "email", "username",
-        Arrays.asList(new String[] { "firstId", "secondId" }), Arrays.asList(new String[] { "secondId" }), null);
+    com.google.sps.data.User fakeUser = com.google.sps.data.User.newBuilder().setId("123").setEmail("email")
+        .setUsername("username").setInvitedEventsId(Arrays.asList(new String[] { "firstId" }))
+        .setJoinedEventsId(Arrays.asList(new String[] { "secondId" })).setDeclinedEventsId(null).build();
 
     when(mockUserService.isUserLoggedIn()).thenReturn(true);
     when(mockUserService.getCurrentUser()).thenReturn(new User("email", "authDomain", "123"));
@@ -108,8 +113,9 @@ public class TestUserServlet {
 
   @Test
   public void testUserServlet_doPost_WithUserLoggedIn_SetsUsername() throws IOException, ServletException {
-    fakeUser = new com.google.sps.data.User("123", "email", "", Arrays.asList(new String[] { "firstId", "secondId" }),
-        Arrays.asList(new String[] { "secondId" }), null);
+    com.google.sps.data.User fakeUser = com.google.sps.data.User.newBuilder().setId("123").setEmail("email")
+        .setUsername("username").setInvitedEventsId(Arrays.asList(new String[] { "firstId", "secondId" }))
+        .setJoinedEventsId(Arrays.asList(new String[] { "secondId" })).setDeclinedEventsId(null).build();
     when(mockUserService.isUserLoggedIn()).thenReturn(true);
     when(mockRequest.getParameter("nickname")).thenReturn("andru47");
     when(mockUserService.getCurrentUser()).thenReturn(new User("email", "authDomain", "123"));
@@ -118,6 +124,10 @@ public class TestUserServlet {
 
     new UserServlet(mockUserStorage, mockEventStorage, mockUserService).doPost(mockRequest, mockResponse);
 
+    ArgumentCaptor<com.google.sps.data.User> argument = ArgumentCaptor.forClass(com.google.sps.data.User.class);
     assertTrue(fakeUser.getUsername().equals("andru47"));
+    verify(mockUserStorage, atLeast(1)).addOrUpdateUser(argument.capture());
+    fakeUser.setUsername("andru47");
+    assertEquals(fakeUser, argument.getValue());
   }
 }
