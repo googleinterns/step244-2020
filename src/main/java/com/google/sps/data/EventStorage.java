@@ -34,7 +34,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class EventStorage {
-  public static Event getEvent(String eventId) {
+  public Event getEvent(String eventId) {
     Entity eventEntity = null;
     try {
       eventEntity = DatastoreServiceFactory.getDatastoreService().get(KeyFactory.stringToKey(eventId));
@@ -45,7 +45,7 @@ public class EventStorage {
     return eventEntity != null ? Event.fromDatastoreEntity(eventEntity) : null;
   }
 
-  public static List<Event> getSearchedEvents(String search, String searchCategory, String searchStart, String searchEnd, String searchDuration, String searchLocation) {
+  public List<Event> getSearchedEvents(String search, String searchCategory, String searchStart, String searchEnd, String searchDuration, String searchLocation) {
     Query query = new Query("Event");
 
     if (searchDuration != null && !searchDuration.isEmpty()) {
@@ -76,7 +76,7 @@ public class EventStorage {
         continue;
       }
  
-      if (search == null || search.isEmpty() || EventStorage.isTextMatch(search, title) || EventStorage.isTextMatch(search, description)) {
+      if (search == null || search.isEmpty() || isTextMatch(search, title) || isTextMatch(search, description)) {
         String category = (String) entity.getProperty("category");
 
         if (searchCategory == null || searchCategory.equals("all") || category.equals(searchCategory)) {
@@ -88,17 +88,17 @@ public class EventStorage {
     return events;
   }
 
-  private static boolean isTextMatch(String search, String text) {
+  private boolean isTextMatch(String search, String text) {
     return text.toLowerCase().contains(search.toLowerCase());
   }
 
-  private static boolean eventInRange(String start, String end, DateTimeRange range) {
+  private boolean eventInRange(String start, String end, DateTimeRange range) {
     return range == null || ((start == null || start.isEmpty() || range.getStartDate() == null 
     || start.compareTo(range.getStartDate()) <= 0) && (end == null || end.isEmpty() 
     || range.getEndDate() == null || end.compareTo(range.getEndDate()) >= 0));
   }
 
-  public static String addOrUpdateEvent(Event event) {
+  public String addOrUpdateEvent(Event event) {
     // Make an Entity of event.
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
     Entity eventEntity = null;
@@ -136,11 +136,11 @@ public class EventStorage {
     return KeyFactory.keyToString(eventEntity.getKey());
   }
 
-  public static void deleteEvent(String eventId) {
+  public void deleteEvent(String eventId) {
     DatastoreServiceFactory.getDatastoreService().delete(KeyFactory.createKey("Event", eventId));
   }
 
-  public static void joinEvent(String userId, String eventId) {
+  public void joinEvent(String userId, String eventId) {
     Event event = getEvent(eventId);
     if (event == null)
       return;
@@ -149,7 +149,7 @@ public class EventStorage {
     addOrUpdateEvent(event);
   }
 
-  public static boolean hasUserAccessToEvent(String userId, String eventId) {
+  public boolean hasUserAccessToEvent(String userId, String eventId) {
     Event event = getEvent(eventId);
     if (event == null)
       return false;
