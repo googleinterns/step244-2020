@@ -35,11 +35,11 @@ public final class DateTimeRange {
   }
 
   public Boolean isDateSet() {
-    return startDate != null && startDate == endDate;
+    return startDate != null && startDate.equals(endDate);
   }
 
   public Boolean isTimeSet() {
-    return startTime != null && startTime == endTime;
+    return startTime != null && startTime.equals(endTime);
   }
 
   public Boolean isDateTimeSet() {
@@ -60,5 +60,21 @@ public final class DateTimeRange {
 
   public String getTime() {
     return isTimeSet() ? startTime : null;
+  }
+
+  public String getStartTime() {
+    return startTime;
+  }
+
+  public String getEndTime() {
+    return endTime;
+  }
+
+  public String convertStartTimeToString() {
+    return this.startDate + "T" + this.startTime + ":00Z";
+  }
+
+  public String convertEndTimeToString() {
+    return this.endDate + "T" + this.endTime + ":00Z";
   }
 }

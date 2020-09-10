@@ -119,6 +119,10 @@ public class Event {
     return dateTimeRange != null && dateTimeRange.isDateSet() ? dateTimeRange.getDate() : null;
   }
 
+  public DateTimeRange getDateTimeRange() {
+    return this.dateTimeRange;
+  }
+
   public String getTime() {
     return dateTimeRange != null && dateTimeRange.isTimeSet() ? dateTimeRange.getTime() : null;
   }

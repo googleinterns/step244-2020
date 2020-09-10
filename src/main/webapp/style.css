@@ -235,3 +235,8 @@ input[type=submit]:hover {
   padding-right: 5px;
   width: auto !important;
 }
+
+input[type=checkbox] {
+  width: auto;
+  height: auto;
+}

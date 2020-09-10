@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -31,7 +32,7 @@ import javax.servlet.http.HttpServletRequest;
 
 public class Utils {
   private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
-  private static final List<String> SCOPES = Collections.singletonList(CalendarScopes.CALENDAR_EVENTS);
+  private static final List<String> SCOPES = Arrays.asList(new String[] {CalendarScopes.CALENDAR_EVENTS, CalendarScopes.CALENDAR_READONLY});
 
   static String getRedirectUri(HttpServletRequest req) {
     GenericUrl url = new GenericUrl(req.getRequestURL().toString());
