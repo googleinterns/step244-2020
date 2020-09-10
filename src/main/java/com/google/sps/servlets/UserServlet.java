@@ -112,6 +112,7 @@ public class UserServlet extends HttpServlet {
   private List<Event> getEventsFromIds(List<String> idList) {
     List<Event> eventList = new ArrayList<>();
     for (String id : idList) {
+      //TODO Add datastore batching
       Event queriedEvent = eventStorageObject.getEvent(id);
       if (queriedEvent == null)
         continue;

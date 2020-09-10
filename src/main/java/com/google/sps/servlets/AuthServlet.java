@@ -21,6 +21,7 @@ import com.google.sps.data.UserStorage;
 public class AuthServlet extends HttpServlet {
   UserService userService;
   UserStorage userStorageObject;
+
   @Inject
   AuthServlet(UserService userService, UserStorage userStorageObject) {
     this.userService = userService;
@@ -30,14 +31,11 @@ public class AuthServlet extends HttpServlet {
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String origin = request.getParameter("origin");
-    
+
     if (userService.isUserLoggedIn() && userStorageObject.getUser(userService.getCurrentUser().getUserId()) == null) {
-      userStorageObject.addOrUpdateUser(new User(userService.getCurrentUser().getUserId(),
-                                           userService.getCurrentUser().getEmail(),
-                                           null,
-                                           new ArrayList<>(),
-                                           new ArrayList<>(),
-                                           new ArrayList<>()));
+      userStorageObject.addOrUpdateUser(User.newBuilder().setId(userService.getCurrentUser().getUserId())
+          .setEmail(userService.getCurrentUser().getEmail()).setUsername(null).setInvitedEventsId(new ArrayList<>())
+          .setJoinedEventsId(new ArrayList<>()).setDeclinedEventsId(new ArrayList<>()).build());
     }
     response.setContentType("application/json;");
     Gson gson = new Gson();

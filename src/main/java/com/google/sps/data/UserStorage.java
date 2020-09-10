@@ -32,10 +32,11 @@ public class UserStorage {
         new FilterPredicate(Entity.KEY_RESERVED_PROPERTY, FilterOperator.EQUAL, KeyFactory.createKey("User", userId)));
     Entity userEntity = DatastoreServiceFactory.getDatastoreService().prepare(query).asSingleEntity();
     if (userEntity != null) {
-      return new User(userId, (String) userEntity.getProperty("email"), (String) userEntity.getProperty("username"),
-          convertPropertyToList(userEntity.getProperty("invited-events")),
-          convertPropertyToList(userEntity.getProperty("joined-events")),
-          convertPropertyToList(userEntity.getProperty("declined-events")));
+      return User.newBuilder().setId(userId).setEmail((String) userEntity.getProperty("email"))
+          .setUsername((String) userEntity.getProperty("username"))
+          .setInvitedEventsId(convertPropertyToList(userEntity.getProperty("invited-events")))
+          .setJoinedEventsId(convertPropertyToList(userEntity.getProperty("joined-events")))
+          .setDeclinedEventsId(convertPropertyToList(userEntity.getProperty("declined-events"))).build();
     }
     return null;
   }
