@@ -19,19 +19,26 @@ public final class DateTimeRange {
   private final String endDate;  
   private final String startTime; // hh:mm
   private final String endTime;
+  private final Long tzShift;
 
-  public DateTimeRange(String startDate, String endDate, String startTime, String endTime) {
+  public DateTimeRange(String startDate, String endDate, String startTime, String endTime, Long tzShift) {
     this.startDate = startDate;
     this.endDate = endDate;
     this.startTime = startTime;
     this.endTime = endTime;
+    this.tzShift = tzShift;
   }
 
-  public DateTimeRange(String date, String time) {
+  public DateTimeRange(String date, String time, Long tzShift) {
     this.startDate = date;
     this.endDate = date;
     this.startTime = time;
     this.endTime = time;
+    this.tzShift = tzShift;
+  }
+
+  public Long getShift() {
+    return tzShift;
   }
 
   public Boolean isDateSet() {

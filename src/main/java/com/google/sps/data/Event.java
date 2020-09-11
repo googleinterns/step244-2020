@@ -305,4 +305,12 @@ public class Event {
       return Event.this;
     }
   }
+
+  public void setRange(DateTimeRange dateTimeRange) {
+    this.dateTimeRange = dateTimeRange;
+  }
+
+  public void setGCalendarId(String id) {
+    this.gcalendarId = id;
+  }
 }
