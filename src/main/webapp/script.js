@@ -18,7 +18,7 @@ function getEvent(event_id) {
     document.getElementById('start-date-info').innerText = event.dateTimeRange.startDate;
     document.getElementById('start-time-info').innerText = event.dateTimeRange.startTime;
     if (event.duration != null)
-        document.getElementById('duration-info').innerText = 'Duration: ' + event.duration + 'minutes';
+      document.getElementById('duration-info').innerText = 'Duration: ' + event.duration + 'minutes';
 
     document.getElementById('category-info').innerText = event.category;
     for (tag in event.tags) {
@@ -83,26 +83,26 @@ function searchEvents() {
   var location = document.getElementById('location-id').value;
   fetch('/events?' + new URLSearchParams({
     search: search,
-}) + '&' + new URLSearchParams({
+  }) + '&' + new URLSearchParams({
     category: category,
-}) + '&' + new URLSearchParams({
+  }) + '&' + new URLSearchParams({
     start: start,
-}) + '&' + new URLSearchParams({
+  }) + '&' + new URLSearchParams({
     end: end,
-}) + '&' + new URLSearchParams({
+  }) + '&' + new URLSearchParams({
     duration: duration,
-}) + '&' + new URLSearchParams({
+  }) + '&' + new URLSearchParams({
     location: location,
-})).then(response => response.json()).then(events => events.forEach(showEvent));
+  })).then(response => response.json()).then(events => events.forEach(showEvent));
   document.getElementById('location-id').value = "all";
 }
 
 function showEvent(event) {
   document.getElementById('events-container').innerHTML += '<div><h1>'
-  + event.title + '</h1><hr><br><h2>' + event.duration + '</h2><h3>' + event.description 
-  + '</h3><br><p><i class="fas fa-map-marker-alt"></i>' + event.location 
-  + '</p><br><form action="/events/' + event.id + '" method="POST">'
-  + '<input type="submit" class="btn btn-success" value="Join event!"/></form><br><br></div>';
+    + event.title + '</h1><hr><br><h2>' + event.duration + '</h2><h3>' + event.description
+    + '</h3><br><p><i class="fas fa-map-marker-alt"></i>' + event.location
+    + '</p><br><form action="/events/' + event.id + '" method="POST">'
+    + '<input type="submit" class="btn btn-success" value="Join event!"/></form><br><br></div>';
 }
 
 function addEventToGCalendar() { //To be modified to get fields
@@ -150,7 +150,7 @@ function getGCalendarEvents(calendar, startTime, endTime) {
               title: event.summary,
               start: start,
               end: end,
-              allDay : allDay,
+              allDay: allDay,
               location: event.location,
               description: event.description,
               shared: shared,
@@ -169,7 +169,7 @@ function getGCalendarEvents(calendar, startTime, endTime) {
           window.location.href = authInfo.authLink;
         }
       })
-      ;
+        ;
     }
   });
 }
@@ -346,4 +346,30 @@ function addPerson() {
 
 function setMinDateToToday() {
   document.getElementById("event-start-date").min = new Date().toISOString().slice(0, 10);
+}
+
+function loadFreeTimes() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const eventId = urlParams.get('eventId');
+  if (eventId == null) {
+    alert("Your request is incomplete. Please access this page from the event page!");
+    return;
+  }
+
+  fetch("/freetimes?eventId=" + eventId).then(response => response.json()).then(freeTimes => {
+    freeTimes.forEach(freeTime => {
+      var toStartDate = new Date(freeTime.start);
+      var toEndDate = new Date(freeTime.end);
+      var buttonElem = document.createElement("button");
+      buttonElem.innerText = toStartDate.toLocaleString() + "  ///  " + toEndDate.toLocaleString();
+      buttonElem.setAttribute("onclick", "setTime('" + eventId + "','" + toStartDate.toISOString() + "')");
+      document.getElementById("page-content-wrapper").appendChild(buttonElem);
+    })
+  }).catch(error => alert(error));
+}
+
+function setTime(eventId, start) {
+  fetch("/events?" + new URLSearchParams({ start: start }) + "&" + new URLSearchParams({ eventId: eventId }), { method: 'PUT' }).then(response => {
+    window.location.href = getCurrentUrl() + "/event.html?event_id=" + eventId;
+  }).catch(error => alert(error));
 }

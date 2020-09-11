@@ -56,6 +56,9 @@
         <label for="event-start-date">Start date</label>
         <input type="date" id="event-start-date" name="start-date" max="2200-01-01">
 
+        <label for="timezone" id="timezone-label"></label><br>
+        <input type="hidden" id="timezone-input" name="tzShift" value="0">
+
         <label for="event-start-time">Start time</label>
         <input type="time" id="event-start-time" name="start-time">
 
@@ -122,6 +125,9 @@
 </body>
 <script>
   $(document).ready(function () {
+    console.log(new Date().getTimezoneOffset());
+    document.getElementById("timezone-input").value = new Date().getTimezoneOffset() * 60 * 1000;
+    document.getElementById("timezone-label").innerText = "The times are in your current TimeZone";
     $('#checkbox-open-ended').change(function () {
       if (!this.checked) {
         document.getElementById("event-end-date").setAttribute("disabled", "true");
