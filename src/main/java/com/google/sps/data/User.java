@@ -19,20 +19,61 @@ import java.util.Objects;
 import java.util.List;
 
 public class User {
-  private final String id;
+  private String id;
   private String email;
   private String username;
   private List<String> invitedEventsId = new ArrayList<String>();
   private List<String> joinedEventsId = new ArrayList<String>();
   private List<String> declinedEventsId = new ArrayList<String>();
 
-  public User(String id, String email, String username, List<String> invitedEventsId, List<String> joinedEventsId, List<String> declinedEventsId) {
-    this.id = Objects.requireNonNull(id, "id cannot be null");
-    this.email = email;
-    this.username = Objects.requireNonNull(username, "username cannot be null");
-    this.invitedEventsId.addAll(invitedEventsId);
-    this.joinedEventsId.addAll(joinedEventsId);
-    this.declinedEventsId.addAll(declinedEventsId);
+  @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof User))
+      return false;
+    User other = (User) obj;
+    return Objects.equals(this.id, other.id) && Objects.equals(this.email, other.email)
+        && Objects.equals(this.username, other.username) && Objects.equals(this.invitedEventsId, other.invitedEventsId)
+        && Objects.equals(this.joinedEventsId, other.joinedEventsId) && Objects.equals(this.declinedEventsId, other.declinedEventsId);
+  }
+
+  public class Builder {
+    public Builder setId(String id) {
+      User.this.id = id;
+      return this;
+    }
+
+    public Builder setEmail(String email) {
+      User.this.email = email;
+      return this;
+    }
+
+    public Builder setUsername(String username) {
+      User.this.username = username;
+      return this;
+    }
+
+    public Builder setInvitedEventsId(List<String> invitedIds) {
+      addAllIfNotNull(User.this.invitedEventsId, invitedIds);
+      return this;
+    }
+
+    public Builder setJoinedEventsId(List<String> joinedIds) {
+      addAllIfNotNull(User.this.joinedEventsId, joinedIds);
+      return this;
+    }
+
+    public Builder setDeclinedEventsId(List<String> declinedIds) {
+      addAllIfNotNull(User.this.declinedEventsId, declinedIds);
+      return this;
+    }
+
+    public User build() {
+      return User.this;
+    }
+  }
+
+  public static Builder newBuilder() {
+    return new User().new Builder();
   }
 
   public void joinEvent(String eventId) {
@@ -40,6 +81,13 @@ public class User {
       this.invitedEventsId.remove(eventId);
       this.joinedEventsId.add(eventId);
     }
+  }
+
+  private void addAllIfNotNull(List<String> list1, List<String> list2) {
+    if (list2 != null) {
+      list1.addAll(list2);
+    }
+    return;
   }
 
   public String getID() {
@@ -64,5 +112,9 @@ public class User {
 
   public List<String> getDeclinedEventsID() {
     return declinedEventsId;
+  }
+
+  public void setUsername(String username) {
+    this.username = username;
   }
 }

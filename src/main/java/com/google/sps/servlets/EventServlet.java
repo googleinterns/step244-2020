@@ -59,7 +59,7 @@ public class EventServlet extends HttpServlet {
     this.userStorageObject = userStorageObject;
     this.eventStorageObject = eventStorageObject;
   }
-
+  
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String pathName = request.getPathInfo();
