@@ -132,7 +132,32 @@ public class EventServlet extends HttpServlet {
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
       return;
     }
-
+    String eventId = request.getParameter("eventId");
+    if (eventId == null) {
+      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      return ;
+    }
+    Event event = eventStorageObject.getEvent(eventId);
+    if (event == null || event.isDateTimeSet()) {
+      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      return ;
+    }
+    if (!event.getOwnerID().equals(userService.getCurrentUser().getUserId())) {
+      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+      return ;
+    }
+    String start = request.getParameter("start");
+    if (start == null) {
+      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      return ;
+    }
+    String startDate = start.split("T")[0];
+    String startTime = start.split("T")[1].split("Z")[0];
+    startTime = String.valueOf(startTime.subSequence(0, 5));
+    DateTimeRange newRange = new DateTimeRange(startDate, startTime, Long.valueOf(0));
+    event.setRange(newRange);
+    event.setGCalendarId(Utils.createGCalendarEvent(event).getId());
+    eventStorageObject.addOrUpdateEvent(event);
     // Redirect back to the HTML page.
     response.sendRedirect("/index.html");
   }
@@ -154,13 +179,19 @@ public class EventServlet extends HttpServlet {
         }
       }
     }
+    Long tzShift = parseLongFromString(request.getParameter("tzShift"));
+    System.out.println(tzShift);
+    System.out.println(request.getParameter("tzShift"));
+    if (tzShift == null) {
+      tzShift = Long.valueOf(0);
+    }
 
     Event.Builder eventBuilder = Event.newBuilder().setOwnerID(currentUserId).setTitle(request.getParameter("title"))
         .setDescription(request.getParameter("description")).setCategory(request.getParameter("category"))
         .setTags(parseTags(request.getParameterValues("tags"))).setLocation(request.getParameter("location"))
         .setLocationId(request.getParameter("location-id"))
         .setDateTimeRange(formatDateTimeRange(request.getParameter("start-date"), request.getParameter("start-time"),
-            request.getParameter("end-date"), request.getParameter("end-time")))
+            request.getParameter("end-date"), request.getParameter("end-time"), tzShift))
         .setDuration(duration).setLinks(parseLinks(request.getParameter("links"))).setFields(fields)
         .setInvitedIDs(parseInvitedIDs(request.getParameterValues("people")));
 
@@ -285,12 +316,10 @@ public class EventServlet extends HttpServlet {
     return Arrays.asList(links.split(","));
   }
 
-  private DateTimeRange formatDateTimeRange(String startDate, String startTime, String endDate, String endTime) {
-    System.out.println(endDate);
-    System.out.println(endTime);
+  private DateTimeRange formatDateTimeRange(String startDate, String startTime, String endDate, String endTime, Long tzShift) {
     if (endDate == null || endTime == null)
-      return new DateTimeRange(startDate, startTime);
-    return new DateTimeRange(startDate, endDate, startTime, endTime);
+      return new DateTimeRange(startDate, startTime, tzShift);
+    return new DateTimeRange(startDate, endDate, startTime, endTime, tzShift);
   }
 
   private Long parseLongFromString(String str) {

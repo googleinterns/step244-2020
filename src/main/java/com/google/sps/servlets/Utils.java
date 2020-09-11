@@ -69,8 +69,9 @@ public class Utils {
     com.google.api.services.calendar.model.Event gcalendarEvent = new com.google.api.services.calendar.model.Event();
     gcalendarEvent.setDescription(event.getDescription()).setSummary(event.getTitle());
     DateTime startDateTime = new DateTime(event.getDateTimeAsString());
-    DateTime endDateTime = new DateTime(startDateTime.getValue() + event.getDuration() * 60 * 1000);
-    gcalendarEvent.setStart(new EventDateTime().setDateTime(startDateTime));
+    DateTime startDateTimeWithShift = new DateTime(startDateTime.getValue() + event.getDateTimeRange().getShift());
+    DateTime endDateTime = new DateTime(startDateTimeWithShift.getValue() + event.getDuration() * 60 * 1000);
+    gcalendarEvent.setStart(new EventDateTime().setDateTime(startDateTimeWithShift));
     gcalendarEvent.setEnd(new EventDateTime().setDateTime(endDateTime));
 
     ExtendedProperties extendedProps = new ExtendedProperties();
