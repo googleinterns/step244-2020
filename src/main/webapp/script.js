@@ -18,7 +18,7 @@ function getEvent(event_id) {
     document.getElementById('start-date-info').innerText = event.dateTimeRange.startDate;
     document.getElementById('start-time-info').innerText = event.dateTimeRange.startTime;
     if (event.duration != null)
-        document.getElementById('duration-info').innerText = 'Duration: ' + event.duration + 'minutes';
+      document.getElementById('duration-info').innerText = 'Duration: ' + event.duration + 'minutes';
 
     document.getElementById('category-info').innerText = event.category;
     for (tag in event.tags) {
@@ -83,15 +83,15 @@ function searchEvents() {
   var location = document.getElementById('location-id').value;
   fetch('/events?' + new URLSearchParams({
     search: search,
-}) + '&' + new URLSearchParams({
+  }) + '&' + new URLSearchParams({
     category: category,
-}) + '&' + new URLSearchParams({
+  }) + '&' + new URLSearchParams({
     start: start,
-}) + '&' + new URLSearchParams({
+  }) + '&' + new URLSearchParams({
     end: end,
-}) + '&' + new URLSearchParams({
+  }) + '&' + new URLSearchParams({
     duration: duration,
-}) + '&' + new URLSearchParams({
+  }) + '&' + new URLSearchParams({
     location: location,
 })).then(response => response.json()).then(events => events.forEach(showEvent));
   document.getElementById('location-id').value = "all";
@@ -99,10 +99,10 @@ function searchEvents() {
 
 function showEvent(event) {
   document.getElementById('events-container').innerHTML += '<div><h1>'
-  + event.title + '</h1><hr><br><h2>' + event.duration + '</h2><h3>' + event.description 
-  + '</h3><br><p><i class="fas fa-map-marker-alt"></i>' + event.location 
-  + '</p><br><form action="/events/' + event.id + '" method="POST">'
-  + '<input type="submit" class="btn btn-success" value="Join event!"/></form><br><br></div>';
+    + event.title + '</h1><hr><br><h2>' + event.duration + '</h2><h3>' + event.description
+    + '</h3><br><p><i class="fas fa-map-marker-alt"></i>' + event.location
+    + '</p><br><form action="/events/' + event.id + '" method="POST">'
+    + '<input type="submit" class="btn btn-success" value="Join event!"/></form><br><br></div>';
 }
 
 function addEventToGCalendar() { //To be modified to get fields
@@ -150,7 +150,7 @@ function getGCalendarEvents(calendar, startTime, endTime) {
               title: event.summary,
               start: start,
               end: end,
-              allDay : allDay,
+              allDay: allDay,
               location: event.location,
               description: event.description,
               shared: shared,
@@ -169,7 +169,7 @@ function getGCalendarEvents(calendar, startTime, endTime) {
           window.location.href = authInfo.authLink;
         }
       })
-      ;
+        ;
     }
   });
 }
@@ -178,6 +178,12 @@ function getCurrentUrl() {
   var currentUrl = window.location.href;
   var currentUrlSlices = currentUrl.split("/");
   return currentUrlSlices[0] + "//" + currentUrlSlices[2];
+}
+
+function getCurrentLocation() {
+  var currentUrl = window.location.pathname;
+  var currentUrlSlices = currentUrl.split("/");
+  return currentUrlSlices[1].split(".")[0];
 }
 
 function createCalendarElements(givenProperties) {
@@ -346,4 +352,86 @@ function addPerson() {
 
 function setMinDateToToday() {
   document.getElementById("event-start-date").min = new Date().toISOString().slice(0, 10);
+}
+
+function fetchUserInfo() {
+  fetch("/users").then(handleError).then(response => response.json()).then(userInfo => {
+    const email = userInfo.email;
+    var username = userInfo.username;
+    if (username == null) {
+      document.getElementById("username-placeholder").innerText = "You currently do not have an username. If you want to set one, click ";
+      username = email;
+    } else {
+      document.getElementById("username-placeholder").innerText = "Your username is currently: " + username + ". If you want to change it click ";
+    }
+    var displayBoxButton = document.createElement("a");
+    displayBoxButton.setAttribute("href", "#");
+    displayBoxButton.setAttribute("onclick", "hideElementById('username-placeholder'); showElementById('username-setter')");
+    displayBoxButton.innerText = "here";
+    document.getElementById("username-placeholder").appendChild(displayBoxButton);
+    document.getElementById("user-header").innerText = "Hello, " + username + "!";
+    createPopoverForEventTypes("invited-events", userInfo.invitedEvents, "Events you are invited to");
+    createPopoverForEventTypes("joined-events", userInfo.joinedEvents, "Events you joined");
+    createPopoverForEventTypes("declined-events", userInfo.declinedEvents, "Events you declined");
+  }).catch(error => {
+    if (error == 401)
+      alert("Please login first, using the button on the sidebar");
+    else alert(error);
+  });
+}
+
+function handleError(response) {
+  if (!response.ok)
+    throw response.status;
+  return response;
+}
+
+function createPopoverForEventTypes(givenId, givenContent, givenTitle) {
+  $("#" + givenId).popover({
+    animation: true,
+    html: true,
+    title: givenTitle,
+    content: createElementsForEvents(givenContent),
+    trigger: 'click',
+    container: 'body',
+    placement: 'top',
+  });
+}
+
+function createElementsForEvents(givenElements) {
+  var ulElement = document.createElement("ul");
+  var eventsExist = false;
+  givenElements.forEach(event => {
+    eventsExist = true;
+    var liElement = document.createElement("li");
+    var aElement = document.createElement("a");
+    aElement.href = getCurrentUrl() + "/event.html?event_id=" + event.id;
+    aElement.innerText = event.title;
+    liElement.appendChild(aElement);
+    ulElement.appendChild(liElement);
+  });
+  if (!eventsExist) {
+    ulElement.innerText = "There are no events to be displayed";
+  }
+  return ulElement;
+}
+
+function showElementById(Id) {
+  document.getElementById(Id).style.display = "";
+}
+
+function hideElementById(Id) {
+  document.getElementById(Id).style.display = "none";
+}
+
+function changePopoverColorTo(color) {
+  var styleNode = document.getElementById("stylesheetId");
+  if (styleNode == null) {
+    styleNode = document.createElement("style");
+    styleNode.id = "stylesheetId";
+  } else {
+    document.body.removeChild(styleNode);
+  }
+  styleNode.innerHTML = ".popover-header {background: " + color + ";}";
+  document.body.appendChild(styleNode);
 }
