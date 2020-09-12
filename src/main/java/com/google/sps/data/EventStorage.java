@@ -45,11 +45,13 @@ public class EventStorage {
     return eventEntity != null ? Event.fromDatastoreEntity(eventEntity) : null;
   }
 
-  public List<Event> getSearchedEvents(String search, String searchCategory, String searchStart, String searchEnd, String searchDuration, String searchLocation) {
+  public List<Event> getSearchedEvents(Search search) {
     Query query = new Query("Event");
 
-    if (searchDuration != null && !searchDuration.isEmpty()) {
-      Long searchDurationLong = Long.parseLong(searchDuration);
+    String duration = search.getDuration();
+
+    if (duration != null && !duration.isEmpty()) {
+      Long searchDurationLong = Long.parseLong(duration);
 
       if (searchDurationLong != null) {
         Filter durationFilter =
@@ -58,9 +60,11 @@ public class EventStorage {
       }
     }
 
-    if (searchLocation != null && !searchLocation.isEmpty() && !searchLocation.equals("all")) {
+    String location = search.getLocation();
+
+    if (location != null && !location.isEmpty() && !location.equals("all")) {
       Filter locationFilter =
-      new FilterPredicate("location-id", FilterOperator.EQUAL, searchLocation);
+      new FilterPredicate("location-id", FilterOperator.EQUAL, location);
       query = query.setFilter(locationFilter);
     }
  
@@ -71,20 +75,20 @@ public class EventStorage {
     for (Entity entity : results.asIterable()) {
       DateTimeRange dateTimeRange = new Gson().fromJson((String) entity.getProperty("date-time-range"), DateTimeRange.class);
 
-      if (!eventInRange(searchStart, searchEnd, dateTimeRange)) {
+      if (!search.eventInRange(dateTimeRange)) {
         continue;
       }
 
       String title = (String) entity.getProperty("title");
       String description = (String) entity.getProperty("description");
  
-      if (!isSearchedTextMath(search, title, description)) {
+      if (!search.isSearchedTextMatching(title, description)) {
         continue;
       }
 
       String category = (String) entity.getProperty("category");
 
-      if (!eventInCategory(searchCategory, category)) {
+      if (!search.eventInCategory(category)) {
         continue;
       }
 
@@ -92,24 +96,6 @@ public class EventStorage {
     }
     
     return events;
-  }
-
-  private boolean isSearchedTextMath(String search, String title, String description) {
-    return search == null || search.isEmpty() || isTextMatch(search, title) || isTextMatch(search, description);
-  }
-
-  private boolean isTextMatch(String search, String text) {
-    return text.toLowerCase().contains(search.toLowerCase());
-  }
-
-  private boolean eventInRange(String start, String end, DateTimeRange range) {
-    return range == null || ((start == null || start.isEmpty() || range.getStartDate() == null 
-    || start.compareTo(range.getStartDate()) <= 0) && (end == null || end.isEmpty() 
-    || range.getEndDate() == null || end.compareTo(range.getEndDate()) >= 0));
-  }
-
-  private boolean eventInCategory(String searchCategory, String category) {
-    return searchCategory == null || searchCategory.equals("all") || category.equals(searchCategory);
   }
 
   public String addOrUpdateEvent(Event event) {
