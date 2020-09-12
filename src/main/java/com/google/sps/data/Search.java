@@ -35,6 +35,22 @@ public class Search {
     this.location = location;
   }
 
+  public String getText() {
+    return text;
+  }
+
+  public String getCategory() {
+    return category;
+  }
+
+  public String getStart() {
+    return start;
+  }
+
+  public String getEnd() {
+    return end;
+  }
+
   public String getDuration() {
     return duration;
   }
