@@ -48,15 +48,28 @@ public class EventServletTest {
   @Rule
   public MockitoRule mockitoRule = MockitoJUnit.rule();
 
-  @Test
-  public void eventServletTest_doGet_WithNullPath_DoesSearch() throws IOException {
-    when(mockRequest.getPathInfo()).thenReturn(null);
+  private void setParameters(Search search) throws IOException {
+    when(mockRequest.getParameter("search")).thenReturn(search.getText());
+    when(mockRequest.getParameter("category")).thenReturn(search.getCategory());
+    when(mockRequest.getParameter("start")).thenReturn(search.getStart());
+    when(mockRequest.getParameter("end")).thenReturn(search.getEnd());
+    when(mockRequest.getParameter("duration")).thenReturn(search.getDuration());
+    when(mockRequest.getParameter("location")).thenReturn(search.getLocation());
+  }
 
+  private void setWriterAndCreateEvent() throws IOException {
     StringWriter stringWriter = new StringWriter();
     PrintWriter writer = new PrintWriter(stringWriter);
     when(mockResponse.getWriter()).thenReturn(writer);
 
     new EventServlet(mockUserStorage, mockEventStorage).doGet(mockRequest, mockResponse);
+  }
+
+  @Test
+  public void eventServletTest_doGet_WithNullPath_DoesSearch() throws IOException {
+    when(mockRequest.getPathInfo()).thenReturn(null);
+
+    setWriterAndCreateEvent();
 
     verify(mockEventStorage, atLeast(1)).getSearchedEvents(any(Search.class));
   }
@@ -65,11 +78,7 @@ public class EventServletTest {
   public void eventServletTest_doGet_WithEmptyPath_DoesSearch() throws IOException {
     when(mockRequest.getPathInfo()).thenReturn("");
 
-    StringWriter stringWriter = new StringWriter();
-    PrintWriter writer = new PrintWriter(stringWriter);
-    when(mockResponse.getWriter()).thenReturn(writer);
-
-    new EventServlet(mockUserStorage, mockEventStorage).doGet(mockRequest, mockResponse);
+    setWriterAndCreateEvent();
 
     verify(mockEventStorage, atLeast(1)).getSearchedEvents(any(Search.class));
   }
@@ -78,11 +87,7 @@ public class EventServletTest {
   public void eventServletTest_doGet_WithSlashPath_DoesSearch() throws IOException {
     when(mockRequest.getPathInfo()).thenReturn("/");
 
-    StringWriter stringWriter = new StringWriter();
-    PrintWriter writer = new PrintWriter(stringWriter);
-    when(mockResponse.getWriter()).thenReturn(writer);
-
-    new EventServlet(mockUserStorage, mockEventStorage).doGet(mockRequest, mockResponse);
+    setWriterAndCreateEvent();
 
     verify(mockEventStorage, atLeast(1)).getSearchedEvents(any(Search.class));
   }
@@ -97,22 +102,40 @@ public class EventServletTest {
   }
 
   @Test
-  public void eventServletTest_doGet_WithGivenParameters_DoesSearch() throws IOException {
+  public void eventServletTest_doGet_WithNullPathAndGivenParameters_DoesSearch() throws IOException {
+    when(mockRequest.getPathInfo()).thenReturn(null);
+
     Search search = new Search("", "all", "2020-01-01", "2020-12-31", "60", "ChIJGaK-SZcLkEcRA9wf5_GNbuY");
+    
+    setParameters(search);
 
+    setWriterAndCreateEvent();
+    
+    verify(mockEventStorage, atLeast(1)).getSearchedEvents(eq(search));
+  }
+
+  @Test
+  public void eventServletTest_doGet_WithEmptyPathAndGivenParameters_DoesSearch() throws IOException {
+    when(mockRequest.getPathInfo()).thenReturn("");
+
+    Search search = new Search("", "all", "2020-01-01", "2020-12-31", "60", "ChIJGaK-SZcLkEcRA9wf5_GNbuY");
+    
+    setParameters(search);
+
+    setWriterAndCreateEvent();
+    
+    verify(mockEventStorage, atLeast(1)).getSearchedEvents(eq(search));
+  }
+
+  @Test
+  public void eventServletTest_doGet_WithSlashPathAndGivenParameters_DoesSearch() throws IOException {
     when(mockRequest.getPathInfo()).thenReturn("/");
-    when(mockRequest.getParameter("search")).thenReturn(search.getText());
-    when(mockRequest.getParameter("category")).thenReturn(search.getCategory());
-    when(mockRequest.getParameter("start")).thenReturn(search.getStart());
-    when(mockRequest.getParameter("end")).thenReturn(search.getEnd());
-    when(mockRequest.getParameter("duration")).thenReturn(search.getDuration());
-    when(mockRequest.getParameter("location")).thenReturn(search.getLocation());
 
-    StringWriter stringWriter = new StringWriter();
-    PrintWriter writer = new PrintWriter(stringWriter);
-    when(mockResponse.getWriter()).thenReturn(writer);
+    Search search = new Search("", "all", "2020-01-01", "2020-12-31", "60", "ChIJGaK-SZcLkEcRA9wf5_GNbuY");
+    
+    setParameters(search);
 
-    new EventServlet(mockUserStorage, mockEventStorage).doGet(mockRequest, mockResponse);
+    setWriterAndCreateEvent();
     
     verify(mockEventStorage, atLeast(1)).getSearchedEvents(eq(search));
   }

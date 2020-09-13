@@ -14,6 +14,8 @@
 
 package com.google.sps.data;
 
+import java.util.Objects;
+
 public class Search {
   private final String text;
   private final String category;
@@ -76,5 +78,18 @@ public class Search {
   public boolean eventInCategory(String category) {
     return this.category == null || category == null || this.category.equals("all") 
     || category.equals(this.category);
+  }
+
+  @Override
+  public boolean equals(Object other_object) {
+    if (!(other_object instanceof Search))
+        return false;
+    Search other = (Search) other_object;
+    return Objects.equals(text, other.getText())
+        && Objects.equals(category, other.getCategory())
+        && Objects.equals(start, other.getStart())
+        && Objects.equals(end, other.getEnd())
+        && Objects.equals(duration, other.getDuration())
+        && Objects.equals(location, other.getLocation());
   }
 }
