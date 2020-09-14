@@ -93,16 +93,72 @@ function searchEvents() {
     duration: duration,
   }) + '&' + new URLSearchParams({
     location: location,
-})).then(response => response.json()).then(events => events.forEach(showEvent));
+  })).then(handleError).then(response => response.json()).then(jsonObject => {
+    jsonObject.searched.forEach(function (event) {
+      showEvent(event, jsonObject.alreadyJoined.includes(event.id));
+    });
+  }).catch(error => {
+    if (error == 401) {
+      alert("You are not logged in and you cannot see this page. You will be redirected to login");
+      fetch("/auth").then(authResponse => authResponse.json()).then(authData => {
+        window.location.href = authData.authLink;
+      });
+    }
+  });
   document.getElementById('location-id').value = "all";
 }
 
-function showEvent(event) {
-  document.getElementById('events-container').innerHTML += '<div><h1>'
+function showEvent(event, alreadyJoined) {
+  console.log(alreadyJoined);
+  /*document.getElementById('events-container').innerHTML += '<div><h1>'
     + event.title + '</h1><hr><br><h2>' + event.duration + '</h2><h3>' + event.description
     + '</h3><br><p><i class="fas fa-map-marker-alt"></i>' + event.location
     + '</p><br><form action="/events/' + event.id + '" method="POST">'
-    + '<input type="submit" class="btn btn-success" value="Join event!"/></form><br><br></div>';
+    + '<input type="submit" class="btn btn-success" value="Join event!"/></form><br><br></div>';*/
+  var divElement = document.createElement("div");
+  var h1Element = document.createElement("h1");
+  var h2Element = document.createElement("h2");
+  var h3Element = document.createElement("h3");
+  var brElement = document.createElement("br");
+  var pElement = document.createElement("p");
+  var iElement = document.createElement("i");
+  var formElement = document.createElement("form");
+  var inputElement = document.createElement("input");
+  var buttonElement = document.createElement("button");
+
+  inputElement.type = "submit";
+  inputElement.classList.add("btn", "btn-success");
+  buttonElement.classList.add("btn", "btn-success");
+
+  formElement.action = "/events/" + event.id;
+  formElement.method = "POST";
+  if (!alreadyJoined)
+    inputElement.value = "Join Event!";
+  else {
+    buttonElement.innerText = "Joined";
+    buttonElement.onclick = function () { window.location.href = getCurrentUrl() + "/event.html?event_id=" + event.id; };
+  }
+
+  formElement.appendChild(inputElement);
+  iElement.classList.add("fas", "fa-map-marker-alt");
+  pElement.innerText = event.location;
+  pElement.appendChild(iElement);
+
+  h3Element.innerText = event.description;
+  h2Element.innerText = event.duration;
+  h1Element.innerText = event.title;
+
+  divElement.appendChild(h1Element);
+  divElement.appendChild(brElement);
+  divElement.appendChild(h2Element);
+  divElement.appendChild(h3Element);
+  divElement.appendChild(brElement);
+  divElement.appendChild(pElement);
+  divElement.appendChild(brElement);
+  if (!alreadyJoined)
+    divElement.appendChild(formElement);
+  else divElement.appendChild(buttonElement);
+  document.getElementById("events-container").appendChild(divElement);
 }
 
 function addEventToGCalendar() { //To be modified to get fields
@@ -168,8 +224,8 @@ function getGCalendarEvents(calendar, startTime, endTime) {
         } else {
           window.location.href = authInfo.authLink;
         }
-      })
-        ;
+      });
+
     }
   });
 }
@@ -434,4 +490,18 @@ function changePopoverColorTo(color) {
   }
   styleNode.innerHTML = ".popover-header {background: " + color + ";}";
   document.body.appendChild(styleNode);
+}
+
+function getCredentialIfNeeded() {
+  verifyCredentials().then(validCredential => {
+    if (!validCredential) {
+      fetch("/auth?origin=add_event").then(authResponse => authResponse.json()).then(authInfo => {
+        if (authInfo.isLoggedIn) {
+          window.location.href = getCurrentUrl() + "/token?origin=add_event";
+        } else {
+          window.location.href = authInfo.authLink;
+        }
+      });
+    }
+  })
 }
