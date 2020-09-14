@@ -18,6 +18,8 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonElement;
 
+import java.util.Objects;
+
 public class Weather {
   private Double temperature;
   private Double temperatureFeelsLike;
@@ -27,7 +29,24 @@ public class Weather {
   private String type;
   private String iconId;
 
-  public Weather() {}
+  private static final String URL_OPENWEATHER_API_CALL = "https://api.openweathermap.org/data/2.5/onecall?lat=%f&lon=%f&units=metric&appid=";
+  
+  public Weather() {
+  }
+
+  @Override
+  public boolean equals(Object other_object) {
+    if (!(other_object instanceof Weather))
+        return false;
+    Weather other = (Weather) other_object;
+    return Objects.equals(temperature, other.temperature)
+        && Objects.equals(temperatureFeelsLike, other.temperatureFeelsLike)
+        && Objects.equals(pressure, other.pressure)
+        && Objects.equals(humidity, other.humidity)
+        && Objects.equals(clouds, other.clouds)
+        && Objects.equals(type, other.type)
+        && Objects.equals(iconId, other.iconId);
+  }
 
   public Weather(Double temperature, Double temperatureFeelsLike, 
           Integer pressure, Integer humidity, Integer clouds, 
@@ -41,7 +60,7 @@ public class Weather {
     this.iconId = iconId;
   }
 
-  private Weather fromOpenWeatherApiJsonObject(JsonObject openWeatherApiJsonObject) {
+  public static Weather fromOpenWeatherApiJsonObject(JsonObject openWeatherApiJsonObject) {
     if (openWeatherApiJsonObject == null)
       return null;
     try {
@@ -71,12 +90,9 @@ public class Weather {
     if (latlng == null)
       return null;
 
-    //https://api.openweathermap.org/data/2.5/onecall?lat={lat}&lon={lon}&exclude={part}&units=metric&appid={YOUR API KEY}
     URL openWeatherApiUrl = null;
     try {
-      openWeatherApiUrl = new URL(String.format(
-        "https://api.openweathermap.org/data/2.5/onecall?lat=%f&lon=%f&units=metric&appid=" + ApiKeys.WEATHER_API_KEY, latlng.lat, latlng.lng
-      ));
+      openWeatherApiUrl = new URL(String.format(URL_OPENWEATHER_API_CALL + ApiKeys.WEATHER_API_KEY, latlng.lat, latlng.lng));
     } catch (MalformedURLException e) {
       System.err.println(String.format("Cannot form URl with %f, %f ", latlng.lat, latlng.lng) + e.getMessage());
       return null;
@@ -103,29 +119,26 @@ public class Weather {
     try {
       return new JsonParser().parse(new InputStreamReader((InputStream) connection.getContent())).getAsJsonObject();
     } catch (IOException e) {
-      System.err.println(String.format("Cannot parse json form URl with %f, %f ", latlng.lat, latlng.lng) + e.getMessage());
+      System.err.println(e.getMessage());
       return null;
     }
   }
   
   public Weather atLatLngNow(LatLng latlng) {
     JsonObject openWeatherApiJsonObject = getOpenWeatherApiJsonObject(latlng);
-    if (openWeatherApiJsonObject == null)
-      return null;
-    return fromOpenWeatherApiJsonObject(openWeatherApiJsonObject.getAsJsonObject("current"));
+    return openWeatherApiJsonObject != null ? 
+        fromOpenWeatherApiJsonObject(openWeatherApiJsonObject.getAsJsonObject("current")) : null;
   }
 
-  public Weather atLatLngTroughHours(LatLng latlng, Integer hours) {
+  public Weather atLatLngThroughHours(LatLng latlng, Integer hours) {
     JsonObject openWeatherApiJsonObject = getOpenWeatherApiJsonObject(latlng);
-    if (openWeatherApiJsonObject == null)
-      return null;
-    return fromOpenWeatherApiJsonObject(openWeatherApiJsonObject.getAsJsonArray("hourly").get(hours).getAsJsonObject());
+    return openWeatherApiJsonObject != null ? 
+        fromOpenWeatherApiJsonObject(openWeatherApiJsonObject.getAsJsonArray("hourly").get(hours).getAsJsonObject()) : null;
   }
 
-  public Weather atLatLngTroughDays(LatLng latlng, Integer days) {
+  public Weather atLatLngThroughDays(LatLng latlng, Integer days) {
     JsonObject openWeatherApiJsonObject = getOpenWeatherApiJsonObject(latlng);
-    if (openWeatherApiJsonObject == null)
-      return null;
-    return fromOpenWeatherApiJsonObject(openWeatherApiJsonObject.getAsJsonArray("daily").get(days).getAsJsonObject());
+    return openWeatherApiJsonObject != null ? 
+        fromOpenWeatherApiJsonObject(openWeatherApiJsonObject.getAsJsonArray("daily").get(days).getAsJsonObject()) : null;
   }
 }
