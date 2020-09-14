@@ -16,6 +16,7 @@ package com.google.sps.servlets;
 
 import static com.google.appengine.api.datastore.FetchOptions.Builder.withLimit;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
@@ -33,6 +34,7 @@ import java.util.stream.Collectors;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -69,7 +71,7 @@ public class EventStorageTest {
         .setDeclinedIDs(LIST).build();
 
   private static final Event EVENT_B = Event.newBuilder()
-        .setID("1")
+        .setID("2")
         .setGCalendarID("1")
         .setOwnerID("1")
         .setTitle("Party")
@@ -87,7 +89,7 @@ public class EventStorageTest {
         .setDeclinedIDs(LIST).build();
 
   private static final Event EVENT_C = Event.newBuilder()
-        .setID("1")
+        .setID("3")
         .setGCalendarID("1")
         .setOwnerID("1")
         .setTitle("Graduation")
@@ -103,6 +105,8 @@ public class EventStorageTest {
         .setInvitedIDs(LIST)
         .setJoinedIDs(LIST)
         .setDeclinedIDs(LIST).build();
+
+  private static final List<Event> ALL_EVENTS = Arrays.asList(EVENT_A, EVENT_B, EVENT_C);
 
   private final LocalServiceTestHelper helper =
       new LocalServiceTestHelper(new LocalDatastoreServiceTestConfig());
@@ -125,7 +129,7 @@ public class EventStorageTest {
   }
 
   private Entity getEntityFromEvent(Event event) {
-    Entity entity = new Entity("Event");
+    Entity entity = new Entity("Event", event.getID());
 
     entity.setProperty("gcalendar-id", event.getGCalendarID());
     entity.setProperty("title", event.getTitle());
@@ -148,20 +152,50 @@ public class EventStorageTest {
     return entity;
   }
 
+  public boolean eventEqualsWithoutID(Event event, Event other) {
+    return Objects.equals(event.getGCalendarID(), other.getGCalendarID())
+        && Objects.equals(event.getTitle(), other.getTitle())
+        && Objects.equals(event.getDescription(), other.getDescription())
+        && Objects.equals(event.getCategory(), other.getCategory())
+        && Objects.equals(event.getTags(), other.getTags())
+        && Objects.equals(event.getDateTimeRangeAsJSON(), other.getDateTimeRangeAsJSON())
+        && Objects.equals(event.getDuration(), other.getDuration())
+        && Objects.equals(event.getLocation(), other.getLocation())
+        && Objects.equals(event.getLinks(), other.getLinks())
+        && Objects.equals(event.getFields(), other.getFields())
+        && Objects.equals(event.getOwnerID(), other.getOwnerID())
+        && Objects.equals(event.getInvitedIDs(), other.getInvitedIDs())
+        && Objects.equals(event.getJoinedIDs(), other.getJoinedIDs())
+        && Objects.equals(event.getDeclinedIDs(), other.getDeclinedIDs());
+  }
+
   @Test
   public void eventStorageTest_getSearchedEvents_nullSearch_MatchesAll() {
-    assertEquals(3, eventStorageObject.getSearchedEvents(NULL_SEARCH).size());
+    List<Event> searchedEvents = eventStorageObject.getSearchedEvents(NULL_SEARCH);
+    assertEquals(3, searchedEvents.size());
+    for (int i = 0; i < searchedEvents.size(); i++) {
+      assertTrue(eventEqualsWithoutID(searchedEvents.get(i), ALL_EVENTS.get(i)));
+    }
   }
 
   @Test
   public void eventStorageTest_getSearchedEvents_emptySearch_MatchesAll() {
-    assertEquals(3, eventStorageObject.getSearchedEvents(EMPTY_SEARCH).size());
+    List<Event> searchedEvents = eventStorageObject.getSearchedEvents(EMPTY_SEARCH);
+    assertEquals(3, searchedEvents.size());
+    for (int i = 0; i < searchedEvents.size(); i++) {
+      assertTrue(eventEqualsWithoutID(searchedEvents.get(i), ALL_EVENTS.get(i)));
+    }
   }
 
   @Test
   public void eventStorageTest_getSearchedEvents_Matches() {
-    assertEquals(1, eventStorageObject.getSearchedEvents(SEARCH_A).size());
-    assertEquals(1, eventStorageObject.getSearchedEvents(SEARCH_B).size());
+    List<Event> searchedAEvents = eventStorageObject.getSearchedEvents(SEARCH_A);
+    assertEquals(1, searchedAEvents.size());
+    assertTrue(eventEqualsWithoutID(searchedAEvents.get(0), EVENT_A));
+
+    List<Event> searchedBEvents = eventStorageObject.getSearchedEvents(SEARCH_B);
+    assertEquals(1, searchedBEvents.size());
+    assertTrue(eventEqualsWithoutID(searchedBEvents.get(0), EVENT_B));
   }
 
   @Test

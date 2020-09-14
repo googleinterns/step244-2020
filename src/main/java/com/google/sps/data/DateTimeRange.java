@@ -14,6 +14,8 @@
 
 package com.google.sps.data;
 
+import java.util.Objects;
+
 public final class DateTimeRange {
   private final String startDate; // yyyy-mm-dd
   private final String endDate;  
@@ -60,5 +62,16 @@ public final class DateTimeRange {
 
   public String getTime() {
     return isTimeSet() ? startTime : null;
+  }
+
+  @Override
+  public boolean equals(Object other_object) {
+    if (!(other_object instanceof DateTimeRange))
+        return false;
+    DateTimeRange other = (DateTimeRange) other_object;
+    return Objects.equals(startDate, other.startDate)
+        && Objects.equals(startTime, other.startTime)
+        && Objects.equals(endDate, other.endDate)
+        && Objects.equals(endTime, other.endTime);
   }
 }
