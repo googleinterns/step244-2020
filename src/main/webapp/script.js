@@ -362,7 +362,7 @@ function loadFreeTimes() {
     return;
   }
 
-  fetch("/freetimes?eventId=" + eventId).then(response => response.json()).then(freeTimes => {
+  fetch("/events/schedule?eventId=" + eventId).then(response => response.json()).then(freeTimes => {
     freeTimes.forEach(freeTime => {
       var toStartDate = new Date(freeTime.start);
       var toEndDate = new Date(freeTime.end);

@@ -22,14 +22,14 @@ public class SeeYouServletModule extends ServletModule {
     bind(CredentialVerifierServlet.class).in(Singleton.class);
     bind(EventServlet.class).in(Singleton.class);
     bind(UserServlet.class).in(Singleton.class);
-    bind(EventFreeTimeServlet.class).in(Singleton.class);
+    bind(TestServlet.class).in(Singleton.class);
     serve("/auth").with(AuthServlet.class);
     serve("/token").with(CalendarTokenServlet.class);
     serve("/oauth2callback").with(OAuth2Callback.class);
     serve("/credentials").with(CredentialVerifierServlet.class);
     serve("/events/*", "/events").with(EventServlet.class);
     serve("/users/*", "/users").with(UserServlet.class);
-    serve("/freetimes").with(EventFreeTimeServlet.class);
+    serve("/test").with(TestServlet.class);
   }
 
   @Provides
@@ -50,5 +50,10 @@ public class SeeYouServletModule extends ServletModule {
   @Provides
   EventStorage provideEventStorage() {
     return new EventStorage();
+  }
+
+  @Provides
+  Utils provideUtils() {
+    return new Utils();
   }
 }

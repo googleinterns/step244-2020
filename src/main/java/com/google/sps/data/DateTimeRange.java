@@ -77,11 +77,11 @@ public final class DateTimeRange {
     return endTime;
   }
 
-  public String convertStartTimeToString() {
+  public String convertStartTimeToUTCString() {
     return this.startDate + "T" + this.startTime + ":00Z";
   }
 
-  public String convertEndTimeToString() {
+  public String convertEndTimeToUTCString() {
     return this.endDate + "T" + this.endTime + ":00Z";
   }
 }

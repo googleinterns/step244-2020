@@ -19,12 +19,14 @@ import com.google.api.client.util.DateTime;
 import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.model.EventDateTime;
 import com.google.api.services.calendar.model.Event.ExtendedProperties;
+import com.google.appengine.api.ThreadManager;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.google.gson.Gson;
 import com.google.inject.Inject;
 import com.google.sps.data.Event;
 import com.google.sps.data.EventStorage;
+import com.google.sps.data.Time;
 import com.google.sps.data.DateTimeRange;
 import com.google.sps.data.User;
 import com.google.sps.data.UserStorage;
@@ -40,6 +42,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Vector;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+
+import com.google.api.client.auth.oauth2.AuthorizationCodeFlow;
+import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.http.HttpHeaders;
 
 import javax.servlet.RequestDispatcher;
@@ -53,11 +65,17 @@ import javax.servlet.http.HttpServletResponse;
 public class EventServlet extends HttpServlet {
   UserStorage userStorageObject;
   EventStorage eventStorageObject;
+  UserService userService;
+  Utils utilsObject;
+  AuthorizationCodeFlow flow;
 
   @Inject
-  EventServlet(UserStorage userStorageObject, EventStorage eventStorageObject) {
+  EventServlet(UserStorage userStorageObject, EventStorage eventStorageObject, UserService userService, Utils utilsObject, AuthorizationCodeFlow flow) {
     this.userStorageObject = userStorageObject;
     this.eventStorageObject = eventStorageObject;
+    this.userService = userService;
+    this.utilsObject = utilsObject;
+    this.flow = flow;
   }
   
   @Override
@@ -81,6 +99,11 @@ public class EventServlet extends HttpServlet {
       response.getWriter().println(gson.toJson(events));
 
       return;
+    }
+
+    if (pathName.equals("/schedule")) {
+      getFreeTimesForEvent(request, response);
+      return ;
     }
 
     if (pathName.equals("/gcalendar")) {
@@ -180,8 +203,6 @@ public class EventServlet extends HttpServlet {
       }
     }
     Long tzShift = parseLongFromString(request.getParameter("tzShift"));
-    System.out.println(tzShift);
-    System.out.println(request.getParameter("tzShift"));
     if (tzShift == null) {
       tzShift = Long.valueOf(0);
     }
@@ -219,6 +240,93 @@ public class EventServlet extends HttpServlet {
     }
 
     return eventId;
+  }
+
+  private void getFreeTimesForEvent(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    String eventId = request.getParameter("eventId");
+    if (eventId == null || eventStorageObject.getEvent(eventId) == null) {
+      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      return;
+    }
+
+    DateTimeRange timeRange = eventStorageObject.getEvent(eventId).getDateTimeRange();
+    Long duration = eventStorageObject.getEvent(eventId).getDuration();
+    if (timeRange.isDateTimeSet()) {
+      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      return;
+    }
+
+    DateTime startDateTime = new DateTime(timeRange.convertStartTimeToUTCString());
+    DateTime startDateTimeWithShift = new DateTime(startDateTime.getValue() + timeRange.getShift());
+    DateTime endDateTime = new DateTime(timeRange.convertEndTimeToUTCString());
+    DateTime endDateTimeWithShift = new DateTime(endDateTime.getValue() + timeRange.getShift());
+    String ownerId = eventStorageObject.getEvent(eventId).getOwnerID();
+
+    if (userService.getCurrentUser() == null || !userService.getCurrentUser().getUserId().equals(ownerId)) {
+      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+      return;
+    }
+
+    List<String> joinedParticipantsIds = eventStorageObject.getEvent(eventId).getJoinedIDs();
+    if (!joinedParticipantsIds.contains(ownerId)) {
+      joinedParticipantsIds.add(ownerId);
+    }
+
+    List<Credential> usersCredentials;
+    try {
+      usersCredentials = getCredentialsFromUserList(joinedParticipantsIds);
+    } catch (InterruptedException e2) {
+      e2.printStackTrace();
+      response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+      return;
+    }
+    Vector<Time> busyTimesForAttendees = utilsObject.getBusyTimesForAttendees(response, flow, usersCredentials, startDateTimeWithShift, endDateTimeWithShift);
+    writeFreeTimesFromInterval(startDateTimeWithShift.getValue(), endDateTimeWithShift.getValue(), duration,
+            busyTimesForAttendees, response);
+  }
+
+  private void writeFreeTimesFromInterval(Long start, Long end, Long duration, Vector<Time> busyTimes,
+      HttpServletResponse response) throws IOException {
+    List<Time> freeTimes = new ArrayList<>();
+    final Long SHIFT = Long.valueOf(1000 * 60 * 15);
+    Long currentStart = start;
+    Long currentEnd = start + duration * 60 * 1000;
+
+    while (currentEnd <= end) {
+      final Long innerCurrentStart = Long.valueOf(currentStart);
+      final Long innerCurrentEnd = Long.valueOf(currentEnd);
+      if (!busyTimes.stream().anyMatch(time -> time.overlaps(innerCurrentStart, innerCurrentEnd))) {
+        freeTimes.add(new Time(currentStart, currentEnd));
+      }
+      currentStart = currentStart + SHIFT;
+      currentEnd += SHIFT;
+    }
+    response.setContentType("application/json");
+    response.getWriter().println(new Gson().toJson(freeTimes));
+
+    return;
+  }
+
+  private List<Credential> getCredentialsFromUserList(List<String> userIds) throws InterruptedException {
+    List<Credential> usersCredential = new ArrayList<>();
+    ExecutorService executorService = Executors.newCachedThreadPool(ThreadManager.currentRequestThreadFactory());
+    List<Callable<Credential>> callables = new ArrayList<>();
+    userIds.forEach(userId -> {
+      callables.add(() -> {
+        return flow.loadCredential(userId);
+      });
+    });
+    List<Future<Credential>> futureCredentials = executorService.invokeAll(callables);
+    futureCredentials.stream().forEach(futureCredential -> {
+      try {
+        usersCredential.add(futureCredential.get());
+      } catch (InterruptedException | ExecutionException e) {
+        e.printStackTrace();
+      }
+    });
+    executorService.shutdown();
+    executorService.awaitTermination(10, TimeUnit.SECONDS); // Await max 10 seconds before returning
+    return usersCredential;
   }
 
   private boolean getEvent(HttpServletRequest request, HttpServletResponse response, String currentUserId,

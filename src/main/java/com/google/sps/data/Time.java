@@ -31,4 +31,8 @@ public class Time implements Comparable<Time>{
   public int compareTo(Time other) {
     return Long.compare(this.start, other.start);
   }
+
+  public boolean overlaps(Long start, Long end) {
+    return !(this.start >= end || this.end <= start);
+  }
 }
