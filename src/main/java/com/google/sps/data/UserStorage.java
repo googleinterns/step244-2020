@@ -76,11 +76,11 @@ public class UserStorage {
     return userEntity != null ? (String) userEntity.getProperty("id") : null;
   }
 
-  public void joinEvent(String userId, String eventId) {
+  public void joinEvent(String userId, String eventId, boolean isEventPublic) {
     User user = getUser(userId);
     if (user == null)
       return;
-    user.joinEvent(eventId);
+    user.joinEvent(eventId, isEventPublic);
     addOrUpdateUser(user);
     new EventStorage().joinEvent(userId, eventId);
   }

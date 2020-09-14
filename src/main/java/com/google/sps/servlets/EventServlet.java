@@ -22,6 +22,8 @@ import com.google.api.services.calendar.model.Event.ExtendedProperties;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.inject.Inject;
 import com.google.sps.data.Event;
 import com.google.sps.data.EventStorage;
@@ -53,17 +55,21 @@ import javax.servlet.http.HttpServletResponse;
 public class EventServlet extends HttpServlet {
   UserStorage userStorageObject;
   EventStorage eventStorageObject;
-  
+
   @Inject
   EventServlet(UserStorage userStorageObject, EventStorage eventStorageObject) {
     this.userStorageObject = userStorageObject;
     this.eventStorageObject = eventStorageObject;
   }
-  
+
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String pathName = request.getPathInfo();
     UserService userService = UserServiceFactory.getUserService();
+    if (!userService.isUserLoggedIn()) {
+      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+      return;
+    }
 
     if (pathName == null || pathName.isEmpty() || pathName.equals("/")) {
       String search = request.getParameter("search");
@@ -76,10 +82,15 @@ public class EventServlet extends HttpServlet {
       List<Event> events = eventStorageObject.getSearchedEvents(search, category, start, end, duration, location);
 
       Gson gson = new Gson();
-    
+      JsonObject wrapper = new JsonObject();
+      JsonElement eventsJson = gson.toJsonTree(events);
+      JsonElement userJoinedEventsJson = gson
+          .toJsonTree(userStorageObject.getUser(userService.getCurrentUser().getUserId()).getJoinedEventsID());
+      wrapper.getAsJsonObject().add("alreadyJoined", userJoinedEventsJson);
+      wrapper.getAsJsonObject().add("searched", eventsJson);
       response.setContentType("application/json");
-      response.getWriter().println(gson.toJson(events));
-      
+      response.getWriter().println(gson.toJson(wrapper));
+
       return;
     }
 
@@ -137,7 +148,8 @@ public class EventServlet extends HttpServlet {
     response.sendRedirect("/index.html");
   }
 
-  private String addEvent(HttpServletRequest request, HttpServletResponse response, String currentUserId) throws IOException {
+  private String addEvent(HttpServletRequest request, HttpServletResponse response, String currentUserId)
+      throws IOException {
     Long duration = parseLongFromString(request.getParameter("duration"));
     if (duration == null) {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -153,21 +165,19 @@ public class EventServlet extends HttpServlet {
         }
       }
     }
-    
-    Event.Builder eventBuilder = Event.newBuilder()
-        .setOwnerID(currentUserId)
-        .setTitle(request.getParameter("title"))
-        .setDescription(request.getParameter("description"))
-        .setCategory(request.getParameter("category"))
-        .setTags(parseTags(request.getParameterValues("tags")))
-        .setLocation(request.getParameter("location"))
+    boolean isPublic = true;
+    if (request.getParameter("isPublic") == null) {
+      isPublic = false;
+    }
+
+    Event.Builder eventBuilder = Event.newBuilder().setOwnerID(currentUserId).setTitle(request.getParameter("title"))
+        .setDescription(request.getParameter("description")).setCategory(request.getParameter("category"))
+        .setTags(parseTags(request.getParameterValues("tags"))).setLocation(request.getParameter("location"))
         .setLocationId(request.getParameter("location-id"))
         .setDateTimeRange(formatDateTimeRange(request.getParameter("start-date"), request.getParameter("start-time")))
-        .setDuration(duration)
-        .setLinks(parseLinks(request.getParameter("links")))
-        .setFields(fields)
-        .setInvitedIDs(parseInvitedIDs(request.getParameterValues("people")));
-    
+        .setDuration(duration).setIsPublic(isPublic).setLinks(parseLinks(request.getParameter("links")))
+        .setFields(fields).setInvitedIDs(parseInvitedIDs(request.getParameterValues("people")));
+
     Event event = eventBuilder.build();
 
     String gcalendarId = null;
@@ -190,12 +200,12 @@ public class EventServlet extends HttpServlet {
       System.err.println("Can't add new event to storage: " + e);
       response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
     }
-    
+
     return eventId;
   }
 
-  private boolean getEvent(HttpServletRequest request, HttpServletResponse response, String currentUserId, String eventId)
-      throws IOException {
+  private boolean getEvent(HttpServletRequest request, HttpServletResponse response, String currentUserId,
+      String eventId) throws IOException {
     Event event = eventStorageObject.getEvent(eventId);
     if (event == null) {
       System.err.println("Can't find event with id " + eventId);
@@ -244,40 +254,45 @@ public class EventServlet extends HttpServlet {
     return;
   }
 
-  private boolean joinEvent(HttpServletRequest request, HttpServletResponse response, String currentUserId, String eventId)
-      throws IOException {
+  private boolean joinEvent(HttpServletRequest request, HttpServletResponse response, String currentUserId,
+      String eventId) throws IOException {
     if (!eventStorageObject.hasUserAccessToEvent(currentUserId, eventId)) {
       response.setStatus(HttpServletResponse.SC_FORBIDDEN);
       return false;
     }
-    
+
     try {
-      userStorageObject.joinEvent(currentUserId, eventId);
-      User user = userStorageObject.getUser(currentUserId);
       Event event = eventStorageObject.getEvent(eventId);
-      if (user == null) {
-        System.err.println("Can't find user with id " + currentUserId);
-        response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-      }
       if (event == null) {
         System.err.println("Can't find event with id " + eventId);
         response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
       }
-      Utils.joinGCalendarEvent(event.getOwnerID(), eventId, user.getEmail());
+      if (event.getJoinedIDs().contains(currentUserId)) {
+        return true;
+      }
+      userStorageObject.joinEvent(currentUserId, eventId, event.isPublic());
+      User user = userStorageObject.getUser(currentUserId);
+      if (user == null) {
+        System.err.println("Can't find user with id " + currentUserId);
+        response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+      }
+      if (event.isDateTimeSet())
+        Utils.joinGCalendarEvent(event.getOwnerID(), event.getGCalendarID(), user.getEmail());
     } catch (Exception e) {
       // TODO: specify exception
       System.err.println("Can't add new event to storage: " + e);
       response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
       return false;
     }
-    
+
     return true;
   }
 
   private List<String> parseInvitedIDs(String[] invitedIDs) {
-    return invitedIDs != null ? 
-        Arrays.asList(invitedIDs).stream()
-            .map(person -> userStorageObject.getIDbyUsername(person)).filter(Objects::nonNull).collect(Collectors.toList()) : null;
+    return invitedIDs != null
+        ? Arrays.asList(invitedIDs).stream().map(person -> userStorageObject.getIDbyUsername(person))
+            .filter(Objects::nonNull).collect(Collectors.toList())
+        : null;
   }
 
   private List<String> parseTags(String[] tags) {
@@ -305,8 +320,7 @@ public class EventServlet extends HttpServlet {
     DateTime endDateTime = new DateTime(endEpochInSeconds);
     try {
       Calendar service = Utils.loadCalendarClient();
-      HttpHeaders headers = new com.google.api.client.http.HttpHeaders()
-          .setAcceptEncoding("gzip").setUserAgent("gzip");
+      HttpHeaders headers = new com.google.api.client.http.HttpHeaders().setAcceptEncoding("gzip").setUserAgent("gzip");
       List<com.google.api.services.calendar.model.Event> events = service.events().list("primary")
           .setFields("items(summary,start,end,description,extendedProperties,location)").setSingleEvents(true)
           .setTimeMin(startDateTime).setTimeMax(endDateTime).setRequestHeaders(headers).execute().getItems();

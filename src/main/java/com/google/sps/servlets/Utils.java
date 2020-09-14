@@ -96,6 +96,9 @@ public class Utils {
     com.google.api.services.calendar.model.Event originalEvent = ownerCalendar.events().get("primary", eventId)
         .execute();
     List<EventAttendee> currentAttendees = originalEvent.getAttendees();
+    System.out.println(userToBeAddedEmail);
+    System.out.println(ownerId);
+    System.out.println(eventId);
     EventAttendee newAttendee = new EventAttendee().setEmail(userToBeAddedEmail)
         .setResponseStatus("accepted");
     if (currentAttendees == null)
