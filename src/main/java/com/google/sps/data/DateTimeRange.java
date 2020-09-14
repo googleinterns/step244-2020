@@ -35,11 +35,11 @@ public final class DateTimeRange {
   }
 
   public Boolean isDateSet() {
-    return startDate != null && startDate == endDate;
+    return startDate != null && startDate.equals(endDate);
   }
 
   public Boolean isTimeSet() {
-    return startTime != null && startTime == endTime;
+    return startTime != null && startTime.equals(endTime);
   }
 
   public Boolean isDateTimeSet() {
