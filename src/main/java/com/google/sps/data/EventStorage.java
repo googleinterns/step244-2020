@@ -28,10 +28,13 @@ import com.google.appengine.api.datastore.Query.FilterOperator;
 import com.google.appengine.api.datastore.Query.FilterPredicate;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
+
+import static java.util.stream.Collectors.toList;
 
 public class EventStorage {
   public Event getEvent(String eventId) {
@@ -45,7 +48,7 @@ public class EventStorage {
     return eventEntity != null ? Event.fromDatastoreEntity(eventEntity) : null;
   }
 
-  public List<Event> getSearchedEvents(String search, String searchCategory, String searchStart, String searchEnd, String searchDuration, String searchLocation) {
+  public List<Event> getSearchedEvents(String search, String searchCategory, String searchStart, String searchEnd, String searchDuration, String searchLocation, String searchTags) {
     Query query = new Query("Event");
 
     if (searchDuration != null && !searchDuration.isEmpty()) {
@@ -66,11 +69,14 @@ public class EventStorage {
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
     PreparedQuery results = datastore.prepare(query);
 
-    List<Event> events = new ArrayList<>();
+    List<String> tagsList = Arrays.asList(searchTags.split("\\s*,\\s*"));
+
+    Map<Event, Integer> events = new HashMap<>();
     for (Entity entity : results.asIterable()) {
       String title = (String) entity.getProperty("title");
       String description = (String) entity.getProperty("description");
       DateTimeRange dateTimeRange = new Gson().fromJson((String) entity.getProperty("date-time-range"), DateTimeRange.class);
+      List<String> tags = (List<String>) entity.getProperty("tags");
 
       if (!eventInRange(searchStart, searchEnd, dateTimeRange)) {
         continue;
@@ -80,9 +86,32 @@ public class EventStorage {
         String category = (String) entity.getProperty("category");
 
         if (searchCategory == null || searchCategory.equals("all") || category.equals(searchCategory)) {
-          events.add(Event.fromDatastoreEntity(entity));
+
+          if (tagsList == null || tagsList.size() == 0 || tags == null || countMatchingTags(tagsList, tags) > 0) {
+            events.put(Event.fromDatastoreEntity(entity), countMatchingTags(tagsList, tags));
+          }
         }
       }
+    }
+
+    return orderEventsByTags(tagsList.size(), events);
+  }
+
+  private int countMatchingTags(List<String> searchTags, List<String> tags) {
+    return tags.stream().filter(tag -> searchTags.contains(tag)).collect(toList()).size();
+  }
+
+  private List<Event> orderEventsByTags(int count, Map<Event, Integer> eventsWithCounts) {
+    List<Event> events = new ArrayList<>();
+
+    while (count > 0) {
+      for (Map.Entry<Event, Integer> eventWithCount : eventsWithCounts.entrySet()) {
+        if (eventWithCount.getValue() == count) {
+          events.add(eventWithCount.getKey());
+          eventsWithCounts.remove(eventWithCount.getKey());
+        }
+      }
+      count--;
     }
 
     return events;
