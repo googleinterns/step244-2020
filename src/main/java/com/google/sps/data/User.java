@@ -76,8 +76,8 @@ public class User {
     return new User().new Builder();
   }
 
-  public void joinEvent(String eventId) {
-    if (invitedEventsId.contains(eventId)) {
+  public void joinEvent(String eventId, boolean isEventPublic) {
+    if (invitedEventsId.contains(eventId) || isEventPublic) {
       this.invitedEventsId.remove(eventId);
       this.joinedEventsId.add(eventId);
     }

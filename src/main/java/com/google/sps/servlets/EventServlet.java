@@ -23,6 +23,8 @@ import com.google.appengine.api.ThreadManager;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.inject.Inject;
 import com.google.sps.data.Event;
 import com.google.sps.data.EventStorage;
@@ -84,6 +86,10 @@ public class EventServlet extends HttpServlet {
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String pathName = request.getPathInfo();
     UserService userService = UserServiceFactory.getUserService();
+    if (!userService.isUserLoggedIn()) {
+      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+      return;
+    }
 
     if (pathName == null || pathName.isEmpty() || pathName.equals("/")) {
       String search = request.getParameter("search");
@@ -96,9 +102,14 @@ public class EventServlet extends HttpServlet {
       List<Event> events = eventStorageObject.getSearchedEvents(search, category, start, end, duration, location);
 
       Gson gson = new Gson();
-
+      JsonObject wrapper = new JsonObject();
+      JsonElement eventsJson = gson.toJsonTree(events);
+      JsonElement userJoinedEventsJson = gson
+          .toJsonTree(userStorageObject.getUser(userService.getCurrentUser().getUserId()).getJoinedEventsID());
+      wrapper.getAsJsonObject().add("alreadyJoined", userJoinedEventsJson);
+      wrapper.getAsJsonObject().add("searched", eventsJson);
       response.setContentType("application/json");
-      response.getWriter().println(gson.toJson(events));
+      response.getWriter().println(gson.toJson(wrapper));
 
       return;
     }
@@ -204,6 +215,10 @@ public class EventServlet extends HttpServlet {
         }
       }
     }
+    boolean isPublic = true;
+    if (request.getParameter("is-public") == null) {
+      isPublic = false;
+    }
     Long tzShift = parseLongFromString(request.getParameter("tzShift"));
     if (tzShift == null) {
       tzShift = Long.valueOf(0);
@@ -215,7 +230,7 @@ public class EventServlet extends HttpServlet {
         .setLocationId(request.getParameter("location-id"))
         .setDateTimeRange(formatDateTimeRange(request.getParameter("start-date"), request.getParameter("start-time"),
             request.getParameter("end-date"), request.getParameter("end-time"), tzShift))
-        .setDuration(duration).setLinks(parseLinks(request.getParameter("links"))).setFields(fields)
+        .setDuration(duration).setIsPublic(isPublic).setLinks(parseLinks(request.getParameter("links"))).setFields(fields)
         .setInvitedIDs(parseInvitedIDs(request.getParameterValues("people")));
 
     Event event = eventBuilder.build();
@@ -390,18 +405,22 @@ public class EventServlet extends HttpServlet {
     }
 
     try {
-      userStorageObject.joinEvent(currentUserId, eventId);
-      User user = userStorageObject.getUser(currentUserId);
       Event event = eventStorageObject.getEvent(eventId);
-      if (user == null) {
-        System.err.println("Can't find user with id " + currentUserId);
-        response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-      }
       if (event == null) {
         System.err.println("Can't find event with id " + eventId);
         response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
       }
-      Utils.joinGCalendarEvent(event.getOwnerID(), eventId, user.getEmail());
+      if (event.getJoinedIDs().contains(currentUserId)) {
+        return true;
+      }
+      userStorageObject.joinEvent(currentUserId, eventId, event.isPublic());
+      User user = userStorageObject.getUser(currentUserId);
+      if (user == null) {
+        System.err.println("Can't find user with id " + currentUserId);
+        response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+      }
+      if (event.isDateTimeSet())
+        Utils.joinGCalendarEvent(event.getOwnerID(), event.getGCalendarID(), user.getEmail());
     } catch (Exception e) {
       // TODO: specify exception
       System.err.println("Can't add new event to storage: " + e);
