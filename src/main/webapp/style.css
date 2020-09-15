@@ -236,6 +236,11 @@ input[type=submit]:hover {
   width: auto !important;
 }
 
+input[type=checkbox] {
+  width: auto;
+  height: auto;
+}
+
 #user-wrapper {
   display: flex;
   flex-direction: column;

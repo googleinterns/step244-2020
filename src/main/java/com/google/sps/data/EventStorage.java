@@ -106,7 +106,7 @@ public class EventStorage {
       eventEntity = new Entity("Event");
     } else {
       try {
-        eventEntity = datastore.get(KeyFactory.createKey("Event", event.getID()));
+        eventEntity = datastore.get(KeyFactory.stringToKey(event.getID()));
       } catch (EntityNotFoundException e) {
         System.err.println("Cannot get event " + event.getID() + ": " + e.getMessage());
         return null;

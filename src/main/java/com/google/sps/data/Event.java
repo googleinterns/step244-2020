@@ -119,6 +119,10 @@ public class Event {
     return dateTimeRange != null && dateTimeRange.isDateSet() ? dateTimeRange.getDate() : null;
   }
 
+  public DateTimeRange getDateTimeRange() {
+    return this.dateTimeRange;
+  }
+
   public String getTime() {
     return dateTimeRange != null && dateTimeRange.isTimeSet() ? dateTimeRange.getTime() : null;
   }
@@ -300,5 +304,13 @@ public class Event {
         throw new IllegalArgumentException("Owner of event should be specified"); 
       return Event.this;
     }
+  }
+
+  public void setRange(DateTimeRange dateTimeRange) {
+    this.dateTimeRange = dateTimeRange;
+  }
+
+  public void setGCalendarId(String id) {
+    this.gcalendarId = id;
   }
 }

@@ -49,4 +49,9 @@ public class SeeYouServletModule extends ServletModule {
   EventStorage provideEventStorage() {
     return new EventStorage();
   }
+
+  @Provides
+  Utils provideUtils() {
+    return new Utils();
+  }
 }
