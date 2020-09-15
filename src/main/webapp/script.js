@@ -404,6 +404,32 @@ function setMinDateToToday() {
   document.getElementById("event-start-date").min = new Date().toISOString().slice(0, 10);
 }
 
+function loadFreeTimes() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const eventId = urlParams.get('eventId');
+  if (eventId == null) {
+    alert("Your request is incomplete. Please access this page from the event page!");
+    return;
+  }
+
+  fetch("/events/schedule?eventId=" + eventId).then(response => response.json()).then(freeTimes => {
+    freeTimes.forEach(freeTime => {
+      var toStartDate = new Date(freeTime.start);
+      var toEndDate = new Date(freeTime.end);
+      var buttonElem = document.createElement("button");
+      buttonElem.innerText = toStartDate.toLocaleString() + "  ///  " + toEndDate.toLocaleString();
+      buttonElem.setAttribute("onclick", "setTime('" + eventId + "','" + toStartDate.toISOString() + "')");
+      document.getElementById("page-content-wrapper").appendChild(buttonElem);
+    })
+  }).catch(error => alert(error));
+}
+
+function setTime(eventId, start) {
+  fetch("/events?" + new URLSearchParams({ start: start }) + "&" + new URLSearchParams({ eventId: eventId }), { method: 'PUT' }).then(response => {
+    window.location.href = getCurrentUrl() + "/event.html?event_id=" + eventId;
+  }).catch(error => alert(error));
+}
+
 function fetchUserInfo() {
   fetch("/users").then(handleError).then(response => response.json()).then(userInfo => {
     const email = userInfo.email;

@@ -27,7 +27,7 @@
 
     function initLocation() {
       autocomplete = new google.maps.places.Autocomplete(
-      document.getElementById('event-location'),{});
+        document.getElementById('event-location'), {});
       autocomplete.addListener("place_changed", onPlaceChanged);
     }
 
@@ -56,8 +56,20 @@
         <label for="event-start-date">Start date</label>
         <input type="date" id="event-start-date" name="start-date" max="2200-01-01">
 
+        <label for="timezone" id="timezone-label"></label><br>
+        <input type="hidden" id="timezone-input" name="tzShift" value="0">
+
         <label for="event-start-time">Start time</label>
         <input type="time" id="event-start-time" name="start-time">
+
+        <label for="open-ended-event">If you would like to make an open ended event, check this</label>
+        <input type="checkbox" id="checkbox-open-ended" name="open-ended-event"><br>
+
+        <label for="event-end-date" id="label-end" style="display: none;">End date</label>
+        <input type="date" id="event-end-date" name="end-date" max="2200-01-01" disabled style="display: none;">
+
+        <label for="event-end-time" id="label-end-time" style="display: none;">End time</label>
+        <input type="time" id="event-end-time" name="end-time" disabled style="display: none;">
 
         <label for="event-duration">Duration in minutes</label>
         <input type="text" id="event-duration" name="duration">
@@ -114,5 +126,31 @@
   </div>
 
 </body>
+<script>
+  $(document).ready(function () {
+    console.log(new Date().getTimezoneOffset());
+    document.getElementById("timezone-input").value = new Date().getTimezoneOffset() * 60 * 1000;
+    document.getElementById("timezone-label").innerText = "The times are in your current TimeZone";
+    $('#checkbox-open-ended').change(function () {
+      if (!this.checked) {
+        document.getElementById("event-end-date").setAttribute("disabled", "true");
+        document.getElementById("event-end-time").setAttribute("disabled", "true");
+        document.getElementById("event-end-date").style.display = "none";
+        document.getElementById("event-end-time").style.display = "none";
+        document.getElementById("label-end").style.display = "none";
+        document.getElementById("label-end-time").style.display = "none";
+        document.getElem
+      }
+      else {
+        document.getElementById("event-end-date").removeAttribute("disabled");
+        document.getElementById("event-end-time").removeAttribute("disabled");
+        document.getElementById("event-end-date").style.display = "";
+        document.getElementById("event-end-time").style.display = "";
+        document.getElementById("label-end").style.display = "";
+        document.getElementById("label-end-time").style.display = "";
+      }
+    });
+  });
+</script>
 
 </html>
