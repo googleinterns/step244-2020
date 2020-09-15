@@ -4,6 +4,8 @@ import com.google.inject.servlet.ServletModule;
 import com.google.sps.data.ApiKeys;
 import com.google.sps.data.GeoCoding;
 import com.google.sps.data.Weather;
+import com.google.sps.data.EventStorage;
+import com.google.sps.data.UserStorage;
 import com.google.maps.GeoApiContext;
 import com.google.api.client.auth.oauth2.AuthorizationCodeFlow;
 import com.google.appengine.api.users.UserService;
@@ -52,5 +54,20 @@ public class SeeYouServletModule extends ServletModule {
   @Provides
   AuthorizationCodeFlow provideFlow() throws IOException, GeneralSecurityException {
     return Utils.newFlow();
+  }
+
+  @Provides
+  UserStorage provideUserStorage() {
+    return new UserStorage();
+  }
+
+  @Provides
+  EventStorage provideEventStorage() {
+    return new EventStorage();
+  }
+
+  @Provides
+  Utils provideUtils() {
+    return new Utils();
   }
 }

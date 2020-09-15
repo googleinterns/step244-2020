@@ -235,3 +235,64 @@ input[type=submit]:hover {
   padding-right: 5px;
   width: auto !important;
 }
+
+input[type=checkbox] {
+  width: auto;
+  height: auto;
+}
+
+#user-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+#user-header {
+  display: flex;
+  justify-content: center;
+  font-size: 2.5rem;
+  padding-bottom: 10vh;
+}
+
+#username-setter input {
+  display: flex;
+  justify-content: center;
+  width: 50vw;
+}
+
+#user-wrapper div {
+  display: flex;
+  justify-content: center;
+  margin: auto;
+}
+
+#user-wrapper button {
+  width: 50vw;
+  margin: auto;
+  display: flex;
+  justify-content: center;
+}
+
+#user-wrapper a {
+  padding-left: 3px;
+}
+
+.popover-header {
+  text-align: center;
+  color: white;
+}
+
+.popover-body {
+  max-height: 65vh;
+  height: auto;
+  overflow-y: scroll;
+}
+
+.popover-body li {
+  margin: auto;
+  font-size: 2rem;
+}
+
+.popover-body ul {
+  display: flex;
+  flex-direction: column;
+}
