@@ -33,6 +33,7 @@ public class Event {
   private DateTimeRange dateTimeRange;
   private Long duration; // in minutes
   private String location;
+  private boolean isPublic;
   private String locationId;
   private List<String> links;
   private Map<String, String> fields;
@@ -63,7 +64,8 @@ public class Event {
         && Objects.equals(ownerId, other.ownerId)
         && Objects.equals(invitedUsersId, other.invitedUsersId)
         && Objects.equals(joinedUsersId, other.joinedUsersId)
-        && Objects.equals(declinedUsersId, other.declinedUsersId);
+        && Objects.equals(declinedUsersId, other.declinedUsersId)
+        && Objects.equals(isPublic, other.isPublic);
   }
 
   public static Event fromDatastoreEntity(Entity eventEntity) {
@@ -77,6 +79,7 @@ public class Event {
         .setDateTimeRange(new Gson().fromJson((String) eventEntity.getProperty("date-time-range"), DateTimeRange.class))
         .setDuration((Long) eventEntity.getProperty("duration"))
         .setLocation((String) eventEntity.getProperty("location"))
+        .setIsPublic((boolean) eventEntity.getProperty("isPublic"))
         .setLocationId((String) eventEntity.getProperty("location-id"))
         .setLinks((ArrayList) eventEntity.getProperty("links"))
         .setFields(new Gson().fromJson((String) eventEntity.getProperty("fields"), Map.class))
@@ -111,12 +114,20 @@ public class Event {
     return tags;
   }
 
+  public boolean isPublic() {
+    return isPublic;
+  }
+
   public boolean isDateTimeSet() {
     return dateTimeRange != null && dateTimeRange.isDateTimeSet();
   }
 
   public String getDate() {
     return dateTimeRange != null && dateTimeRange.isDateSet() ? dateTimeRange.getDate() : null;
+  }
+
+  public DateTimeRange getDateTimeRange() {
+    return this.dateTimeRange;
   }
 
   public String getTime() {
@@ -172,11 +183,11 @@ public class Event {
   }
 
   public boolean joinEvent(String userId) {
-    if (invitedUsersId == null)
+    if (isPublic == false && invitedUsersId == null)
         return false;
     if (joinedUsersId == null)
         joinedUsersId = new ArrayList<>();
-    if (invitedUsersId.contains(userId)) {
+    if (invitedUsersId.contains(userId) || isPublic) {
       invitedUsersId.remove(userId);
       joinedUsersId.add(userId);
       return true;
@@ -185,8 +196,7 @@ public class Event {
   }
 
   public boolean hasUserAccessToEvent(String userId) {
-    // TODO: add isPublic
-    return ownerId.equals(userId) || invitedUsersId.contains(userId) || joinedUsersId.contains(userId) || declinedUsersId.contains(userId);
+    return isPublic || ownerId.equals(userId) || invitedUsersId.contains(userId) || joinedUsersId.contains(userId) || declinedUsersId.contains(userId);
   }
 
   public static Builder newBuilder() {
@@ -232,6 +242,11 @@ public class Event {
 
     public Builder setDateTimeRange(DateTimeRange dateTimeRange) {
       Event.this.dateTimeRange = dateTimeRange;
+      return this;
+    }
+
+    public Builder setIsPublic(boolean isPublic) {
+      Event.this.isPublic = isPublic;
       return this;
     }
 
@@ -300,5 +315,13 @@ public class Event {
         throw new IllegalArgumentException("Owner of event should be specified"); 
       return Event.this;
     }
+  }
+
+  public void setRange(DateTimeRange dateTimeRange) {
+    this.dateTimeRange = dateTimeRange;
+  }
+
+  public void setGCalendarId(String id) {
+    this.gcalendarId = id;
   }
 }

@@ -106,7 +106,7 @@ public class EventStorage {
       eventEntity = new Entity("Event");
     } else {
       try {
-        eventEntity = datastore.get(KeyFactory.createKey("Event", event.getID()));
+        eventEntity = datastore.get(KeyFactory.stringToKey(event.getID()));
       } catch (EntityNotFoundException e) {
         System.err.println("Cannot get event " + event.getID() + ": " + e.getMessage());
         return null;
@@ -130,6 +130,7 @@ public class EventStorage {
     eventEntity.setProperty("invited-users", event.getInvitedIDs());
     eventEntity.setProperty("joined-users", event.getJoinedIDs());
     eventEntity.setProperty("declined-users", event.getDeclinedIDs());
+    eventEntity.setProperty("isPublic", event.isPublic());
 
     // Store Entities to datastore.
     datastore.put(eventEntity);

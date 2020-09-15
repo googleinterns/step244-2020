@@ -21,27 +21,34 @@ public final class DateTimeRange {
   private final String endDate;  
   private final String startTime; // hh:mm
   private final String endTime;
+  private final Long tzShift;
 
-  public DateTimeRange(String startDate, String endDate, String startTime, String endTime) {
+  public DateTimeRange(String startDate, String endDate, String startTime, String endTime, Long tzShift) {
     this.startDate = startDate;
     this.endDate = endDate;
     this.startTime = startTime;
     this.endTime = endTime;
+    this.tzShift = tzShift;
   }
 
-  public DateTimeRange(String date, String time) {
+  public DateTimeRange(String date, String time, Long tzShift) {
     this.startDate = date;
     this.endDate = date;
     this.startTime = time;
     this.endTime = time;
+    this.tzShift = tzShift;
+  }
+
+  public Long getShift() {
+    return tzShift;
   }
 
   public Boolean isDateSet() {
-    return startDate != null && startDate == endDate;
+    return startDate != null && startDate.equals(endDate);
   }
 
   public Boolean isTimeSet() {
-    return startTime != null && startTime == endTime;
+    return startTime != null && startTime.equals(endTime);
   }
 
   public Boolean isDateTimeSet() {
@@ -64,6 +71,22 @@ public final class DateTimeRange {
     return isTimeSet() ? startTime : null;
   }
 
+  public String getStartTime() {
+    return startTime;
+  }
+
+  public String getEndTime() {
+    return endTime;
+  }
+
+  public String convertStartTimeToUTCString() {
+    return this.startDate + "T" + this.startTime + ":00Z";
+  }
+
+  public String convertEndTimeToUTCString() {
+    return this.endDate + "T" + this.endTime + ":00Z";
+  }
+  
   @Override
   public boolean equals(Object other_object) {
     if (!(other_object instanceof DateTimeRange))

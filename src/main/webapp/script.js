@@ -18,7 +18,7 @@ function getEvent(event_id) {
     document.getElementById('start-date-info').innerText = event.dateTimeRange.startDate;
     document.getElementById('start-time-info').innerText = event.dateTimeRange.startTime;
     if (event.duration != null)
-        document.getElementById('duration-info').innerText = 'Duration: ' + event.duration + 'minutes';
+      document.getElementById('duration-info').innerText = 'Duration: ' + event.duration + 'minutes';
 
     document.getElementById('category-info').innerText = event.category;
     for (tag in event.tags) {
@@ -83,26 +83,76 @@ function searchEvents() {
   var location = document.getElementById('location-id').value;
   fetch('/events?' + new URLSearchParams({
     search: search,
-}) + '&' + new URLSearchParams({
+  }) + '&' + new URLSearchParams({
     category: category,
-}) + '&' + new URLSearchParams({
+  }) + '&' + new URLSearchParams({
     start: start,
-}) + '&' + new URLSearchParams({
+  }) + '&' + new URLSearchParams({
     end: end,
-}) + '&' + new URLSearchParams({
+  }) + '&' + new URLSearchParams({
     duration: duration,
-}) + '&' + new URLSearchParams({
+  }) + '&' + new URLSearchParams({
     location: location,
-})).then(response => response.json()).then(events => events.forEach(showEvent));
+  })).then(handleError).then(response => response.json()).then(jsonObject => {
+    jsonObject.searched.forEach(function (event) {
+      showEvent(event, jsonObject.alreadyJoined.includes(event.id));
+    });
+  }).catch(error => {
+    if (error == 401) {
+      alert("You are not logged in and you cannot see this page. You will be redirected to login");
+      fetch("/auth").then(authResponse => authResponse.json()).then(authData => {
+        window.location.href = authData.authLink;
+      });
+    }
+  });
   document.getElementById('location-id').value = "all";
 }
 
-function showEvent(event) {
-  document.getElementById('events-container').innerHTML += '<div><h1>'
-  + event.title + '</h1><hr><br><h2>' + event.duration + '</h2><h3>' + event.description 
-  + '</h3><br><p><i class="fas fa-map-marker-alt"></i>' + event.location 
-  + '</p><br><form action="/events/' + event.id + '" method="POST">'
-  + '<input type="submit" class="btn btn-success" value="Join event!"/></form><br><br></div>';
+function showEvent(event, alreadyJoined) {
+  var divElement = document.createElement("div");
+  var h1Element = document.createElement("h1");
+  var h2Element = document.createElement("h2");
+  var h3Element = document.createElement("h3");
+  var brElement = document.createElement("br");
+  var pElement = document.createElement("p");
+  var iElement = document.createElement("i");
+  var formElement = document.createElement("form");
+  var inputElement = document.createElement("input");
+  var buttonElement = document.createElement("button");
+
+  inputElement.type = "submit";
+  inputElement.classList.add("btn", "btn-success");
+  buttonElement.classList.add("btn", "btn-success");
+
+  formElement.action = "/events/" + event.id;
+  formElement.method = "POST";
+  if (!alreadyJoined)
+    inputElement.value = "Join Event!";
+  else {
+    buttonElement.innerText = "Joined";
+    buttonElement.onclick = function () { window.location.href = getCurrentUrl() + "/event.html?event_id=" + event.id; };
+  }
+
+  formElement.appendChild(inputElement);
+  iElement.classList.add("fas", "fa-map-marker-alt");
+  pElement.innerText = event.location;
+  pElement.appendChild(iElement);
+
+  h3Element.innerText = event.description;
+  h2Element.innerText = event.duration;
+  h1Element.innerText = event.title;
+
+  divElement.appendChild(h1Element);
+  divElement.appendChild(brElement);
+  divElement.appendChild(h2Element);
+  divElement.appendChild(h3Element);
+  divElement.appendChild(brElement);
+  divElement.appendChild(pElement);
+  divElement.appendChild(brElement);
+  if (!alreadyJoined)
+    divElement.appendChild(formElement);
+  else divElement.appendChild(buttonElement);
+  document.getElementById("events-container").appendChild(divElement);
 }
 
 function addEventToGCalendar() { //To be modified to get fields
@@ -150,7 +200,7 @@ function getGCalendarEvents(calendar, startTime, endTime) {
               title: event.summary,
               start: start,
               end: end,
-              allDay : allDay,
+              allDay: allDay,
               location: event.location,
               description: event.description,
               shared: shared,
@@ -168,8 +218,8 @@ function getGCalendarEvents(calendar, startTime, endTime) {
         } else {
           window.location.href = authInfo.authLink;
         }
-      })
-      ;
+      });
+
     }
   });
 }
@@ -178,6 +228,12 @@ function getCurrentUrl() {
   var currentUrl = window.location.href;
   var currentUrlSlices = currentUrl.split("/");
   return currentUrlSlices[0] + "//" + currentUrlSlices[2];
+}
+
+function getCurrentLocation() {
+  var currentUrl = window.location.pathname;
+  var currentUrlSlices = currentUrl.split("/");
+  return currentUrlSlices[1].split(".")[0];
 }
 
 function createCalendarElements(givenProperties) {
@@ -346,4 +402,126 @@ function addPerson() {
 
 function setMinDateToToday() {
   document.getElementById("event-start-date").min = new Date().toISOString().slice(0, 10);
+}
+
+function loadFreeTimes() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const eventId = urlParams.get('eventId');
+  if (eventId == null) {
+    alert("Your request is incomplete. Please access this page from the event page!");
+    return;
+  }
+
+  fetch("/events/schedule?eventId=" + eventId).then(response => response.json()).then(freeTimes => {
+    freeTimes.forEach(freeTime => {
+      var toStartDate = new Date(freeTime.start);
+      var toEndDate = new Date(freeTime.end);
+      var buttonElem = document.createElement("button");
+      buttonElem.innerText = toStartDate.toLocaleString() + "  ///  " + toEndDate.toLocaleString();
+      buttonElem.setAttribute("onclick", "setTime('" + eventId + "','" + toStartDate.toISOString() + "')");
+      document.getElementById("page-content-wrapper").appendChild(buttonElem);
+    })
+  }).catch(error => alert(error));
+}
+
+function setTime(eventId, start) {
+  fetch("/events?" + new URLSearchParams({ start: start }) + "&" + new URLSearchParams({ eventId: eventId }), { method: 'PUT' }).then(response => {
+    window.location.href = getCurrentUrl() + "/event.html?event_id=" + eventId;
+  }).catch(error => alert(error));
+}
+
+function fetchUserInfo() {
+  fetch("/users").then(handleError).then(response => response.json()).then(userInfo => {
+    const email = userInfo.email;
+    var username = userInfo.username;
+    if (username == null) {
+      document.getElementById("username-placeholder").innerText = "You currently do not have an username. If you want to set one, click ";
+      username = email;
+    } else {
+      document.getElementById("username-placeholder").innerText = "Your username is currently: " + username + ". If you want to change it click ";
+    }
+    var displayBoxButton = document.createElement("a");
+    displayBoxButton.setAttribute("href", "#");
+    displayBoxButton.setAttribute("onclick", "hideElementById('username-placeholder'); showElementById('username-setter')");
+    displayBoxButton.innerText = "here";
+    document.getElementById("username-placeholder").appendChild(displayBoxButton);
+    document.getElementById("user-header").innerText = "Hello, " + username + "!";
+    createPopoverForEventTypes("invited-events", userInfo.invitedEvents, "Events you are invited to");
+    createPopoverForEventTypes("joined-events", userInfo.joinedEvents, "Events you joined");
+    createPopoverForEventTypes("declined-events", userInfo.declinedEvents, "Events you declined");
+  }).catch(error => {
+    if (error == 401)
+      alert("Please login first, using the button on the sidebar");
+    else alert(error);
+  });
+}
+
+function handleError(response) {
+  if (!response.ok)
+    throw response.status;
+  return response;
+}
+
+function createPopoverForEventTypes(givenId, givenContent, givenTitle) {
+  $("#" + givenId).popover({
+    animation: true,
+    html: true,
+    title: givenTitle,
+    content: createElementsForEvents(givenContent),
+    trigger: 'click',
+    container: 'body',
+    placement: 'top',
+  });
+}
+
+function createElementsForEvents(givenElements) {
+  var ulElement = document.createElement("ul");
+  var eventsExist = false;
+  givenElements.forEach(event => {
+    eventsExist = true;
+    var liElement = document.createElement("li");
+    var aElement = document.createElement("a");
+    aElement.href = getCurrentUrl() + "/event.html?event_id=" + event.id;
+    aElement.innerText = event.title;
+    liElement.appendChild(aElement);
+    ulElement.appendChild(liElement);
+  });
+  if (!eventsExist) {
+    ulElement.innerText = "There are no events to be displayed";
+  }
+  return ulElement;
+}
+
+function showElementById(Id) {
+  document.getElementById(Id).style.display = "";
+}
+
+function hideElementById(Id) {
+  document.getElementById(Id).style.display = "none";
+}
+
+function changePopoverColorTo(color) {
+  var styleNode = document.getElementById("stylesheetId");
+  if (styleNode == null) {
+    styleNode = document.createElement("style");
+    styleNode.id = "stylesheetId";
+  } else {
+    document.body.removeChild(styleNode);
+  }
+  styleNode.innerHTML = ".popover-header {background: " + color + ";}";
+  document.body.appendChild(styleNode);
+}
+
+function getCredentialIfNeeded() {
+  verifyCredentials().then(validCredential => {
+    if (!validCredential) {
+      fetch("/auth?origin=add_event").then(authResponse => authResponse.json()).then(authInfo => {
+        if (authInfo.isLoggedIn) {
+          window.location.href = getCurrentUrl() + "/token?origin=add_event";
+        } else {
+          window.location.href = authInfo.authLink;
+        }
+      });
+    }
+  })
 }
