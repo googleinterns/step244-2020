@@ -1,6 +1,6 @@
 package com.google.sps.data;
 
-import java.io.IOException;
+import java.lang.RuntimeException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.BufferedReader;
@@ -13,8 +13,7 @@ public class ApiKeys {
   private static String readKeyFromFile(String fileName) {
     InputStream in = ApiKeys.class.getResourceAsStream(fileName);
     if (in == null) {
-      System.err.println("Resource not found: " + fileName);
-      return "";
+      throw new RuntimeException("Resource not found: " + fileName);
     }
     try {
       InputStreamReader inReader = new InputStreamReader(in);
@@ -22,7 +21,7 @@ public class ApiKeys {
       return reader.lines().collect(Collectors.joining(System.lineSeparator()));
     } catch (Exception e) {
       System.err.println("Cannot read API key from " + fileName + ": " + e.getMessage());
-      return "";
+      throw new RuntimeException("Cannot read API key from " + fileName);
     }
   }
 }

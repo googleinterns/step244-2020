@@ -30,40 +30,40 @@ public class TestWeatherServlet {
   private static final LatLng RUSSIA_MOSCOW_LATLNG = new LatLng(55.75393030, 37.62079500);
 
   @Mock
-  Weather weather;
+  Weather mockWeather;
   @Mock
-  GeoCoding geoCoding;
+  GeoCoding mockGeoCoding;
   @Mock
-  HttpServletRequest request;
+  HttpServletRequest mockRequest;
   @Mock
-  HttpServletResponse response;
+  HttpServletResponse mockResponse;
   @Rule
   public MockitoRule mockitoRule = MockitoJUnit.rule();
 
   @Test
-  public void testWeatherServlet_doGet_withEmptyLocation_returnsErrorAnswer() throws IOException {
-    when(request.getParameter("location")).thenReturn("");
+  public void testWeatherServlet_doGet_withEmptyLocation_returnsLocationErrorAnswer() throws IOException {
+    when(mockRequest.getParameter("location")).thenReturn("");
 
     StringWriter stringWriter = new StringWriter();
     PrintWriter writer = new PrintWriter(stringWriter);
-    when(response.getWriter()).thenReturn(writer);
+    when(mockResponse.getWriter()).thenReturn(writer);
 
-    new WeatherServlet(weather, geoCoding).doGet(request, response);
+    new WeatherServlet(mockWeather, mockGeoCoding).doGet(mockRequest, mockResponse);
 
     Assert.assertTrue(stringWriter.toString().equals("Location cannot be null or empty\n"));
   }
 
   @Test
   public void testWeatherServlet_doGet_withLocation_returnsAnswer() throws IOException {
-    when(request.getParameter("location")).thenReturn(RUSSIA_MOSCOW_ADDRESS);
-    when(geoCoding.fromAddressOrPlaceIdToLatLng(RUSSIA_MOSCOW_ADDRESS)).thenReturn(RUSSIA_MOSCOW_LATLNG);
-    when(weather.atLatLngNow(RUSSIA_MOSCOW_LATLNG)).thenReturn(new Weather(10.7, 11.0, 10, 100, 0, "Clear", "10n"));
+    when(mockRequest.getParameter("location")).thenReturn(RUSSIA_MOSCOW_ADDRESS);
+    when(mockGeoCoding.fromAddressOrPlaceIdToLatLng(RUSSIA_MOSCOW_ADDRESS)).thenReturn(RUSSIA_MOSCOW_LATLNG);
+    when(mockWeather.atLatLngNow(RUSSIA_MOSCOW_LATLNG)).thenReturn(new Weather(10.7, 11.0, 10, 100, 0, "Clear", "10n"));
     
     StringWriter stringWriter = new StringWriter();
     PrintWriter writer = new PrintWriter(stringWriter);
-    when(response.getWriter()).thenReturn(writer);
+    when(mockResponse.getWriter()).thenReturn(writer);
 
-    new WeatherServlet(weather, geoCoding).doGet(request, response);
+    new WeatherServlet(mockWeather, mockGeoCoding).doGet(mockRequest, mockResponse);
 
     JsonElement json = JsonParser.parseString(stringWriter.toString());
     JsonObject jsonObject = json.getAsJsonObject();
@@ -84,32 +84,32 @@ public class TestWeatherServlet {
   }
 
   @Test
-  public void testWeatherServlet_doGet_withLocationThroughHours_returnsErrorAnswer() throws IOException {
-    when(request.getParameter("location")).thenReturn(RUSSIA_MOSCOW_ADDRESS);
-    when(geoCoding.fromAddressOrPlaceIdToLatLng(RUSSIA_MOSCOW_ADDRESS)).thenReturn(RUSSIA_MOSCOW_LATLNG);
-    when(request.getParameter("hours")).thenReturn("50");
+  public void testWeatherServlet_doGet_withHoursParamOutOfRange_returnsHoursErrorAnswer() throws IOException {
+    when(mockRequest.getParameter("location")).thenReturn(RUSSIA_MOSCOW_ADDRESS);
+    when(mockGeoCoding.fromAddressOrPlaceIdToLatLng(RUSSIA_MOSCOW_ADDRESS)).thenReturn(RUSSIA_MOSCOW_LATLNG);
+    when(mockRequest.getParameter("hours")).thenReturn("50");
 
     StringWriter stringWriter = new StringWriter();
     PrintWriter writer = new PrintWriter(stringWriter);
-    when(response.getWriter()).thenReturn(writer);
+    when(mockResponse.getWriter()).thenReturn(writer);
 
-    new WeatherServlet(weather, geoCoding).doGet(request, response);
+    new WeatherServlet(mockWeather, mockGeoCoding).doGet(mockRequest, mockResponse);
 
     Assert.assertTrue(stringWriter.toString().equals("Hours should be in range 0 <= hours < 48\n"));
   }
 
   @Test
-  public void testWeatherServlet_doGet_withLocationThroughDays_returnsErrorAnswer() throws IOException {
-    when(request.getParameter("location")).thenReturn(RUSSIA_MOSCOW_ADDRESS);
-    when(geoCoding.fromAddressOrPlaceIdToLatLng(RUSSIA_MOSCOW_ADDRESS)).thenReturn(RUSSIA_MOSCOW_LATLNG);
-    when(request.getParameter("days")).thenReturn("3");
-    when(weather.atLatLngThroughDays(RUSSIA_MOSCOW_LATLNG, 3)).thenReturn(new Weather(10.7, 11.0, 10, 100, 0, "Clear", "10n"));
+  public void testWeatherServlet_doGet_withLocationThroughDays_returnsAnswer() throws IOException {
+    when(mockRequest.getParameter("location")).thenReturn(RUSSIA_MOSCOW_ADDRESS);
+    when(mockGeoCoding.fromAddressOrPlaceIdToLatLng(RUSSIA_MOSCOW_ADDRESS)).thenReturn(RUSSIA_MOSCOW_LATLNG);
+    when(mockRequest.getParameter("days")).thenReturn("3");
+    when(mockWeather.atLatLngThroughDays(RUSSIA_MOSCOW_LATLNG, 3)).thenReturn(new Weather(10.7, 11.0, 10, 100, 0, "Clear", "10n"));
     
     StringWriter stringWriter = new StringWriter();
     PrintWriter writer = new PrintWriter(stringWriter);
-    when(response.getWriter()).thenReturn(writer);
+    when(mockResponse.getWriter()).thenReturn(writer);
 
-    new WeatherServlet(weather, geoCoding).doGet(request, response);
+    new WeatherServlet(mockWeather, mockGeoCoding).doGet(mockRequest, mockResponse);
 
     JsonElement json = JsonParser.parseString(stringWriter.toString());
     JsonObject jsonObject = json.getAsJsonObject();

@@ -14,7 +14,7 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public final class WeatherTest {
   @Test
-  public void testWeather_fromOpenWeatherApiJsonObject_withPrimitiveTemp_returnsTrue() {
+  public void testWeather_fromOpenWeatherApiJsonObject_withPrimitiveTemp_returnsWeather() {
     JsonObject openWeatherApiJsonObject = new JsonObject();
     
     openWeatherApiJsonObject.addProperty("temp", "10.7");
@@ -36,7 +36,7 @@ public final class WeatherTest {
   }
 
   @Test
-  public void testWeather_fromOpenWeatherApiJsonObject_withNotPrimitiveTemp_returnsTrue() {
+  public void testWeather_fromOpenWeatherApiJsonObject_withNotPrimitiveTemp_returnsWeather() {
     JsonObject openWeatherApiJsonObject = new JsonObject();
     
     JsonObject tempJsonObject = new JsonObject();
