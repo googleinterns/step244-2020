@@ -209,13 +209,19 @@ public class EventServlet extends HttpServlet {
       tzShift = Long.valueOf(0);
     }
 
-    Event.Builder eventBuilder = Event.newBuilder().setOwnerID(currentUserId).setTitle(request.getParameter("title"))
-        .setDescription(request.getParameter("description")).setCategory(request.getParameter("category"))
-        .setTags(parseTags(request.getParameterValues("tags"))).setLocation(request.getParameter("location"))
+    Event.Builder eventBuilder = Event.newBuilder()
+        .setOwnerID(currentUserId)
+        .setTitle(request.getParameter("title"))
+        .setDescription(request.getParameter("description"))
+        .setCategory(request.getParameter("category"))
+        .setTags(parseTags(request.getParameterValues("tags")))
+        .setLocation(request.getParameter("location"))
         .setLocationId(request.getParameter("location-id"))
         .setDateTimeRange(formatDateTimeRange(request.getParameter("start-date"), request.getParameter("start-time"),
             request.getParameter("end-date"), request.getParameter("end-time"), tzShift))
-        .setDuration(duration).setLinks(parseLinks(request.getParameter("links"))).setFields(fields)
+        .setDuration(duration)
+        .setLinks(parseLinks(request.getParameter("links")))
+        .setFields(fields)
         .setInvitedIDs(parseInvitedIDs(request.getParameterValues("people")));
 
     Event event = eventBuilder.build();
@@ -346,7 +352,17 @@ public class EventServlet extends HttpServlet {
       return false;
     }
     response.setContentType("application/json;");
+    
+    // Gson gson = new Gson();
+    event.setInvitedIDs(IDsToUsernames(event.getInvitedIDs()));
+    event.setJoinedIDs(IDsToUsernames(event.getJoinedIDs()));
+    event.setDeclinedIDs(IDsToUsernames(event.getDeclinedIDs()));
+    // String eventJson = ;
+    // gson.add("invitedUsers", gson.toJson(IDsToUsernames(event.getInvitedIDs())));
+    // gson.add("joinedUsers", gson.toJson(IDsToUsernames(event.getJoinedIDs())));
+    // gson.add("declinedUsers", gson.toJson(IDsToUsernames(event.getJoinedIDs())));
     response.getWriter().println(new Gson().toJson(event));
+    // response.getWriter().println();
     return true;
   }
 
@@ -410,6 +426,13 @@ public class EventServlet extends HttpServlet {
     }
 
     return true;
+  }
+
+  private List<String> IDsToUsernames(List<String> IDs) {
+    return IDs != null
+        ? IDs.stream().map(id -> userStorageObject.getUsernameByID(id))
+            .filter(Objects::nonNull).collect(Collectors.toList())
+        : null;
   }
 
   private List<String> parseInvitedIDs(String[] invitedIDs) {

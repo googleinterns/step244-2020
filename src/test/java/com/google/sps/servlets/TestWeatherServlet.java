@@ -84,21 +84,6 @@ public class TestWeatherServlet {
   }
 
   @Test
-  public void testWeatherServlet_doGet_withHoursParamOutOfRange_returnsHoursErrorAnswer() throws IOException {
-    when(mockRequest.getParameter("location")).thenReturn(RUSSIA_MOSCOW_ADDRESS);
-    when(mockGeoCoding.fromAddressOrPlaceIdToLatLng(RUSSIA_MOSCOW_ADDRESS)).thenReturn(RUSSIA_MOSCOW_LATLNG);
-    when(mockRequest.getParameter("hours")).thenReturn("50");
-
-    StringWriter stringWriter = new StringWriter();
-    PrintWriter writer = new PrintWriter(stringWriter);
-    when(mockResponse.getWriter()).thenReturn(writer);
-
-    new WeatherServlet(mockWeather, mockGeoCoding).doGet(mockRequest, mockResponse);
-
-    Assert.assertTrue(stringWriter.toString().equals("Hours should be in range 0 <= hours < 48\n"));
-  }
-
-  @Test
   public void testWeatherServlet_doGet_withLocationThroughDays_returnsAnswer() throws IOException {
     when(mockRequest.getParameter("location")).thenReturn(RUSSIA_MOSCOW_ADDRESS);
     when(mockGeoCoding.fromAddressOrPlaceIdToLatLng(RUSSIA_MOSCOW_ADDRESS)).thenReturn(RUSSIA_MOSCOW_LATLNG);

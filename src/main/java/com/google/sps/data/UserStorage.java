@@ -76,6 +76,13 @@ public class UserStorage {
     return userEntity != null ? (String) userEntity.getProperty("id") : null;
   }
 
+  public String getUsernameByID(String userId) {
+    Query query = new Query("User").setFilter(
+        new FilterPredicate(Entity.KEY_RESERVED_PROPERTY, FilterOperator.EQUAL, KeyFactory.createKey("User", userId)));
+    Entity userEntity = DatastoreServiceFactory.getDatastoreService().prepare(query).asSingleEntity();
+    return userEntity != null ? (String) userEntity.getProperty("username") : null;
+  }
+
   public void joinEvent(String userId, String eventId) {
     User user = getUser(userId);
     if (user == null)
