@@ -38,6 +38,7 @@ import java.time.LocalTime;
 import java.text.SimpleDateFormat;
 import java.sql.Timestamp;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 import java.util.HashMap;
@@ -251,6 +252,7 @@ public class EventServlet extends HttpServlet {
     String eventId = null;
     try {
       eventId = eventStorageObject.addOrUpdateEvent(event);
+      userStorageObject.joinEvent(currentUserId, eventId, true);
     } catch (Exception e) {
       System.err.println("Can't add new event to storage: " + e);
       response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);

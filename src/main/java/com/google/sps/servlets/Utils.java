@@ -27,6 +27,9 @@ import com.google.api.services.calendar.model.FreeBusyRequestItem;
 import com.google.api.services.calendar.model.FreeBusyResponse;
 import com.google.api.services.calendar.model.TimePeriod;
 import com.google.api.services.calendar.model.Event.ExtendedProperties;
+import com.google.appengine.api.datastore.DatastoreService;
+import com.google.appengine.api.datastore.DatastoreServiceFactory;
+import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.google.sps.data.Event;
 import com.google.sps.data.Time;
@@ -41,6 +44,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Vector;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -89,6 +93,17 @@ public class Utils {
     DateTime endDateTime = new DateTime(startDateTimeWithShift.getValue() + event.getDuration() * 60 * 1000);
     gcalendarEvent.setStart(new EventDateTime().setDateTime(startDateTimeWithShift));
     gcalendarEvent.setEnd(new EventDateTime().setDateTime(endDateTime));
+
+    List<String> joinedParticipants = event.getJoinedIDs();
+    if (joinedParticipants != null) {
+      List<String> participantsEmails = DatastoreServiceFactory.getDatastoreService()
+          .get(joinedParticipants.stream().map(userId -> KeyFactory.createKey("User", userId))
+              .collect(Collectors.toList()))
+          .values().stream().map(entity -> (String) entity.getProperty("email")).collect(Collectors.toList());
+      gcalendarEvent.setAttendees(
+          participantsEmails.stream().map(email -> new EventAttendee().setEmail(email).setResponseStatus("accepted"))
+              .collect(Collectors.toList()));
+    }
 
     ExtendedProperties extendedProps = new ExtendedProperties();
     extendedProps.setShared(event.getFields());
