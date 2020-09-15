@@ -49,6 +49,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import com.google.api.client.auth.oauth2.AuthorizationCodeFlow;
 import com.google.api.client.auth.oauth2.Credential;
@@ -70,14 +71,15 @@ public class EventServlet extends HttpServlet {
   AuthorizationCodeFlow flow;
 
   @Inject
-  EventServlet(UserStorage userStorageObject, EventStorage eventStorageObject, UserService userService, Utils utilsObject, AuthorizationCodeFlow flow) {
+  EventServlet(UserStorage userStorageObject, EventStorage eventStorageObject, UserService userService,
+      Utils utilsObject, AuthorizationCodeFlow flow) {
     this.userStorageObject = userStorageObject;
     this.eventStorageObject = eventStorageObject;
     this.userService = userService;
     this.utilsObject = utilsObject;
     this.flow = flow;
   }
-  
+
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String pathName = request.getPathInfo();
@@ -103,7 +105,7 @@ public class EventServlet extends HttpServlet {
 
     if (pathName.equals("/schedule")) {
       getFreeTimesForEvent(request, response);
-      return ;
+      return;
     }
 
     if (pathName.equals("/gcalendar")) {
@@ -158,21 +160,21 @@ public class EventServlet extends HttpServlet {
     String eventId = request.getParameter("eventId");
     if (eventId == null) {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-      return ;
+      return;
     }
     Event event = eventStorageObject.getEvent(eventId);
     if (event == null || event.isDateTimeSet()) {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-      return ;
+      return;
     }
     if (!event.getOwnerID().equals(userService.getCurrentUser().getUserId())) {
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-      return ;
+      return;
     }
     String start = request.getParameter("start");
     if (start == null) {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-      return ;
+      return;
     }
     String startDate = start.split("T")[0];
     String startTime = start.split("T")[1].split("Z")[0];
@@ -280,9 +282,10 @@ public class EventServlet extends HttpServlet {
       response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
       return;
     }
-    Vector<Time> busyTimesForAttendees = utilsObject.getBusyTimesForAttendees(response, flow, usersCredentials, startDateTimeWithShift, endDateTimeWithShift);
+    Vector<Time> busyTimesForAttendees = utilsObject.getBusyTimesForAttendees(response, flow, usersCredentials,
+        startDateTimeWithShift, endDateTimeWithShift);
     writeFreeTimesFromInterval(startDateTimeWithShift.getValue(), endDateTimeWithShift.getValue(), duration,
-            busyTimesForAttendees, response);
+        busyTimesForAttendees, response);
   }
 
   private void writeFreeTimesFromInterval(Long start, Long end, Long duration, Vector<Time> busyTimes,
@@ -319,8 +322,8 @@ public class EventServlet extends HttpServlet {
     List<Future<Credential>> futureCredentials = executorService.invokeAll(callables);
     futureCredentials.stream().forEach(futureCredential -> {
       try {
-        usersCredential.add(futureCredential.get());
-      } catch (InterruptedException | ExecutionException e) {
+        usersCredential.add(futureCredential.get(700, TimeUnit.MILLISECONDS));
+      } catch (InterruptedException | ExecutionException | TimeoutException e) {
         e.printStackTrace();
       }
     });
