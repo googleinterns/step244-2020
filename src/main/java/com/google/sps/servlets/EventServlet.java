@@ -166,7 +166,7 @@ public class EventServlet extends HttpServlet {
       }
     }
     boolean isPublic = true;
-    if (request.getParameter("isPublic") == null) {
+    if (request.getParameter("is-public") == null) {
       isPublic = false;
     }
 

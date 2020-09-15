@@ -109,12 +109,6 @@ function searchEvents() {
 }
 
 function showEvent(event, alreadyJoined) {
-  console.log(alreadyJoined);
-  /*document.getElementById('events-container').innerHTML += '<div><h1>'
-    + event.title + '</h1><hr><br><h2>' + event.duration + '</h2><h3>' + event.description
-    + '</h3><br><p><i class="fas fa-map-marker-alt"></i>' + event.location
-    + '</p><br><form action="/events/' + event.id + '" method="POST">'
-    + '<input type="submit" class="btn btn-success" value="Join event!"/></form><br><br></div>';*/
   var divElement = document.createElement("div");
   var h1Element = document.createElement("h1");
   var h2Element = document.createElement("h2");
