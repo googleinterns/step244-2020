@@ -17,6 +17,8 @@ package com.google.sps.servlets;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -24,8 +26,18 @@ import java.io.StringWriter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import com.google.appengine.api.users.UserService;
 
+import com.google.gson.Gson;
+
+import com.google.sps.data.DateTimeRange;
+import com.google.sps.data.Event;
 import com.google.sps.data.EventStorage;
 import com.google.sps.data.UserStorage;
 import com.google.sps.data.Search;
@@ -48,6 +60,31 @@ public class EventServletTest {
   @Rule
   public MockitoRule mockitoRule = MockitoJUnit.rule();
 
+  private static final List<String> LIST = new ArrayList<>();
+  private static final Map<String, String> MAP = new HashMap<>();
+
+  private static final DateTimeRange RANGE = new DateTimeRange("2020-06-06", "2020-07-01", "12:12", "13:13");
+
+  private static final Event EVENT = Event.newBuilder()
+        .setID("2")
+        .setGCalendarID("1")
+        .setOwnerID("1")
+        .setTitle("Party")
+        .setDescription("RSVP through the link")
+        .setCategory("Entertainment")
+        .setTags(LIST)
+        .setLocation("London, UK")
+        .setLocationId("ChIJdd4hrwug2EcRmSrV3Vo6llI")
+        .setDateTimeRange(RANGE)
+        .setDuration(new Long("30"))
+        .setLinks(LIST)
+        .setFields(MAP)
+        .setInvitedIDs(LIST)
+        .setJoinedIDs(LIST)
+        .setDeclinedIDs(LIST).build();
+
+  private static final List<Event> EVENT_LIST = Arrays.asList(EVENT);
+
   private void setParameters(Search search) throws IOException {
     when(mockRequest.getParameter("search")).thenReturn(search.getText());
     when(mockRequest.getParameter("category")).thenReturn(search.getCategory());
@@ -57,19 +94,15 @@ public class EventServletTest {
     when(mockRequest.getParameter("location")).thenReturn(search.getLocation());
   }
 
-  private void setWriterAndCreateEvent() throws IOException {
+  @Test
+  public void eventServletTest_doGet_WithNullPath_DoesSearch() throws IOException {
+    when(mockRequest.getPathInfo()).thenReturn(null);
+
     StringWriter stringWriter = new StringWriter();
     PrintWriter writer = new PrintWriter(stringWriter);
     when(mockResponse.getWriter()).thenReturn(writer);
 
     new EventServlet(mockUserStorage, mockEventStorage).doGet(mockRequest, mockResponse);
-  }
-
-  @Test
-  public void eventServletTest_doGet_WithNullPath_DoesSearch() throws IOException {
-    when(mockRequest.getPathInfo()).thenReturn(null);
-
-    setWriterAndCreateEvent();
 
     verify(mockEventStorage, atLeast(1)).getSearchedEvents(any(Search.class));
   }
@@ -78,7 +111,11 @@ public class EventServletTest {
   public void eventServletTest_doGet_WithEmptyPath_DoesSearch() throws IOException {
     when(mockRequest.getPathInfo()).thenReturn("");
 
-    setWriterAndCreateEvent();
+    StringWriter stringWriter = new StringWriter();
+    PrintWriter writer = new PrintWriter(stringWriter);
+    when(mockResponse.getWriter()).thenReturn(writer);
+
+    new EventServlet(mockUserStorage, mockEventStorage).doGet(mockRequest, mockResponse);
 
     verify(mockEventStorage, atLeast(1)).getSearchedEvents(any(Search.class));
   }
@@ -87,7 +124,11 @@ public class EventServletTest {
   public void eventServletTest_doGet_WithSlashPath_DoesSearch() throws IOException {
     when(mockRequest.getPathInfo()).thenReturn("/");
 
-    setWriterAndCreateEvent();
+    StringWriter stringWriter = new StringWriter();
+    PrintWriter writer = new PrintWriter(stringWriter);
+    when(mockResponse.getWriter()).thenReturn(writer);
+
+    new EventServlet(mockUserStorage, mockEventStorage).doGet(mockRequest, mockResponse);
 
     verify(mockEventStorage, atLeast(1)).getSearchedEvents(any(Search.class));
   }
@@ -109,7 +150,11 @@ public class EventServletTest {
     
     setParameters(search);
 
-    setWriterAndCreateEvent();
+    StringWriter stringWriter = new StringWriter();
+    PrintWriter writer = new PrintWriter(stringWriter);
+    when(mockResponse.getWriter()).thenReturn(writer);
+
+    new EventServlet(mockUserStorage, mockEventStorage).doGet(mockRequest, mockResponse);
     
     verify(mockEventStorage, atLeast(1)).getSearchedEvents(eq(search));
   }
@@ -122,7 +167,11 @@ public class EventServletTest {
     
     setParameters(search);
 
-    setWriterAndCreateEvent();
+    StringWriter stringWriter = new StringWriter();
+    PrintWriter writer = new PrintWriter(stringWriter);
+    when(mockResponse.getWriter()).thenReturn(writer);
+
+    new EventServlet(mockUserStorage, mockEventStorage).doGet(mockRequest, mockResponse);
     
     verify(mockEventStorage, atLeast(1)).getSearchedEvents(eq(search));
   }
@@ -135,8 +184,33 @@ public class EventServletTest {
     
     setParameters(search);
 
-    setWriterAndCreateEvent();
+    StringWriter stringWriter = new StringWriter();
+    PrintWriter writer = new PrintWriter(stringWriter);
+    when(mockResponse.getWriter()).thenReturn(writer);
+
+    new EventServlet(mockUserStorage, mockEventStorage).doGet(mockRequest, mockResponse);
     
     verify(mockEventStorage, atLeast(1)).getSearchedEvents(eq(search));
+  }
+
+  @Test
+  public void eventServletTest_doGet_returnedEventsOutputCorrectly() throws IOException {
+    when(mockRequest.getPathInfo()).thenReturn("/");
+
+    Search search = new Search("", "all", "2020-01-01", "2020-12-31", "60", "ChIJdd4hrwug2EcRmSrV3Vo6llI");
+    
+    setParameters(search);
+
+    StringWriter stringWriter = new StringWriter();
+    PrintWriter writer = new PrintWriter(stringWriter);
+    when(mockResponse.getWriter()).thenReturn(writer);
+
+    when(mockEventStorage.getSearchedEvents(eq(search))).thenReturn(EVENT_LIST);
+
+    new EventServlet(mockUserStorage, mockEventStorage).doGet(mockRequest, mockResponse);
+
+    verify(mockEventStorage, atLeast(1)).getSearchedEvents(eq(search));
+    writer.flush();
+    assertTrue(stringWriter.toString().contains(new Gson().toJson(EVENT_LIST)));
   }
 }
