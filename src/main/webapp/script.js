@@ -35,6 +35,12 @@ function getEvent(event_id) {
       linkA.href = "https://" + event.links[link];
       document.getElementById('links-info').appendChild(linkA);
     }
+    if (typeof event.gcalendarId === "undefined") {
+      var doodleLink = document.createElement("a");
+      doodleLink.href = getCurrentUrl() + "/doodle.html?eventId=" + event.id;
+      doodleLink.innerText = "Click to select a time";
+      document.getElementById("links-info").appendChild(doodleLink);
+    }
     for (field in event.fields) {
       const fieldLI = document.createElement('li');
       fieldLI.innerText = field + ': ' + event.fields[field];
@@ -417,6 +423,7 @@ function loadFreeTimes() {
       var toStartDate = new Date(freeTime.start);
       var toEndDate = new Date(freeTime.end);
       var buttonElem = document.createElement("button");
+      buttonElem.classList.add("btn", "btn-success");
       buttonElem.innerText = toStartDate.toLocaleString() + "  ///  " + toEndDate.toLocaleString();
       buttonElem.setAttribute("onclick", "setTime('" + eventId + "','" + toStartDate.toISOString() + "')");
       document.getElementById("page-content-wrapper").appendChild(buttonElem);
