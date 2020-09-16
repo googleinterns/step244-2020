@@ -71,7 +71,7 @@ public class EventServletTest {
   private static final List<String> LIST = new ArrayList<>();
   private static final Map<String, String> MAP = new HashMap<>();
 
-  private static final DateTimeRange RANGE = new DateTimeRange("2020-06-06", "2020-07-01", "12:12", "13:13", new Long("0"));
+  private static final DateTimeRange RANGE = new DateTimeRange("2020-06-06", "2020-07-01", "12:12", "13:13", 0L);
 
   private static final Event EVENT = Event.newBuilder()
         .setID("2")
