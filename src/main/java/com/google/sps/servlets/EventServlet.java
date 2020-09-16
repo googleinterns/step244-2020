@@ -353,16 +353,10 @@ public class EventServlet extends HttpServlet {
     }
     response.setContentType("application/json;");
     
-    // Gson gson = new Gson();
     event.setInvitedIDs(IDsToUsernames(event.getInvitedIDs()));
     event.setJoinedIDs(IDsToUsernames(event.getJoinedIDs()));
     event.setDeclinedIDs(IDsToUsernames(event.getDeclinedIDs()));
-    // String eventJson = ;
-    // gson.add("invitedUsers", gson.toJson(IDsToUsernames(event.getInvitedIDs())));
-    // gson.add("joinedUsers", gson.toJson(IDsToUsernames(event.getJoinedIDs())));
-    // gson.add("declinedUsers", gson.toJson(IDsToUsernames(event.getJoinedIDs())));
     response.getWriter().println(new Gson().toJson(event));
-    // response.getWriter().println();
     return true;
   }
 

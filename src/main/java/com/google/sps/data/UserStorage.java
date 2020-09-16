@@ -80,7 +80,7 @@ public class UserStorage {
     Query query = new Query("User").setFilter(
         new FilterPredicate(Entity.KEY_RESERVED_PROPERTY, FilterOperator.EQUAL, KeyFactory.createKey("User", userId)));
     Entity userEntity = DatastoreServiceFactory.getDatastoreService().prepare(query).asSingleEntity();
-    return userEntity != null ? (String) userEntity.getProperty("username") : null;
+    return userEntity != null ? (String) userEntity.getProperty("email") : null;
   }
 
   public void joinEvent(String userId, String eventId) {
