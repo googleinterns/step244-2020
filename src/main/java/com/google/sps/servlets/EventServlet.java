@@ -86,7 +86,7 @@ public class EventServlet extends HttpServlet {
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String pathName = request.getPathInfo();
-    UserService userService = UserServiceFactory.getUserService();
+    
     if (!userService.isUserLoggedIn()) {
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
       return;
@@ -105,6 +105,7 @@ public class EventServlet extends HttpServlet {
       List<Event> events = eventStorageObject.getSearchedEvents(search);
 
       Gson gson = new Gson();
+
       JsonObject wrapper = new JsonObject();
       JsonElement eventsJson = gson.toJsonTree(events);
       JsonElement userJoinedEventsJson = gson
@@ -112,7 +113,7 @@ public class EventServlet extends HttpServlet {
       wrapper.getAsJsonObject().add("alreadyJoined", userJoinedEventsJson);
       wrapper.getAsJsonObject().add("searched", eventsJson);
       response.setContentType("application/json");
-      response.getWriter().println(gson.toJson(wrapper));
+      response.getWriter().println(gson.toJson(events));
 
       return;
     }

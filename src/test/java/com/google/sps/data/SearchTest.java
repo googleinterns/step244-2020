@@ -39,10 +39,10 @@ public final class SearchTest {
   private static final String DESCRIPTION_B = "RSVP via the provided link";
   private static final String DESCRIPTION_C = "Dress up for meeting the faculty";
 
-  private static final DateTimeRange RANGE_A = new DateTimeRange("2020-06-06", "2020-07-01", "12:12", "13:13");
-  private static final DateTimeRange RANGE_B = new DateTimeRange("2020-06-29", "2020-07-09", "12:12", "13:13");
-  private static final DateTimeRange RANGE_C = new DateTimeRange("2020-06-05", "2020-06-30", "12:12", "13:13");
-  private static final DateTimeRange RANGE_D = new DateTimeRange("2020-06-05", "2020-08-08", "12:12", "13:13");
+  private static final DateTimeRange RANGE_A = new DateTimeRange("2020-06-06", "2020-07-01", "12:12", "13:13", new Long("0"));
+  private static final DateTimeRange RANGE_B = new DateTimeRange("2020-06-29", "2020-07-09", "12:12", "13:13", new Long("0"));
+  private static final DateTimeRange RANGE_C = new DateTimeRange("2020-06-05", "2020-06-30", "12:12", "13:13", new Long("0"));
+  private static final DateTimeRange RANGE_D = new DateTimeRange("2020-06-05", "2020-08-08", "12:12", "13:13", new Long("0"));
 
 
   @Test

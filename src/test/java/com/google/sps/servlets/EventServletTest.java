@@ -32,6 +32,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.google.api.client.auth.oauth2.AuthorizationCodeFlow;
+import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 
 import com.google.gson.Gson;
@@ -54,6 +56,12 @@ public class EventServletTest {
   @Mock
   UserStorage mockUserStorage;
   @Mock
+  UserService mockUserService;
+  @Mock
+  Utils mockUtilsObject;
+  @Mock
+  AuthorizationCodeFlow mockFlow;
+  @Mock
   HttpServletRequest mockRequest;
   @Mock
   HttpServletResponse mockResponse;
@@ -63,7 +71,7 @@ public class EventServletTest {
   private static final List<String> LIST = new ArrayList<>();
   private static final Map<String, String> MAP = new HashMap<>();
 
-  private static final DateTimeRange RANGE = new DateTimeRange("2020-06-06", "2020-07-01", "12:12", "13:13");
+  private static final DateTimeRange RANGE = new DateTimeRange("2020-06-06", "2020-07-01", "12:12", "13:13", 0L);
 
   private static final Event EVENT = Event.newBuilder()
         .setID("2")
@@ -96,39 +104,58 @@ public class EventServletTest {
 
   @Test
   public void eventServletTest_doGet_WithNullPath_DoesSearch() throws IOException {
+    com.google.sps.data.User fakeUser = com.google.sps.data.User.newBuilder().setId("123").setEmail("email")
+        .setUsername("username").setInvitedEventsId(Arrays.asList(new String[] { "firstId" })).setJoinedEventsId(null)
+        .setDeclinedEventsId(null).build();
     when(mockRequest.getPathInfo()).thenReturn(null);
+    when(mockUserService.isUserLoggedIn()).thenReturn(true);
+    when(mockUserService.getCurrentUser()).thenReturn(new User("email", "authDomain", "123"));
+    when(mockUserStorage.getUser("123")).thenReturn(fakeUser);
 
     StringWriter stringWriter = new StringWriter();
     PrintWriter writer = new PrintWriter(stringWriter);
     when(mockResponse.getWriter()).thenReturn(writer);
 
-    new EventServlet(mockUserStorage, mockEventStorage).doGet(mockRequest, mockResponse);
+    new EventServlet(mockUserStorage, mockEventStorage, mockUserService, mockUtilsObject, mockFlow).doGet(mockRequest, mockResponse);
 
     verify(mockEventStorage, atLeast(1)).getSearchedEvents(any(Search.class));
   }
 
   @Test
   public void eventServletTest_doGet_WithEmptyPath_DoesSearch() throws IOException {
+    com.google.sps.data.User fakeUser = com.google.sps.data.User.newBuilder().setId("123").setEmail("email")
+        .setUsername("username").setInvitedEventsId(Arrays.asList(new String[] { "firstId" })).setJoinedEventsId(null)
+        .setDeclinedEventsId(null).build();
     when(mockRequest.getPathInfo()).thenReturn("");
+    when(mockUserService.isUserLoggedIn()).thenReturn(true);
+    when(mockUserService.getCurrentUser()).thenReturn(new User("email", "authDomain", "123"));
+    when(mockUserStorage.getUser("123")).thenReturn(fakeUser);
 
     StringWriter stringWriter = new StringWriter();
     PrintWriter writer = new PrintWriter(stringWriter);
     when(mockResponse.getWriter()).thenReturn(writer);
 
-    new EventServlet(mockUserStorage, mockEventStorage).doGet(mockRequest, mockResponse);
+    new EventServlet(mockUserStorage, mockEventStorage, mockUserService, mockUtilsObject, mockFlow).doGet(mockRequest, mockResponse);
 
     verify(mockEventStorage, atLeast(1)).getSearchedEvents(any(Search.class));
   }
 
   @Test
   public void eventServletTest_doGet_WithSlashPath_DoesSearch() throws IOException {
+    com.google.sps.data.User fakeUser = com.google.sps.data.User.newBuilder().setId("123").setEmail("email")
+        .setUsername("username").setInvitedEventsId(Arrays.asList(new String[] { "firstId" })).setJoinedEventsId(null)
+        .setDeclinedEventsId(null).build();
+
     when(mockRequest.getPathInfo()).thenReturn("/");
+    when(mockUserService.isUserLoggedIn()).thenReturn(true);
+    when(mockUserService.getCurrentUser()).thenReturn(new User("email", "authDomain", "123"));
+    when(mockUserStorage.getUser("123")).thenReturn(fakeUser);
 
     StringWriter stringWriter = new StringWriter();
     PrintWriter writer = new PrintWriter(stringWriter);
     when(mockResponse.getWriter()).thenReturn(writer);
 
-    new EventServlet(mockUserStorage, mockEventStorage).doGet(mockRequest, mockResponse);
+    new EventServlet(mockUserStorage, mockEventStorage, mockUserService, mockUtilsObject, mockFlow).doGet(mockRequest, mockResponse);
 
     verify(mockEventStorage, atLeast(1)).getSearchedEvents(any(Search.class));
   }
@@ -137,14 +164,21 @@ public class EventServletTest {
   public void eventServletTest_doGet_WithDifferentNonEmptyPath_DoesntSearch() throws IOException {
     when(mockRequest.getPathInfo()).thenReturn("/gcalendar");
 
-    new EventServlet(mockUserStorage, mockEventStorage).doGet(mockRequest, mockResponse);
+    new EventServlet(mockUserStorage, mockEventStorage, mockUserService, mockUtilsObject, mockFlow).doGet(mockRequest, mockResponse);
 
     verify(mockEventStorage, never()).getSearchedEvents(any(Search.class));
   }
 
   @Test
   public void eventServletTest_doGet_WithNullPathAndGivenParameters_DoesSearch() throws IOException {
+    com.google.sps.data.User fakeUser = com.google.sps.data.User.newBuilder().setId("123").setEmail("email")
+        .setUsername("username").setInvitedEventsId(Arrays.asList(new String[] { "firstId" })).setJoinedEventsId(null)
+        .setDeclinedEventsId(null).build();
+    
     when(mockRequest.getPathInfo()).thenReturn(null);
+    when(mockUserService.isUserLoggedIn()).thenReturn(true);
+    when(mockUserService.getCurrentUser()).thenReturn(new User("email", "authDomain", "123"));
+    when(mockUserStorage.getUser("123")).thenReturn(fakeUser);
 
     Search search = new Search("", "all", "2020-01-01", "2020-12-31", "60", "ChIJGaK-SZcLkEcRA9wf5_GNbuY");
     
@@ -154,14 +188,21 @@ public class EventServletTest {
     PrintWriter writer = new PrintWriter(stringWriter);
     when(mockResponse.getWriter()).thenReturn(writer);
 
-    new EventServlet(mockUserStorage, mockEventStorage).doGet(mockRequest, mockResponse);
+    new EventServlet(mockUserStorage, mockEventStorage, mockUserService, mockUtilsObject, mockFlow).doGet(mockRequest, mockResponse);
     
     verify(mockEventStorage, atLeast(1)).getSearchedEvents(eq(search));
   }
 
   @Test
   public void eventServletTest_doGet_WithEmptyPathAndGivenParameters_DoesSearch() throws IOException {
+    com.google.sps.data.User fakeUser = com.google.sps.data.User.newBuilder().setId("123").setEmail("email")
+        .setUsername("username").setInvitedEventsId(Arrays.asList(new String[] { "firstId" })).setJoinedEventsId(null)
+        .setDeclinedEventsId(null).build();
+    
     when(mockRequest.getPathInfo()).thenReturn("");
+    when(mockUserService.isUserLoggedIn()).thenReturn(true);
+    when(mockUserService.getCurrentUser()).thenReturn(new User("email", "authDomain", "123"));
+    when(mockUserStorage.getUser("123")).thenReturn(fakeUser);
 
     Search search = new Search("", "all", "2020-01-01", "2020-12-31", "60", "ChIJGaK-SZcLkEcRA9wf5_GNbuY");
     
@@ -171,14 +212,21 @@ public class EventServletTest {
     PrintWriter writer = new PrintWriter(stringWriter);
     when(mockResponse.getWriter()).thenReturn(writer);
 
-    new EventServlet(mockUserStorage, mockEventStorage).doGet(mockRequest, mockResponse);
+    new EventServlet(mockUserStorage, mockEventStorage, mockUserService, mockUtilsObject, mockFlow).doGet(mockRequest, mockResponse);
     
     verify(mockEventStorage, atLeast(1)).getSearchedEvents(eq(search));
   }
 
   @Test
   public void eventServletTest_doGet_WithSlashPathAndGivenParameters_DoesSearch() throws IOException {
+    com.google.sps.data.User fakeUser = com.google.sps.data.User.newBuilder().setId("123").setEmail("email")
+        .setUsername("username").setInvitedEventsId(Arrays.asList(new String[] { "firstId" })).setJoinedEventsId(null)
+        .setDeclinedEventsId(null).build();
+    
     when(mockRequest.getPathInfo()).thenReturn("/");
+    when(mockUserService.isUserLoggedIn()).thenReturn(true);
+    when(mockUserService.getCurrentUser()).thenReturn(new User("email", "authDomain", "123"));
+    when(mockUserStorage.getUser("123")).thenReturn(fakeUser);
 
     Search search = new Search("", "all", "2020-01-01", "2020-12-31", "60", "ChIJGaK-SZcLkEcRA9wf5_GNbuY");
     
@@ -188,14 +236,21 @@ public class EventServletTest {
     PrintWriter writer = new PrintWriter(stringWriter);
     when(mockResponse.getWriter()).thenReturn(writer);
 
-    new EventServlet(mockUserStorage, mockEventStorage).doGet(mockRequest, mockResponse);
+    new EventServlet(mockUserStorage, mockEventStorage, mockUserService, mockUtilsObject, mockFlow).doGet(mockRequest, mockResponse);
     
     verify(mockEventStorage, atLeast(1)).getSearchedEvents(eq(search));
   }
 
   @Test
   public void eventServletTest_doGet_returnedEventsOutputCorrectly() throws IOException {
+    com.google.sps.data.User fakeUser = com.google.sps.data.User.newBuilder().setId("123").setEmail("email")
+        .setUsername("username").setInvitedEventsId(Arrays.asList(new String[] { "firstId" })).setJoinedEventsId(null)
+        .setDeclinedEventsId(null).build();
+    
     when(mockRequest.getPathInfo()).thenReturn("/");
+    when(mockUserService.isUserLoggedIn()).thenReturn(true);
+    when(mockUserService.getCurrentUser()).thenReturn(new User("email", "authDomain", "123"));
+    when(mockUserStorage.getUser("123")).thenReturn(fakeUser);
 
     Search search = new Search("", "all", "2020-01-01", "2020-12-31", "60", "ChIJdd4hrwug2EcRmSrV3Vo6llI");
     
@@ -207,7 +262,7 @@ public class EventServletTest {
 
     when(mockEventStorage.getSearchedEvents(eq(search))).thenReturn(EVENT_LIST);
 
-    new EventServlet(mockUserStorage, mockEventStorage).doGet(mockRequest, mockResponse);
+    new EventServlet(mockUserStorage, mockEventStorage, mockUserService, mockUtilsObject, mockFlow).doGet(mockRequest, mockResponse);
 
     verify(mockEventStorage, atLeast(1)).getSearchedEvents(eq(search));
     writer.flush();
