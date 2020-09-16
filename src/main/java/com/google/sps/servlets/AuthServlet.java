@@ -37,9 +37,10 @@ public class AuthServlet extends HttpServlet {
           .setEmail(userService.getCurrentUser().getEmail()).setUsername(null).setInvitedEventsId(new ArrayList<>())
           .setJoinedEventsId(new ArrayList<>()).setDeclinedEventsId(new ArrayList<>()).build());
     }
+    String userId = userService.isUserLoggedIn() ? userService.getCurrentUser().getUserId() : null;
     response.setContentType("application/json;");
     Gson gson = new Gson();
-    response.getWriter().println(gson.toJson(new AuthData(userService.isUserLoggedIn(), buildAuthLink(origin))));
+    response.getWriter().println(gson.toJson(new AuthData(userService.isUserLoggedIn(), buildAuthLink(origin), userId)));
   }
 
   private String buildAuthLink(String origin) {
