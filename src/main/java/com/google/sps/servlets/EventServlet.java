@@ -29,6 +29,7 @@ import com.google.sps.data.Time;
 import com.google.sps.data.DateTimeRange;
 import com.google.sps.data.User;
 import com.google.sps.data.UserStorage;
+import com.google.sps.data.Search;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.Arrays;
@@ -78,23 +79,26 @@ public class EventServlet extends HttpServlet {
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String pathName = request.getPathInfo();
-    UserService userService = UserServiceFactory.getUserService();
+    
     if (!userService.isUserLoggedIn()) {
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
       return;
     }
 
     if (pathName == null || pathName.isEmpty() || pathName.equals("/")) {
-      String search = request.getParameter("search");
+      String text = request.getParameter("search");
       String category = request.getParameter("category");
       String start = request.getParameter("start");
       String end = request.getParameter("end");
       String duration = request.getParameter("duration");
       String location = request.getParameter("location");
 
-      List<Event> events = eventStorageObject.getSearchedEvents(search, category, start, end, duration, location);
+      Search search = new Search(text, category, start, end, duration, location);
+
+      List<Event> events = eventStorageObject.getSearchedEvents(search);
 
       Gson gson = new Gson();
+
       JsonObject wrapper = new JsonObject();
       JsonElement eventsJson = gson.toJsonTree(events);
       JsonElement userJoinedEventsJson = gson
@@ -102,7 +106,7 @@ public class EventServlet extends HttpServlet {
       wrapper.getAsJsonObject().add("alreadyJoined", userJoinedEventsJson);
       wrapper.getAsJsonObject().add("searched", eventsJson);
       response.setContentType("application/json");
-      response.getWriter().println(gson.toJson(wrapper));
+      response.getWriter().println(gson.toJson(events));
 
       return;
     }
