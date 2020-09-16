@@ -324,4 +324,25 @@ public class Event {
   public void setGCalendarId(String id) {
     this.gcalendarId = id;
   }
+
+  public void setInvitedIDs(List<String> invitedUsersId) {
+    Event.this.invitedUsersId = new ArrayList<>();
+    if (invitedUsersId != null) {
+      Event.this.invitedUsersId.addAll(invitedUsersId);
+    }
+  }
+
+  public void setJoinedIDs(List<String> joinedUsersId) {
+    Event.this.joinedUsersId = new ArrayList<>();
+    if (joinedUsersId != null) {
+      Event.this.joinedUsersId.addAll(joinedUsersId);
+    }
+  }
+
+  public void setDeclinedIDs(List<String> declinedUsersId) {
+    Event.this.declinedUsersId = new ArrayList<>();
+    if (declinedUsersId != null) {
+      Event.this.declinedUsersId.addAll(declinedUsersId);
+    }
+  }
 }
