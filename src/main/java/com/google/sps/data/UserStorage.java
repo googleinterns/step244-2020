@@ -86,11 +86,11 @@ public class UserStorage {
     return username != null ? username : (String) userEntity.getProperty("email");
   }
 
-  public void joinEvent(String userId, String eventId) {
+  public void joinEvent(String userId, String eventId, boolean isEventPublic) {
     User user = getUser(userId);
     if (user == null)
       return;
-    user.joinEvent(eventId);
+    user.joinEvent(eventId, isEventPublic);
     addOrUpdateUser(user);
     new EventStorage().joinEvent(userId, eventId);
   }
