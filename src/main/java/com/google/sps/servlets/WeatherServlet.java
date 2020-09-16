@@ -43,24 +43,15 @@ public class WeatherServlet extends HttpServlet {
       return;
     }
 
-    if (hours != null) {
-      if (hours < 0 || hours >= 48) {
-        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-        response.getWriter().println("Hours should be in range 0 <= hours < 48");
-        return;
-      }
+    if (hours != null && hours >= 0 && hours < 48) {
       response.getWriter().println(new Gson().toJson(weather.atLatLngThroughHours(latlng, hours)));
       return;
-    } else if (days != null) {
-      if (days < 0 || days >= 8) {
-        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-        response.getWriter().println("Days should be in range 0 <= days < 8");
-        return;
-      }
+    } else if (days != null && days >= 0 && days < 8) {
       response.getWriter().println(new Gson().toJson(weather.atLatLngThroughDays(latlng, days)));
       return;
     }
     response.getWriter().println(new Gson().toJson(weather.atLatLngNow(latlng)));
+    return;
   }
 
   private Integer parseIntegerFromString(String str) {

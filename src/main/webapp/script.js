@@ -29,6 +29,23 @@ function getEvent(event_id) {
 
     document.getElementById('description-info').innerText = event.description;
     document.getElementById('location-info').innerText = 'Location: ' + event.location;
+
+    var today = new Date();
+    fetch('/weather?' + new URLSearchParams({
+        location: event.location,
+        hours: today.getUTCHours() - event.dateTimeRange.startTime.split(':')[0],
+        days: today.getDay() - event.dateTimeRange.startDate.split('-')[2]
+      }).then(response => response.json()).then((weather) => {
+        document.getElementById('weather-type-info').innerText = weather.type;
+        document.getElementById('weather-temperature-info').innerText = weather.temperature;
+        document.getElementById('weather-temperaturefeels-like-info').innerText = weather.temperatureFeelsLike;
+        document.getElementById('weather-pressure-info').innerText = weather.pressure;
+        document.getElementById('weather-humidity-info').innerText = weather.humidity;
+        document.getElementById('weather-clouds-info').innerText = weather.clouds;
+        document.getElementById('weather-icon').src = `"http://openweathermap.org/img/wn/${weather.iconId}.@2x.png"`;
+      })
+    );
+
     for (link in event.links) {
       const linkA = document.createElement('a');
       linkA.innerText = event.links[link];

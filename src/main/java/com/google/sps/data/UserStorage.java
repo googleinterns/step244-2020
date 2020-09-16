@@ -76,6 +76,16 @@ public class UserStorage {
     return userEntity != null ? (String) userEntity.getProperty("id") : null;
   }
 
+  public String getUsernameByID(String userId) {
+    Query query = new Query("User").setFilter(
+        new FilterPredicate(Entity.KEY_RESERVED_PROPERTY, FilterOperator.EQUAL, KeyFactory.createKey("User", userId)));
+    Entity userEntity = DatastoreServiceFactory.getDatastoreService().prepare(query).asSingleEntity();
+    if (userEntity == null)
+      return null;
+    String username = (String) userEntity.getProperty("username");
+    return username != null ? username : (String) userEntity.getProperty("email");
+  }
+
   public void joinEvent(String userId, String eventId, boolean isEventPublic) {
     User user = getUser(userId);
     if (user == null)
