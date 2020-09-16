@@ -14,11 +14,8 @@
 
 package com.google.sps.servlets;
 
-import com.google.api.client.http.HttpStatusCodes;
 import com.google.api.client.util.DateTime;
 import com.google.api.services.calendar.Calendar;
-import com.google.api.services.calendar.model.EventDateTime;
-import com.google.api.services.calendar.model.Event.ExtendedProperties;
 import com.google.appengine.api.ThreadManager;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
@@ -34,11 +31,7 @@ import com.google.sps.data.User;
 import com.google.sps.data.UserStorage;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-import java.time.LocalTime;
-import java.text.SimpleDateFormat;
-import java.sql.Timestamp;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 import java.util.HashMap;
@@ -58,7 +51,6 @@ import com.google.api.client.auth.oauth2.AuthorizationCodeFlow;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.http.HttpHeaders;
 
-import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -252,7 +244,7 @@ public class EventServlet extends HttpServlet {
     String eventId = null;
     try {
       eventId = eventStorageObject.addOrUpdateEvent(event);
-      userStorageObject.joinEvent(currentUserId, eventId, true);
+      userStorageObject.joinEvent(currentUserId, eventId, /*isPublic=*/true);
     } catch (Exception e) {
       System.err.println("Can't add new event to storage: " + e);
       response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
