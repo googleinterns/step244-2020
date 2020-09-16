@@ -324,4 +324,8 @@ public class Event {
   public void setGCalendarId(String id) {
     this.gcalendarId = id;
   }
+
+  public void setId(String id) {
+    this.id = id;
+  }
 }

@@ -42,7 +42,9 @@ import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 import java.util.stream.Collectors;
 
@@ -106,7 +108,10 @@ public class Utils {
     }
 
     ExtendedProperties extendedProps = new ExtendedProperties();
-    extendedProps.setShared(event.getFields());
+    Map<String, String> allFields = new HashMap<>();
+    allFields.putAll(event.getFields());
+    allFields.put("seeYouId", event.getID());
+    extendedProps.setShared((Map) allFields);
     gcalendarEvent.setExtendedProperties(extendedProps);
     try {
       Calendar service = loadCalendarClient();
