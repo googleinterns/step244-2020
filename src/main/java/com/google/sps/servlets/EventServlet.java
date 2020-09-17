@@ -249,13 +249,14 @@ public class EventServlet extends HttpServlet {
         return null;
       }
       gcalendarId = newEvent.getId();
-    }
-    if (gcalendarId != null) {
-      event = eventBuilder.setGCalendarID(gcalendarId).build();
+
+      if (gcalendarId != null) {
+        event = eventBuilder.setGCalendarID(gcalendarId).build();
+        eventId = eventStorageObject.addOrUpdateEvent(event);
+      }
     }
 
     try {
-      eventId = eventStorageObject.addOrUpdateEvent(event);
       userStorageObject.joinEvent(currentUserId, eventId, /*isPublic=*/true);
     } catch (Exception e) {
       System.err.println("Can't add new event to storage: " + e);
