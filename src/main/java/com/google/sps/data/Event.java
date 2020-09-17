@@ -329,24 +329,28 @@ public class Event {
     this.id = id;
   }
   
+  public void setOwnerID(String ownerId) {
+    this.ownerId = ownerId;
+  }
+
   public void setInvitedIDs(List<String> invitedUsersId) {
-    Event.this.invitedUsersId = new ArrayList<>();
+    invitedUsersId = new ArrayList<>();
     if (invitedUsersId != null) {
-      Event.this.invitedUsersId.addAll(invitedUsersId);
+      this.invitedUsersId.addAll(invitedUsersId);
     }
   }
 
   public void setJoinedIDs(List<String> joinedUsersId) {
-    Event.this.joinedUsersId = new ArrayList<>();
+    this.joinedUsersId = new ArrayList<>();
     if (joinedUsersId != null) {
-      Event.this.joinedUsersId.addAll(joinedUsersId);
+      this.joinedUsersId.addAll(joinedUsersId);
     }
   }
 
   public void setDeclinedIDs(List<String> declinedUsersId) {
-    Event.this.declinedUsersId = new ArrayList<>();
+    this.declinedUsersId = new ArrayList<>();
     if (declinedUsersId != null) {
-      Event.this.declinedUsersId.addAll(declinedUsersId);
+      this.declinedUsersId.addAll(declinedUsersId);
     }
   }
 }

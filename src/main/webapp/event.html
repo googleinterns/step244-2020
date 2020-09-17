@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+  <titile>Event info</titile>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css"
     integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js"
@@ -32,26 +33,29 @@
       </script>
     </div>
     <div id="page-content-wrapper">
-      <h1 id="title-info"></h1>
-      <p id="start-date-info"></p>
-      <p id="start-time-info"></p>
-      <p id="duration-info"></p>
-      <p id="category-info"></p>
-      <ul id="tags-info"></ul>
-      <p id="description-info"></p>
-      <p id="location-info"></p>
-      <div id="weather-info">
-        <img id="weather-icon">
-        <p id="weather-type-info"></p>
+      <div id="title-wrapper">
+        <h1><span id="title-info"></span>@<span id="owner-info"></span></h1>
+        <p id="start-info"><span id="start-date-info"></span> <span id="start-time-info"></span></p>
+        <p id="duration-info"></p>
+        <a id="doodle-link-info" hidden>Click to select a time</a>
+      </div>
+      <div id="event-info">
+        <ul id="tags-info"></ul>
+        <p id="category-info"></p>
+        <p id="description-info"></p>
+        <div id="location-wrapper" hidden><i class="fas fa-map-marker-alt"></i><span id="location-info"></span></div>
+        <div id="links-info" hidden><i class="fas fa-link"></i></div>
+        <ul id="fields-info"></ul>
+        <p>Participants:</p>
+        <ul id="people-list-info"></ul>
+      </div>
+      <div id="weather-info" hidden>
+        <img id="weather-icon"><span id="weather-type-info"></span>
         <p id="weather-temperature-info"></p>
         <p id="weather-pressure-info"></p>
         <p id="weather-humidity-info"></p>
         <p id="weather-clouds-info"></p>
       </div>
-      <div id="links-info"></div>
-      <ul id="fields-info"></ul>
-      <p id="owner-info"></p>
-      <ul id="people-list-info"></ul>
     </div>
   </div>
 

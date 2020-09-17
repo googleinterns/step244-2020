@@ -28,12 +28,12 @@ html * {
 }
 
 #events-container > div > button {
-    width: 100%;
-    color: white;
-    padding: 14px 20px;
-    margin: 8px 0;
-    border: none;
-    border-radius: 4px;
+  width: 100%;
+  color: white;
+  padding: 14px 20px;
+  margin: 8px 0;
+  border: none;
+  border-radius: 4px;
 }
 
 .doodle-times {
@@ -351,4 +351,49 @@ input[type=checkbox] {
 .popover-body ul {
   display: flex;
   flex-direction: column;
+}
+
+#title-wrapper {
+  margin-bottom: 20px;
+}
+#description-info {
+  margin: 10px 0;
+}
+
+.invited {
+  color:  #e7e7e7;
+}
+.declined {
+  color: red;
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+#tags-info li, #event-tags li, #event-custom-tags li {
+  background-color: #e7e7e7;
+  display: inline-block;
+  text-align: center;
+  min-width: 50px;
+  border-radius: 30%;
+  margin-right: 5px;
+}
+
+#event-info, #weather-info {
+  display: inline-block;
+}
+
+#weather-info {
+  background: lightyellow;
+  border: 2px solid #ebe719;
+  border-radius: 15px;
+  padding: 1em;
+  margin: 0 50px;
+}
+
+svg {
+  margin: 0 5px;
 }
