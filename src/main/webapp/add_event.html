@@ -65,11 +65,13 @@
         <label for="open-ended-event">If you would like to make an open ended event, check this</label>
         <input type="checkbox" id="checkbox-open-ended" name="open-ended-event"><br>
 
-        <label for="event-end-date" id="label-end" style="display: none;">End date</label>
-        <input type="date" id="event-end-date" name="end-date" max="2200-01-01" disabled style="display: none;">
+        <div id="event-end-wrapper">
+          <label for="event-end-date" id="label-end">End date</label>
+          <input type="date" id="event-end-date" name="end-date" max="2200-01-01" >
 
-        <label for="event-end-time" id="label-end-time" style="display: none;">End time</label>
-        <input type="time" id="event-end-time" name="end-time" disabled style="display: none;">
+          <label for="event-end-time" id="label-end-time">End time</label>
+          <input type="time" id="event-end-time" name="end-time">
+        </div>
 
         <label for="event-duration">Duration in minutes</label>
         <input type="text" id="event-duration" name="duration">
@@ -140,26 +142,18 @@
 </body>
 <script>
   $(document).ready(function () {
-    console.log(new Date().getTimezoneOffset());
     document.getElementById("timezone-input").value = new Date().getTimezoneOffset() * 60 * 1000;
     document.getElementById("timezone-label").innerText = "The times are in your current TimeZone";
     $('#checkbox-open-ended').change(function () {
-      if (!this.checked) {
-        document.getElementById("event-end-date").setAttribute("disabled", "true");
-        document.getElementById("event-end-time").setAttribute("disabled", "true");
-        document.getElementById("event-end-date").style.display = "none";
-        document.getElementById("event-end-time").style.display = "none";
-        document.getElementById("label-end").style.display = "none";
-        document.getElementById("label-end-time").style.display = "none";
-        document.getElem
+      if (this.checked) {
+        document.getElementById("event-end-date").disabled = true;
+        document.getElementById("event-end-time").disabled = true;
+        document.getElementById("event-end-wrapper").hidden = true;
       }
       else {
-        document.getElementById("event-end-date").removeAttribute("disabled");
-        document.getElementById("event-end-time").removeAttribute("disabled");
-        document.getElementById("event-end-date").style.display = "";
-        document.getElementById("event-end-time").style.display = "";
-        document.getElementById("label-end").style.display = "";
-        document.getElementById("label-end-time").style.display = "";
+        document.getElementById("event-end-date").disabled = false;
+        document.getElementById("event-end-time").disabled = false;
+        document.getElementById("event-end-wrapper").hidden = false;
       }
     });
   });

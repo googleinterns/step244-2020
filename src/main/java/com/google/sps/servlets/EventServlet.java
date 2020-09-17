@@ -373,6 +373,7 @@ public class EventServlet extends HttpServlet {
       return false;
     }
     response.setContentType("application/json;");
+    
     event.setOwnerID(userStorageObject.getUsernameByID(event.getOwnerID()));
     event.setInvitedIDs(IDsToUsernames(event.getInvitedIDs()));
     event.setJoinedIDs(IDsToUsernames(event.getJoinedIDs()));
