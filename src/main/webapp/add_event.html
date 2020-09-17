@@ -96,6 +96,12 @@
           <option value="photography">Photography</option>
           <option value="movies">Movies</option>
         </select>
+        <label for="event-custom-tag">Add custom tag</label>
+        <input type="text" id="event-custom-tag">
+        <input type="button" value="Add" onclick="addTag()">
+        <div id="event-custom-tags">
+          <ul id="event-custom-tags-list"></ul>
+        </div>
 
         <label for="event-description">Description</label>
         <textarea id="event-description" name="description"></textarea>
@@ -122,8 +128,7 @@
         <input type="button" value="Add" onclick="addPerson()">
 
         <div id="event-people">
-          <ul id="event-people-list">
-          </ul>
+          <ul id="event-people-list"></ul>
         </div>
         <div id="event-location-id" name="location-id"></div>
 

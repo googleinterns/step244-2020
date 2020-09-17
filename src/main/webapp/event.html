@@ -32,14 +32,21 @@
       </script>
     </div>
     <div id="page-content-wrapper">
-      <h1 id="title-info"></h1>
-      <p id="start-date-info"></p>
-      <p id="start-time-info"></p>
-      <p id="duration-info"></p>
-      <p id="category-info"></p>
-      <ul id="tags-info"></ul>
-      <p id="description-info"></p>
-      <p id="location-info"></p>
+      <div id="event-info">
+        <div id="title-wrapper">
+          <h1 id="title-info"></h1>
+          <p id="start-info"><span id="start-date-info"></span> <span id="start-time-info"></span></p>
+          <p id="duration-info"></p>
+        </div>
+        <p id="category-info"></p>
+        <ul id="tags-info"></ul>
+        <p id="description-info"></p>
+        <div id="location-wrapper" hidden><i class="fas fa-map-marker-alt"></i><span id="location-info"></span></div>
+        <div id="links-info" hidden><i class="fas fa-link"></i></div>
+        <ul id="fields-info"></ul>
+        <p id="owner-info"></p>
+        <ul id="people-list-info"></ul>
+      </div>
       <div id="weather-info">
         <img id="weather-icon">
         <p id="weather-type-info"></p>
@@ -48,10 +55,6 @@
         <p id="weather-humidity-info"></p>
         <p id="weather-clouds-info"></p>
       </div>
-      <div id="links-info"></div>
-      <ul id="fields-info"></ul>
-      <p id="owner-info"></p>
-      <ul id="people-list-info"></ul>
     </div>
   </div>
 

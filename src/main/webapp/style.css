@@ -352,3 +352,31 @@ input[type=checkbox] {
   display: flex;
   flex-direction: column;
 }
+
+#title-wrapper {
+  margin-bottom: 10px;
+  /* background-color: lightblue;
+  width: 100%; */
+}
+
+ul#tags-info, ul#event-tags {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+#tags-info li, #event-tags li {
+  background-color: #e7e7e7;
+  display: inline-block;
+  text-align: center;
+  min-width: 50px;
+  border-radius: 30%;
+}
+
+#event-info, #weather-info {
+  display: inline-block;
+}
+
+.fas {
+  margin: 2px;
+}

@@ -15,14 +15,14 @@
 function getEvent(event_id) {
   fetch('/events/' + event_id).then(response => response.json()).then((event) => {
     document.getElementById('duration-info').hidden = true;
-    document.getElementById('location-info').hidden = true;
+    document.getElementById('location-wrapper').hidden = true;
     
     document.getElementById('title-info').innerText = event.title;
     document.getElementById('start-date-info').innerText = event.dateTimeRange.startDate;
     document.getElementById('start-time-info').innerText = event.dateTimeRange.startTime;
     if (event.duration != null && event.duration != "") {
       document.getElementById('duration-info').hidden = false;
-      document.getElementById('duration-info').innerText = 'Duration: ' + event.duration + 'minutes';
+      document.getElementById('duration-info').innerText = event.duration + ' minutes';
     }
 
     document.getElementById('category-info').innerText = event.category;
@@ -34,7 +34,7 @@ function getEvent(event_id) {
 
     document.getElementById('description-info').innerText = event.description;
     if (event.location != null && event.location != "") {
-        document.getElementById('location-info').hidden = false;
+        document.getElementById('location-wrapper').hidden = false;
         document.getElementById('location-info').innerText = 'Location: ' + event.location;
     }
 
@@ -47,11 +47,12 @@ function getEvent(event_id) {
         days: today.getDay() - event.dateTimeRange.startDate.split('-')[2],
       })).then(weatherResponse => weatherResponse.json()).then((weather) => {
         document.getElementById('weather-type-info').innerText = "Weather: " + weather.type;
-        document.getElementById('weather-temperature-info').innerText = "Temperature: " + weather.temperature + "°C, feels like " + weather.temperatureFeelsLike + "°C";
+        document.getElementById('weather-temperature-info').innerText = "Temperature: " + weather.temperature + "\u00B0C, feels like " + 
+                                                                                          weather.temperatureFeelsLike + "\u00B0C";
         document.getElementById('weather-pressure-info').innerText = "Pressure: " + weather.pressure;
         document.getElementById('weather-humidity-info').innerText = "Humidity: " + weather.humidity;
         document.getElementById('weather-clouds-info').innerText = "Clouds: " + weather.clouds;
-        document.getElementById('weather-icon').src = `"http://openweathermap.org/img/wn/${weather.iconId}.@2x.png"`;
+        document.getElementById('weather-icon').src = `https://openweathermap.org/img/wn/${weather.iconId}@2x.png`;
     });
 
     for (link in event.links) {
@@ -494,6 +495,21 @@ function addField() {
   form.insertBefore(FieldInput, button);
   form.insertBefore(fieldLabel, button);
   form.insertBefore(fieldInput, button);
+}
+
+function addTag() {
+  var eventTag = document.getElementById('event-custom-tag').value;
+  document.getElementById('event-custom-tag').value = '';
+
+  const tagInput = document.createElement('input');
+  tagInput.setAttribute('type', 'hidden');
+  tagInput.setAttribute('name', 'tags');
+  tagInput.setAttribute('value', eventTag);
+  document.getElementById('add-event-form').insertBefore(tagInput, document.getElementById('event-custom-tags'));
+
+  const tagLI = document.createElement('li');
+  tagLI.innerText = eventTag;
+  document.getElementById('event-custom-tags-list').appendChild(tagLI);
 }
 
 function addPerson() {
