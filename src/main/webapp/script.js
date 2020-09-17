@@ -14,11 +14,16 @@
 
 function getEvent(event_id) {
   fetch('/events/' + event_id).then(response => response.json()).then((event) => {
+    document.getElementById('duration-info').hidden = true;
+    document.getElementById('location-info').hidden = true;
+    
     document.getElementById('title-info').innerText = event.title;
     document.getElementById('start-date-info').innerText = event.dateTimeRange.startDate;
     document.getElementById('start-time-info').innerText = event.dateTimeRange.startTime;
-    if (event.duration != null)
+    if (event.duration != null && event.duration != "") {
+      document.getElementById('duration-info').hidden = false;
       document.getElementById('duration-info').innerText = 'Duration: ' + event.duration + 'minutes';
+    }
 
     document.getElementById('category-info').innerText = event.category;
     for (tag in event.tags) {
@@ -28,23 +33,26 @@ function getEvent(event_id) {
     }
 
     document.getElementById('description-info').innerText = event.description;
-    document.getElementById('location-info').innerText = 'Location: ' + event.location;
+    if (event.location != null && event.location != "") {
+        document.getElementById('location-info').hidden = false;
+        document.getElementById('location-info').innerText = 'Location: ' + event.location;
+    }
 
     var today = new Date();
     fetch('/weather?' + new URLSearchParams({
         location: event.location,
+      }) + '&' + new URLSearchParams({
         hours: today.getUTCHours() - event.dateTimeRange.startTime.split(':')[0],
-        days: today.getDay() - event.dateTimeRange.startDate.split('-')[2]
-      }).then(response => response.json()).then((weather) => {
-        document.getElementById('weather-type-info').innerText = weather.type;
-        document.getElementById('weather-temperature-info').innerText = weather.temperature;
-        document.getElementById('weather-temperaturefeels-like-info').innerText = weather.temperatureFeelsLike;
-        document.getElementById('weather-pressure-info').innerText = weather.pressure;
-        document.getElementById('weather-humidity-info').innerText = weather.humidity;
-        document.getElementById('weather-clouds-info').innerText = weather.clouds;
+      }) + '&' + new URLSearchParams({
+        days: today.getDay() - event.dateTimeRange.startDate.split('-')[2],
+      })).then(weatherResponse => weatherResponse.json()).then((weather) => {
+        document.getElementById('weather-type-info').innerText = "Weather: " + weather.type;
+        document.getElementById('weather-temperature-info').innerText = "Temperature: " + weather.temperature + "°C, feels like " + weather.temperatureFeelsLike + "°C";
+        document.getElementById('weather-pressure-info').innerText = "Pressure: " + weather.pressure;
+        document.getElementById('weather-humidity-info').innerText = "Humidity: " + weather.humidity;
+        document.getElementById('weather-clouds-info').innerText = "Clouds: " + weather.clouds;
         document.getElementById('weather-icon').src = `"http://openweathermap.org/img/wn/${weather.iconId}.@2x.png"`;
-      })
-    );
+    });
 
     for (link in event.links) {
       const linkA = document.createElement('a');
