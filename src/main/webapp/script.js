@@ -44,7 +44,7 @@ function getEvent(event_id) {
     }
 
     if (typeof event.gcalendarId === "undefined") {
-    //   document.getElementById("doodle-link-info").hidden = false;
+      document.getElementById("doodle-link-info").hidden = false;
       document.getElementById("doodle-link-info").href = getCurrentUrl() + "/doodle.html?eventId=" + event.id;
     }
 
