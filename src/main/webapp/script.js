@@ -113,6 +113,7 @@ function searchEvents() {
   var end = document.getElementById('end-date').value;
   var duration = document.getElementById('duration').value;
   var location = document.getElementById('location-id').value;
+  var tags = $('#tags option:selected').toArray().map(item => item.value).join();
   fetch('/events?' + new URLSearchParams({
     search: search,
   }) + '&' + new URLSearchParams({
@@ -125,6 +126,8 @@ function searchEvents() {
     duration: duration,
   }) + '&' + new URLSearchParams({
     location: location,
+  }) + '&' + new URLSearchParams({
+    tags: tags,
   })).then(handleError).then(response => response.json()).then(jsonObject => {
     jsonObject.searched.forEach(function (event) {
       showEvent(event, jsonObject.alreadyJoined.includes(event.id));

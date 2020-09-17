@@ -29,9 +29,11 @@ import com.google.appengine.api.datastore.Query.FilterPredicate;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.*;
 
 public class EventStorage {
   public Event getEvent(String eventId) {
@@ -71,8 +73,15 @@ public class EventStorage {
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
     PreparedQuery results = datastore.prepare(query);
 
-    List<Event> events = new ArrayList<>();
+    Map<Event, Integer> events = new HashMap<>();
+
     for (Entity entity : results.asIterable()) {
+      String category = (String) entity.getProperty("category");
+
+      if (!search.eventInCategory(category)) {
+        continue;
+      }
+
       DateTimeRange dateTimeRange = new Gson().fromJson((String) entity.getProperty("date-time-range"), DateTimeRange.class);
 
       if (!search.eventInRange(dateTimeRange)) {
@@ -86,15 +95,35 @@ public class EventStorage {
         continue;
       }
 
-      String category = (String) entity.getProperty("category");
+      List<String> tags = (List<String>) entity.getProperty("tags");
 
-      if (!search.eventInCategory(category)) {
+      int numberOfMatchingTags = search.countMatchingTags(tags);
+
+      if (numberOfMatchingTags == 0) {
         continue;
       }
 
-      events.add(Event.fromDatastoreEntity(entity));
+      events.put(Event.fromDatastoreEntity(entity), numberOfMatchingTags);
     }
     
+    return orderEventsByTags(events);
+  }
+
+  public List<Event> orderEventsByTags(Map<Event, Integer> eventsWithCounts) {
+    List<Event> events = new ArrayList<>();
+    List<Integer> counts = new ArrayList<>(eventsWithCounts.values()).stream() 
+                                      .distinct().collect(Collectors.toList());
+
+    counts.sort(Comparator.reverseOrder());
+
+    for (Integer count : counts) {
+      for (Map.Entry<Event, Integer> eventWithCount : eventsWithCounts.entrySet()) {
+        if (eventWithCount.getValue().equals(count)) {
+          events.add(eventWithCount.getKey());
+        }
+      }
+    }
+
     return events;
   }
 

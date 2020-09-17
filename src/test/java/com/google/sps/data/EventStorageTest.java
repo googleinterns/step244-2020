@@ -41,11 +41,17 @@ import org.junit.Test;
 
 public class EventStorageTest {
 
+  private static final List<String> TAGS_SEARCH = Arrays.asList("Dogs", "Cats", "Golf");
+  private static final List<String> TAGS_A = Arrays.asList("Dogs", "Cats", "Golf");
+  private static final List<String> TAGS_B = Arrays.asList("Cats", "Animal", "Violin");
+  private static final List<String> TAGS_C = Arrays.asList("Dogs", "Golf");
+
   private static final Search NULL_SEARCH = new Search();
-  private static final Search EMPTY_SEARCH = new Search("", "all", "", "", "", "all");
-  private static final Search SEARCH_A = new Search("Meeting", "Business", "2020-06-06", "2020-07-07", "200", "ChIJyc_U0TTDQUcRYBEeDCnEAAQ");
-  private static final Search SEARCH_B = new Search("party", "Entertainment", "2020-06-06", null, "30", null);
-  private static final Search SEARCH_C = new Search("pEn", "Education", "", "2020-08-06", "20", "ChIJdd4hrwug2EcRmSrV3Vo6llI");
+  private static final Search EMPTY_SEARCH = new Search("", "all", "", "", "", "all", new ArrayList<>());
+  private static final Search ORDERED_SEARCH = new Search("", "all", "", "", "", "all", TAGS_SEARCH);
+  private static final Search SEARCH_A = new Search("Meeting", "Business", "2020-06-06", "2020-07-07", "200", "ChIJyc_U0TTDQUcRYBEeDCnEAAQ", null);
+  private static final Search SEARCH_B = new Search("party", "Entertainment", "2020-06-06", null, "30", null, null);
+  private static final Search SEARCH_C = new Search("pEn", "Education", "", "2020-08-06", "20", "ChIJdd4hrwug2EcRmSrV3Vo6llI", null);
 
   private static final List<String> LIST = new ArrayList<>();
   private static final Map<String, String> MAP = new HashMap<>();
@@ -59,7 +65,7 @@ public class EventStorageTest {
         .setTitle("Meeting")
         .setDescription("Bring a pen")
         .setCategory("Business")
-        .setTags(LIST)
+        .setTags(TAGS_A)
         .setLocation("Budapest, Hungary")
         .setLocationId("ChIJyc_U0TTDQUcRYBEeDCnEAAQ")
         .setDateTimeRange(RANGE_A)
@@ -77,7 +83,7 @@ public class EventStorageTest {
         .setTitle("Party")
         .setDescription("RSVP through the link")
         .setCategory("Entertainment")
-        .setTags(LIST)
+        .setTags(TAGS_B)
         .setLocation("London, UK")
         .setLocationId("ChIJdd4hrwug2EcRmSrV3Vo6llI")
         .setDateTimeRange(RANGE_A)
@@ -95,7 +101,7 @@ public class EventStorageTest {
         .setTitle("Graduation")
         .setDescription("After the celebration join us for the party")
         .setCategory("Entertainment")
-        .setTags(LIST)
+        .setTags(TAGS_C)
         .setLocation("Budapest, Hungary")
         .setLocationId("ChIJyc_U0TTDQUcRYBEeDCnEAAQ")
         .setDateTimeRange(RANGE_B)
@@ -107,6 +113,21 @@ public class EventStorageTest {
         .setDeclinedIDs(LIST).build();
 
   private static final List<Event> ALL_EVENTS = Arrays.asList(EVENT_A, EVENT_B, EVENT_C);
+  private static final List<Event> ORDERED_EVENTS_A = Arrays.asList(EVENT_B, EVENT_A, EVENT_C);
+  private static final List<Event> ORDERED_EVENTS_B = Arrays.asList(EVENT_B, EVENT_C, EVENT_A);
+  private static final List<Event> ORDERED_EVENTS_C = Arrays.asList(EVENT_A, EVENT_C, EVENT_B);
+
+  private static final Map<Event, Integer> EVENTS_WITH_COUNTS_A = new HashMap<Event, Integer>() {{
+        put(EVENT_A, new Integer(1));
+        put(EVENT_B, new Integer(2));
+        put(EVENT_C, new Integer(1));
+  }};
+
+  private static final Map<Event, Integer> EVENTS_WITH_COUNTS_B = new HashMap<Event, Integer>() {{
+        put(EVENT_A, new Integer(1));
+        put(EVENT_B, new Integer(3));
+        put(EVENT_C, new Integer(2));
+  }};
 
   private final LocalServiceTestHelper helper =
       new LocalServiceTestHelper(new LocalDatastoreServiceTestConfig());
@@ -170,12 +191,35 @@ public class EventStorageTest {
         && Objects.equals(event.getDeclinedIDs(), other.getDeclinedIDs());
   }
 
+  private boolean eventContainsWithoutID(Event event, List<Event> list) {
+    for (Event e : list) {
+      if (eventEqualsWithoutID(event, e)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private boolean isEventsSameWithoutID(List<Event> events, List<Event> list) {
+    if (events.size() != list.size()) {
+      return false;
+    }
+
+    for (int i = 0; i < events.size(); i++) {
+      if (!eventEqualsWithoutID(events.get(i), list.get(i))) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
   @Test
   public void eventStorageTest_getSearchedEvents_nullSearch_MatchesAll() {
     List<Event> searchedEvents = eventStorageObject.getSearchedEvents(NULL_SEARCH);
     assertEquals(3, searchedEvents.size());
     for (int i = 0; i < searchedEvents.size(); i++) {
-      assertTrue(eventEqualsWithoutID(searchedEvents.get(i), ALL_EVENTS.get(i)));
+      assertTrue(eventContainsWithoutID(searchedEvents.get(i), ALL_EVENTS));
     }
   }
 
@@ -183,9 +227,18 @@ public class EventStorageTest {
   public void eventStorageTest_getSearchedEvents_emptySearch_MatchesAll() {
     List<Event> searchedEvents = eventStorageObject.getSearchedEvents(EMPTY_SEARCH);
     assertEquals(3, searchedEvents.size());
+    assertEquals(ALL_EVENTS.size(), searchedEvents.size());
     for (int i = 0; i < searchedEvents.size(); i++) {
-      assertTrue(eventEqualsWithoutID(searchedEvents.get(i), ALL_EVENTS.get(i)));
+      assertTrue(eventContainsWithoutID(searchedEvents.get(i), ALL_EVENTS));
     }
+  }
+
+  @Test
+  public void eventStorageTest_getSearchedEvents_onlyTagSearch_MatchesAll_ResultsAreOrdered() {
+    List<Event> searchedEvents = eventStorageObject.getSearchedEvents(ORDERED_SEARCH);
+    assertEquals(3, searchedEvents.size());
+    assertEquals(ALL_EVENTS.size(), searchedEvents.size());
+    assertTrue(isEventsSameWithoutID(searchedEvents, ORDERED_EVENTS_C));
   }
 
   @Test
@@ -202,5 +255,20 @@ public class EventStorageTest {
   @Test
   public void eventStorageTest_getSearchedEvents_DoesntMatch() {
     assertEquals(0, eventStorageObject.getSearchedEvents(SEARCH_C).size());
+  }
+
+  @Test
+  public void eventStorageTest_orderEventsByTags_WithoutDuplicateCounts() {
+    List<Event> orderedEvents = eventStorageObject.orderEventsByTags(EVENTS_WITH_COUNTS_B);
+    assertEquals(3, orderedEvents.size());
+    assertTrue(isEventsSameWithoutID(orderedEvents, ORDERED_EVENTS_B));
+  }
+
+  @Test
+  public void eventStorageTest_orderEventsByTags_WithDuplicateCounts() {
+    List<Event> orderedEvents = eventStorageObject.orderEventsByTags(EVENTS_WITH_COUNTS_A);
+    assertEquals(3, orderedEvents.size());
+    assertTrue(isEventsSameWithoutID(orderedEvents, ORDERED_EVENTS_A) 
+    || isEventsSameWithoutID(orderedEvents, ORDERED_EVENTS_B));
   }
 }
