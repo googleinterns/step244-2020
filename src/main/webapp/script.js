@@ -35,7 +35,7 @@ function getEvent(event_id) {
         location: event.location,
         hours: today.getUTCHours() - event.dateTimeRange.startTime.split(':')[0],
         days: today.getDay() - event.dateTimeRange.startDate.split('-')[2]
-      }).then(response => response.json()).then((weather) => {
+      }).then(weatherResponse => weatherResponse.json()).then((weather) => {
         document.getElementById('weather-type-info').innerText = weather.type;
         document.getElementById('weather-temperature-info').innerText = weather.temperature;
         document.getElementById('weather-temperaturefeels-like-info').innerText = weather.temperatureFeelsLike;
