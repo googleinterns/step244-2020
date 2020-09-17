@@ -51,6 +51,38 @@ html * {
   width: auto;
 }
 
+.accepted-event {
+  background-color: #007bff !important;
+  border: 1px solid #007bff !important;
+}
+
+.see-you-event {
+  background-color: #28a745 !important;
+  border: 1px solid#28a745 !important;
+}
+
+.transparent-event {
+  background-color: transparent !important;
+  border: 1px solid #007bff !important;
+}
+
+.transparent-event > .fc-event-main > .fc-event-main-frame {
+  color: #007bff;
+}
+
+.no-time-set-event {
+  background-color: transparent !important;
+  border: 1px solid#dc3545 !important;
+}
+
+.no-time-set-event > .fc-event-main > .fc-event-main-frame {
+  color: #dc3545;
+}
+
+.fc-event-title {
+  overflow: auto;
+}
+
 #search-bar {
   left: 30%;
   margin-bottom: 50px;

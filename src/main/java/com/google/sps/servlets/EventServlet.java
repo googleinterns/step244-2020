@@ -244,6 +244,8 @@ public class EventServlet extends HttpServlet {
 
     Event event = eventBuilder.build();
 
+    String eventId = eventStorageObject.addOrUpdateEvent(event);
+    event.setId(eventId);
     String gcalendarId = null;
     if (event.isDateTimeSet()) {
       com.google.api.services.calendar.model.Event newEvent = Utils.createGCalendarEvent(event);
@@ -252,14 +254,14 @@ public class EventServlet extends HttpServlet {
         return null;
       }
       gcalendarId = newEvent.getId();
-    }
-    if (gcalendarId != null) {
-      event = eventBuilder.setGCalendarID(gcalendarId).build();
+
+      if (gcalendarId != null) {
+        event = eventBuilder.setGCalendarID(gcalendarId).build();
+        eventId = eventStorageObject.addOrUpdateEvent(event);
+      }
     }
 
-    String eventId = null;
     try {
-      eventId = eventStorageObject.addOrUpdateEvent(event);
       userStorageObject.joinEvent(currentUserId, eventId, /*isPublic=*/true);
     } catch (Exception e) {
       System.err.println("Can't add new event to storage: " + e);
@@ -488,7 +490,7 @@ public class EventServlet extends HttpServlet {
       Calendar service = Utils.loadCalendarClient();
       HttpHeaders headers = new com.google.api.client.http.HttpHeaders().setAcceptEncoding("gzip").setUserAgent("gzip");
       List<com.google.api.services.calendar.model.Event> events = service.events().list("primary")
-          .setFields("items(summary,start,end,description,extendedProperties,location)").setSingleEvents(true)
+          .setFields("items(summary,start,end,description,extendedProperties,location,attendees)").setSingleEvents(true)
           .setTimeMin(startDateTime).setTimeMax(endDateTime).setRequestHeaders(headers).execute().getItems();
       return new Gson().toJson(events);
     } catch (GeneralSecurityException e) {

@@ -325,6 +325,10 @@ public class Event {
     this.gcalendarId = id;
   }
 
+  public void setId(String id) {
+    this.id = id;
+  }
+  
   public void setInvitedIDs(List<String> invitedUsersId) {
     Event.this.invitedUsersId = new ArrayList<>();
     if (invitedUsersId != null) {
