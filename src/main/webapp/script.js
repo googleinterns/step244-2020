@@ -46,12 +46,11 @@ function getEvent(event_id) {
       }) + '&' + new URLSearchParams({
         days: today.getDay() - event.dateTimeRange.startDate.split('-')[2],
       })).then(weatherResponse => weatherResponse.json()).then((weather) => {
-        document.getElementById('weather-type-info').innerText = weather.type;
-        document.getElementById('weather-temperature-info').innerText = weather.temperature;
-        document.getElementById('weather-temperaturefeels-like-info').innerText = weather.temperatureFeelsLike;
-        document.getElementById('weather-pressure-info').innerText = weather.pressure;
-        document.getElementById('weather-humidity-info').innerText = weather.humidity;
-        document.getElementById('weather-clouds-info').innerText = weather.clouds;
+        document.getElementById('weather-type-info').innerText = "Weather: " + weather.type;
+        document.getElementById('weather-temperature-info').innerText = "Temperature: " + weather.temperature + "°C, feels like " + weather.temperatureFeelsLike + "°C";
+        document.getElementById('weather-pressure-info').innerText = "Preassure: " + weather.pressure;
+        document.getElementById('weather-humidity-info').innerText = "Humidity: " + weather.humidity;
+        document.getElementById('weather-clouds-info').innerText = "Clouds: " + weather.clouds;
         document.getElementById('weather-icon').src = `"http://openweathermap.org/img/wn/${weather.iconId}.@2x.png"`;
     });
 
