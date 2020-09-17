@@ -110,21 +110,9 @@ public class EventStorage {
   }
 
   public List<Event> orderEventsByTags(Map<Event, Integer> eventsWithCounts) {
-    List<Event> events = new ArrayList<>();
-    List<Integer> counts = new ArrayList<>(eventsWithCounts.values()).stream() 
-                                      .distinct().collect(Collectors.toList());
-
-    counts.sort(Comparator.reverseOrder());
-
-    for (Integer count : counts) {
-      for (Map.Entry<Event, Integer> eventWithCount : eventsWithCounts.entrySet()) {
-        if (eventWithCount.getValue().equals(count)) {
-          events.add(eventWithCount.getKey());
-        }
-      }
-    }
-
-    return events;
+    return eventsWithCounts.entrySet().stream()
+            .sorted((Map.Entry.<Event, Integer>comparingByValue().reversed()))
+            .map(Map.Entry::getKey).collect(Collectors.toList());
   }
 
   public String addOrUpdateEvent(Event event) {
