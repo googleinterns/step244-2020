@@ -45,7 +45,7 @@ function getEvent(event_id) {
         hours: today.getUTCHours() - event.dateTimeRange.startTime.split(':')[0],
       }) + '&' + new URLSearchParams({
         days: today.getDay() - event.dateTimeRange.startDate.split('-')[2],
-      }).then(response => response.json()).then((weather) => {
+      })).then(weatherResponse => weatherResponse.json()).then((weather) => {
         document.getElementById('weather-type-info').innerText = weather.type;
         document.getElementById('weather-temperature-info').innerText = weather.temperature;
         document.getElementById('weather-temperaturefeels-like-info').innerText = weather.temperatureFeelsLike;
@@ -53,8 +53,7 @@ function getEvent(event_id) {
         document.getElementById('weather-humidity-info').innerText = weather.humidity;
         document.getElementById('weather-clouds-info').innerText = weather.clouds;
         document.getElementById('weather-icon').src = `"http://openweathermap.org/img/wn/${weather.iconId}.@2x.png"`;
-      })
-    );
+    });
 
     for (link in event.links) {
       const linkA = document.createElement('a');
