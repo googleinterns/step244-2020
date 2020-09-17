@@ -84,11 +84,18 @@
 
         <label for="event-tags">Tags</label>
         <input list="event-tags-list" id="event-tags" name="tags">
-        <datalist id="event-tags-list">
-          <option value="entertainment"></option>
-          <option value="education"></option>
-          <option value="business"></option>
-        </datalist>
+        <select id="event-tags-list" multiple>
+          <option value="sport">Sport</option>
+          <option value="food">Food</option>
+          <option value="animals">Animals</option>
+          <option value="nature">Nature</option>
+          <option value="travel">Travel</option>
+          <option value="art">Art</option>
+          <option value="beauty">Beauty</option>
+          <option value="charity">Charity</option>
+          <option value="photography">Photography</option>
+          <option value="movies">Movies</option>
+        </select>
 
         <label for="event-description">Description</label>
         <textarea id="event-description" name="description"></textarea>

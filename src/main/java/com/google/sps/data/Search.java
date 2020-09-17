@@ -14,7 +14,10 @@
 
 package com.google.sps.data;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.*;
 
 public class Search {
   private final String text;
@@ -23,18 +26,20 @@ public class Search {
   private final String end;
   private final String duration;
   private final String location;
+  private final List<String> tags;
 
   public Search() {
-    this(null, null, null, null, null, null);
+    this(null, null, null, null, null, null, null);
   }
 
-  public Search(String text, String category, String start, String end, String duration, String location) {
+  public Search(String text, String category, String start, String end, String duration, String location, List<String> tags) {
     this.text = text;
     this.category = category;
     this.start = start;
     this.end = end;
     this.duration = duration;
     this.location = location;
+    this.tags = tags;
   }
 
   public String getText() {
@@ -61,6 +66,21 @@ public class Search {
     return location;
   }
 
+  public List<String> getTags() {
+    return tags;
+  }
+
+  public String getTagsAsStringForParameters() {
+    return listToParameterString(tags);
+  }
+
+  private String listToParameterString(List<String> list) {
+    if (list == null || list.size() == 0) {
+      return "";
+    }
+    return String.join(",", list);
+  }
+
   public boolean isSearchedTextMatching(String title, String description) {
     return text == null || text.isEmpty() || isTextMatching(title) || isTextMatching(description);
   }
@@ -80,6 +100,16 @@ public class Search {
     || category.equals(this.category);
   }
 
+  public int countMatchingTags(List<String> tags) {
+    if (this.tags == null || this.tags.size() == 0) {
+      return -1;
+    }
+    if (tags == null || tags.size() == 0) {
+      return 0;
+    }
+    return tags.stream().filter(tag -> this.tags.contains(tag)).collect(Collectors.toList()).size();
+  }
+
   @Override
   public boolean equals(Object other_object) {
     if (!(other_object instanceof Search))
@@ -90,6 +120,7 @@ public class Search {
         && Objects.equals(start, other.getStart())
         && Objects.equals(end, other.getEnd())
         && Objects.equals(duration, other.getDuration())
-        && Objects.equals(location, other.getLocation());
+        && Objects.equals(location, other.getLocation())
+        && Objects.equals(listToParameterString(tags), other.getTagsAsStringForParameters());
   }
 }

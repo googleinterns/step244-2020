@@ -71,6 +71,8 @@ public class EventServletTest {
   private static final List<String> LIST = new ArrayList<>();
   private static final Map<String, String> MAP = new HashMap<>();
 
+  private static final Search SEARCH = new Search("", "all", "2020-01-01", "2020-12-31", "60", "ChIJGaK-SZcLkEcRA9wf5_GNbuY", null);
+
   private static final DateTimeRange RANGE = new DateTimeRange("2020-06-06", "2020-07-01", "12:12", "13:13", 0L);
 
   private static final Event EVENT = Event.newBuilder()
@@ -100,6 +102,7 @@ public class EventServletTest {
     when(mockRequest.getParameter("end")).thenReturn(search.getEnd());
     when(mockRequest.getParameter("duration")).thenReturn(search.getDuration());
     when(mockRequest.getParameter("location")).thenReturn(search.getLocation());
+    when(mockRequest.getParameter("tags")).thenReturn(search.getTagsAsStringForParameters());
   }
 
   @Test
@@ -179,10 +182,8 @@ public class EventServletTest {
     when(mockUserService.isUserLoggedIn()).thenReturn(true);
     when(mockUserService.getCurrentUser()).thenReturn(new User("email", "authDomain", "123"));
     when(mockUserStorage.getUser("123")).thenReturn(fakeUser);
-
-    Search search = new Search("", "all", "2020-01-01", "2020-12-31", "60", "ChIJGaK-SZcLkEcRA9wf5_GNbuY");
     
-    setParameters(search);
+    setParameters(SEARCH);
 
     StringWriter stringWriter = new StringWriter();
     PrintWriter writer = new PrintWriter(stringWriter);
@@ -190,7 +191,7 @@ public class EventServletTest {
 
     new EventServlet(mockUserStorage, mockEventStorage, mockUserService, mockUtilsObject, mockFlow).doGet(mockRequest, mockResponse);
     
-    verify(mockEventStorage, atLeast(1)).getSearchedEvents(eq(search));
+    verify(mockEventStorage, atLeast(1)).getSearchedEvents(eq(SEARCH));
   }
 
   @Test
@@ -204,9 +205,7 @@ public class EventServletTest {
     when(mockUserService.getCurrentUser()).thenReturn(new User("email", "authDomain", "123"));
     when(mockUserStorage.getUser("123")).thenReturn(fakeUser);
 
-    Search search = new Search("", "all", "2020-01-01", "2020-12-31", "60", "ChIJGaK-SZcLkEcRA9wf5_GNbuY");
-    
-    setParameters(search);
+    setParameters(SEARCH);
 
     StringWriter stringWriter = new StringWriter();
     PrintWriter writer = new PrintWriter(stringWriter);
@@ -214,7 +213,7 @@ public class EventServletTest {
 
     new EventServlet(mockUserStorage, mockEventStorage, mockUserService, mockUtilsObject, mockFlow).doGet(mockRequest, mockResponse);
     
-    verify(mockEventStorage, atLeast(1)).getSearchedEvents(eq(search));
+    verify(mockEventStorage, atLeast(1)).getSearchedEvents(eq(SEARCH));
   }
 
   @Test
@@ -228,9 +227,7 @@ public class EventServletTest {
     when(mockUserService.getCurrentUser()).thenReturn(new User("email", "authDomain", "123"));
     when(mockUserStorage.getUser("123")).thenReturn(fakeUser);
 
-    Search search = new Search("", "all", "2020-01-01", "2020-12-31", "60", "ChIJGaK-SZcLkEcRA9wf5_GNbuY");
-    
-    setParameters(search);
+    setParameters(SEARCH);
 
     StringWriter stringWriter = new StringWriter();
     PrintWriter writer = new PrintWriter(stringWriter);
@@ -238,7 +235,7 @@ public class EventServletTest {
 
     new EventServlet(mockUserStorage, mockEventStorage, mockUserService, mockUtilsObject, mockFlow).doGet(mockRequest, mockResponse);
     
-    verify(mockEventStorage, atLeast(1)).getSearchedEvents(eq(search));
+    verify(mockEventStorage, atLeast(1)).getSearchedEvents(eq(SEARCH));
   }
 
   @Test
@@ -252,19 +249,17 @@ public class EventServletTest {
     when(mockUserService.getCurrentUser()).thenReturn(new User("email", "authDomain", "123"));
     when(mockUserStorage.getUser("123")).thenReturn(fakeUser);
 
-    Search search = new Search("", "all", "2020-01-01", "2020-12-31", "60", "ChIJdd4hrwug2EcRmSrV3Vo6llI");
-    
-    setParameters(search);
+    setParameters(SEARCH);
 
     StringWriter stringWriter = new StringWriter();
     PrintWriter writer = new PrintWriter(stringWriter);
     when(mockResponse.getWriter()).thenReturn(writer);
 
-    when(mockEventStorage.getSearchedEvents(eq(search))).thenReturn(EVENT_LIST);
+    when(mockEventStorage.getSearchedEvents(eq(SEARCH))).thenReturn(EVENT_LIST);
 
     new EventServlet(mockUserStorage, mockEventStorage, mockUserService, mockUtilsObject, mockFlow).doGet(mockRequest, mockResponse);
 
-    verify(mockEventStorage, atLeast(1)).getSearchedEvents(eq(search));
+    verify(mockEventStorage, atLeast(1)).getSearchedEvents(eq(SEARCH));
     writer.flush();
     assertTrue(stringWriter.toString().contains(new Gson().toJson(EVENT_LIST)));
   }

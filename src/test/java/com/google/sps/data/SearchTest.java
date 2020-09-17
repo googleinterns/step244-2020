@@ -21,14 +21,23 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
+
 @RunWith(JUnit4.class)
 public final class SearchTest {
+
+  private static final List<String> EMPTY_TAGS = new ArrayList<>();
+  private static final List<String> TAGS_A = Arrays.asList("Dogs", "Cats", "Golf");
+  private static final List<String> TAGS_B = Arrays.asList("Cats", "Animal", "Violin");
+  private static final List<String> TAGS_C = Arrays.asList("Dogs", "Golf");
   
   private static final Search NULL_SEARCH = new Search();
-  private static final Search EMPTY_SEARCH = new Search("", "all", "", "", null, null);
-  private static final Search SEARCH_A = new Search("Meeting", "Business", "2020-06-06", "2020-07-07", null, null);
-  private static final Search SEARCH_B = new Search("eti", "Education", "2020-06-06", null, null, null);
-  private static final Search SEARCH_C = new Search("pEn", "Education", "", "2020-08-06", null, null);
+  private static final Search EMPTY_SEARCH = new Search("", "all", "", "", null, null, EMPTY_TAGS);
+  private static final Search SEARCH_A = new Search("Meeting", "Business", "2020-06-06", "2020-07-07", null, null, TAGS_A);
+  private static final Search SEARCH_B = new Search("eti", "Education", "2020-06-06", null, null, null, TAGS_B);
+  private static final Search SEARCH_C = new Search("pEn", "Education", "", "2020-08-06", null, null, TAGS_C);
 
   private static final String TITLE_A = "Meeting";
   private static final String TITLE_B = "Party";
@@ -44,6 +53,43 @@ public final class SearchTest {
   private static final DateTimeRange RANGE_C = new DateTimeRange("2020-06-05", "2020-06-30", "12:12", "13:13", new Long("0"));
   private static final DateTimeRange RANGE_D = new DateTimeRange("2020-06-05", "2020-08-08", "12:12", "13:13", new Long("0"));
 
+  @Test
+  public void nullTagsReturnsZero() {
+    Assert.assertEquals(0, SEARCH_A.countMatchingTags(null));
+    Assert.assertEquals(0, SEARCH_B.countMatchingTags(null));
+    Assert.assertEquals(0, SEARCH_C.countMatchingTags(null));
+  }
+
+  @Test
+  public void emptyTagsReturnsZero() {
+    Assert.assertEquals(0, SEARCH_A.countMatchingTags(EMPTY_TAGS));
+    Assert.assertEquals(0, SEARCH_B.countMatchingTags(EMPTY_TAGS));
+    Assert.assertEquals(0, SEARCH_C.countMatchingTags(EMPTY_TAGS));
+  }
+
+  @Test
+  public void nullSearchTagsReturnsNonZero() {
+    Assert.assertEquals(-1, NULL_SEARCH.countMatchingTags(TAGS_A));
+    Assert.assertEquals(-1, NULL_SEARCH.countMatchingTags(TAGS_B));
+    Assert.assertEquals(-1, NULL_SEARCH.countMatchingTags(TAGS_C));
+  }
+
+  @Test
+  public void emptySearchTagsReturnsNonZero() {
+    Assert.assertEquals(-1, EMPTY_SEARCH.countMatchingTags(TAGS_A));
+    Assert.assertEquals(-1, EMPTY_SEARCH.countMatchingTags(TAGS_B));
+    Assert.assertEquals(-1, EMPTY_SEARCH.countMatchingTags(TAGS_C));
+  }
+
+  @Test
+  public void tagsReturnCorrectNumberOfMatches() {
+    Assert.assertEquals(3, SEARCH_A.countMatchingTags(TAGS_A));
+    Assert.assertEquals(3, SEARCH_B.countMatchingTags(TAGS_B));
+    Assert.assertEquals(2, SEARCH_C.countMatchingTags(TAGS_C));
+    Assert.assertEquals(1, SEARCH_A.countMatchingTags(TAGS_B));
+    Assert.assertEquals(0, SEARCH_B.countMatchingTags(TAGS_C));
+    Assert.assertEquals(2, SEARCH_C.countMatchingTags(TAGS_A));
+  }
 
   @Test
   public void textContainingMatches() {
