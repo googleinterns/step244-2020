@@ -14,11 +14,16 @@
 
 function getEvent(event_id) {
   fetch('/events/' + event_id).then(response => response.json()).then((event) => {
+    document.getElementById('duration-info').hidden = true;
+    document.getElementById('location-info').hidden = true;
+    
     document.getElementById('title-info').innerText = event.title;
     document.getElementById('start-date-info').innerText = event.dateTimeRange.startDate;
     document.getElementById('start-time-info').innerText = event.dateTimeRange.startTime;
-    if (event.duration != null)
+    if (event.duration != null && event.duration != "") {
+      document.getElementById('duration-info').hidden = false;
       document.getElementById('duration-info').innerText = 'Duration: ' + event.duration + 'minutes';
+    }
 
     document.getElementById('category-info').innerText = event.category;
     for (tag in event.tags) {
@@ -28,13 +33,18 @@ function getEvent(event_id) {
     }
 
     document.getElementById('description-info').innerText = event.description;
-    document.getElementById('location-info').innerText = 'Location: ' + event.location;
+    if (event.location != null && event.location != "") {
+        document.getElementById('location-info').hidden = false;
+        document.getElementById('location-info').innerText = 'Location: ' + event.location;
+    }
 
     var today = new Date();
     fetch('/weather?' + new URLSearchParams({
         location: event.location,
+      }) + '&' + new URLSearchParams({
         hours: today.getUTCHours() - event.dateTimeRange.startTime.split(':')[0],
-        days: today.getDay() - event.dateTimeRange.startDate.split('-')[2]
+      }) + '&' + new URLSearchParams({
+        days: today.getDay() - event.dateTimeRange.startDate.split('-')[2],
       }).then(response => response.json()).then((weather) => {
         document.getElementById('weather-type-info').innerText = weather.type;
         document.getElementById('weather-temperature-info').innerText = weather.temperature;
