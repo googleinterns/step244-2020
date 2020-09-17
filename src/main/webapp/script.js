@@ -177,9 +177,14 @@ function showEvent(event, alreadyJoined) {
   iElement.classList.add("fas", "fa-map-marker-alt");
   pElement.innerText = event.location;
   pElement.appendChild(iElement);
+  iElement.classList.add("fas", "fas fa-stopwatch");
+  pElement.innerText = event.duration + " mins";
+  pElement.appendChild(iElement);
 
   h3Element.innerText = event.description;
-  h2Element.innerText = event.duration;
+  iElement.classList.add("fas", "fa-clock");
+  h2Element.appendChild(iElement);
+  h2Element.innerText = event.date + " " + event.time;
   h1Element.innerText = event.title;
 
   divElement.appendChild(h1Element);
