@@ -112,29 +112,35 @@ function searchEvents() {
   var end = document.getElementById('end-date').value;
   var duration = document.getElementById('duration').value;
   var location = document.getElementById('location-id').value;
-  fetch('/events?' + new URLSearchParams({
-    search: search,
-  }) + '&' + new URLSearchParams({
-    category: category,
-  }) + '&' + new URLSearchParams({
-    start: start,
-  }) + '&' + new URLSearchParams({
-    end: end,
-  }) + '&' + new URLSearchParams({
-    duration: duration,
-  }) + '&' + new URLSearchParams({
-    location: location,
-  })).then(handleError).then(response => response.json()).then(jsonObject => {
-    jsonObject.searched.forEach(function (event) {
-      showEvent(event, jsonObject.alreadyJoined.includes(event.id));
-    });
-  }).catch(error => {
-    if (error == 401) {
-      alert("You are not logged in and you cannot see this page. You will be redirected to login");
-      fetch("/auth").then(authResponse => authResponse.json()).then(authData => {
-        window.location.href = authData.authLink;
-      });
+  fetch("/auth?origin=search").then(authResponse => authResponse.json()).then(responseJson => {
+    if (!responseJson.isLoggedIn) {
+      window.location.href = responseJson.authLink;
+      return;
     }
+    verifyCredentials().then(validCredential => {
+      if (!validCredential) {
+        window.location.href = getCurrentUrl() + "/token?origin=search";
+        return;
+      }
+      var userId = responseJson.userId;
+      fetch('/events?' + new URLSearchParams({
+        search: search,
+      }) + '&' + new URLSearchParams({
+        category: category,
+      }) + '&' + new URLSearchParams({
+        start: start,
+      }) + '&' + new URLSearchParams({
+        end: end,
+      }) + '&' + new URLSearchParams({
+        duration: duration,
+      }) + '&' + new URLSearchParams({
+        location: location,
+      })).then(handleError).then(response => response.json()).then(jsonObject => {
+        jsonObject.forEach(function (event) {
+          showEvent(event, event.joinedUsersId.includes(userId));
+        });
+      });
+    });
   });
   document.getElementById('location-id').value = "all";
 }
@@ -208,50 +214,112 @@ function verifyCredentials() {
 }
 
 function getGCalendarEvents(calendar, startTime, endTime) {
-  verifyCredentials().then(validCredential => {
-    if (validCredential) {
-      fetch("/events/gcalendar?startEpochInSeconds=" + startTime + "&endEpochInSeconds=" + endTime)
-        .then(response => response.json()).then(events => {
-          var fullcalendarEvents = [];
-          events.forEach(event => {
-            var start, end, allDay = false;
-            if (event.start.dateTime) {
-              start = event.start.dateTime.value;
-              end = event.end.dateTime.value;
-            } else {
-              start = event.start.date.value;
-              end = event.end.date.value;
-              allDay = true;
-            }
-            var shared = null, private = null;
-            if (event.extendedProperties)
-              shared = event.extendedProperties.shared, private = event.extendedProperties.private;
-            fullcalendarEvents.push({
-              id: event.id,
-              title: event.summary,
-              start: start,
-              end: end,
-              allDay: allDay,
-              location: event.location,
-              description: event.description,
-              shared: shared,
-              private: private
-            });
-          });
-          if (calendar.getEventSources().length)
-            calendar.getEventSources()[0].remove();
-          calendar.addEventSource(fullcalendarEvents);
-        });
-    } else {
-      fetch("/auth?origin=calendar").then(authResponse => authResponse.json()).then(authInfo => {
-        if (authInfo.isLoggedIn) {
-          window.location.href = getCurrentUrl() + "/token?origin=calendar";
-        } else {
-          window.location.href = authInfo.authLink;
-        }
-      });
-
+  fetch("/auth?origin=calendar").then(authResponse => authResponse.json()).then(responseJson => {
+    if (!responseJson.isLoggedIn) {
+      window.location.href = responseJson.authLink;
+      return;
     }
+    var userId = responseJson.userId;
+    verifyCredentials().then(validCredential => {
+      if (validCredential) {
+        fetch("/events/gcalendar?startEpochInSeconds=" + startTime + "&endEpochInSeconds=" + endTime)
+          .then(response => response.json()).then(events => {
+            var gcalendarEvents = [];
+            events.forEach(event => {
+              var start, end, allDay = false;
+              if (event.start.dateTime) {
+                start = event.start.dateTime.value;
+                end = event.end.dateTime.value;
+              } else {
+                start = event.start.date.value;
+                end = event.end.date.value;
+                allDay = true;
+              }
+              var shared = null, private = null;
+              if (event.extendedProperties)
+                shared = event.extendedProperties.shared, private = event.extendedProperties.private;
+              var className, omitEvent = false, color;
+              if (shared != null && shared.seeYouId) {
+                className = "see-you-event";
+                color = "#28a745";
+              } else {
+                if (event.attendees) {
+                  event.attendees.forEach(eventAttendee => {
+                    if (eventAttendee.self === true) {
+                      if (eventAttendee.responseStatus === "accepted") {
+                        className = "accepted-event";
+                      }
+                      else if (eventAttendee.responseStatus === "needsAction") {
+                        className = "transparent-event";
+                      }
+                      else {
+                        omitEvent = true;
+                      }
+                      color = "#007bff";
+                    }
+                  })
+                } else {
+                  className = "accepted-event";
+                  color = "#007bff";
+                }
+              }
+              if (!omitEvent) {
+                gcalendarEvents.push({
+                  id: event.id,
+                  color: color,
+                  classNames: [className],
+                  title: event.summary,
+                  start: start,
+                  end: end,
+                  allDay: allDay,
+                  location: event.location,
+                  description: event.description,
+                  shared: shared,
+                  private: private
+                });
+              }
+            });
+            var startDateTimeRange = new Date(startTime - 48 * 60 * 60 * 1000).toISOString().slice(0, 10);
+            var endDateTimeRange = new Date(endTime + 48 * 60 * 60 * 1000).toISOString().slice(0, 10);
+            var storedEventsSource = [];
+            fetch("events?start=" + startDateTimeRange + "&end=" + endDateTimeRange).then(newResponse => newResponse.json())
+              .then(storedEvents => {
+                storedEvents.forEach(storedEvent => {
+                  if (!storedEvent.joinedUsersId.includes(userId) || typeof storedEvent.gcalendarId !== "undefined")
+                    return;
+                  var startTime = new Date(storedEvent.dateTimeRange.startDate + "T" + storedEvent.dateTimeRange.startTime + ":00Z");
+                  var endTime = new Date(storedEvent.dateTimeRange.endDate + "T" + storedEvent.dateTimeRange.endTime + ":00Z");
+                  var startTimeWithShift = new Date(startTime.getTime() + storedEvent.dateTimeRange.tzShift).getTime();
+                  var endTimeWithShift = new Date(endTime.getTime() + storedEvent.dateTimeRange.tzShift).getTime();
+
+                  while (startTimeWithShift <= endTimeWithShift) { //Add an allday event for all days from the DateRange
+                    storedEventsSource.push({
+                      id: storedEvent.id,
+                      storageId: storedEvent.id,
+                      title: storedEvent.title,
+                      description: storedEvent.description,
+                      shared: storedEvent.fields,
+                      location: storedEvent.location,
+                      start: startTimeWithShift,
+                      end: endTimeWithShift,
+                      color: "#dc3545",
+                      classNames: ["no-time-set-event"],
+                      allDay: true
+                    });
+                    startTimeWithShift += 24 * 60 * 60 * 1000;
+                  }
+                });
+
+                while (calendar.getEventSources().length)
+                  calendar.getEventSources()[0].remove();
+                calendar.addEventSource(gcalendarEvents);
+                calendar.addEventSource(storedEventsSource);
+              });
+          });
+      } else {
+        window.location.href = getCurrentUrl() + "/token?origin=calendar";
+      }
+    });
   });
 }
 
@@ -300,9 +368,13 @@ function createCalendarElements(givenProperties) {
 
   eventWrapper.appendChild(descriptionElement);
   eventWrapper.appendChild(locationElement);
-
+  var localStorageEventId = null;
   if (givenProperties.shared) {
     for (const [key, value] of Object.entries(givenProperties.shared)) {
+      if (key === "seeYouId") {
+        localStorageEventId = value;
+        continue;
+      }
       var extendedPropertyElement = document.createElement("div");
       extendedPropertyElement.classList.add("extendedprop-wrapper");
       var extendedPropertyName = document.createElement("div");
@@ -316,17 +388,21 @@ function createCalendarElements(givenProperties) {
       eventWrapper.appendChild(extendedPropertyElement);
     }
   }
+  if (givenProperties.storageId != null)
+    localStorageEventId = givenProperties.storageId;
+  if (localStorageEventId != null) {
+    var buttonDivElement = document.createElement("div");
+    buttonDivElement.classList.add("add-button");
+    var buttonElement = document.createElement("button");
+    buttonElement.onclick = function () { window.location.href = getCurrentUrl() + "/event.html?event_id=" + localStorageEventId; }
+    buttonElement.classList.add("btn", "btn-primary");
+    var plusIcon = document.createElement("i");
+    plusIcon.classList.add("fas", "fa-edit");
 
-  var buttonDivElement = document.createElement("div");
-  buttonDivElement.classList.add("add-button");
-  var buttonElement = document.createElement("button");
-  buttonElement.classList.add("btn", "btn-primary");
-  var plusIcon = document.createElement("i");
-  plusIcon.classList.add("fas", "fa-edit");
-
-  buttonElement.appendChild(plusIcon);
-  buttonDivElement.appendChild(buttonElement);
-  eventWrapper.appendChild(buttonDivElement);
+    buttonElement.appendChild(plusIcon);
+    buttonDivElement.appendChild(buttonElement);
+    eventWrapper.appendChild(buttonDivElement);
+  }
   return eventWrapper;
 }
 
@@ -371,6 +447,7 @@ function calendarRender() {
     fixedWeekCount: false,
     eventClick: function (event) {
       event.jsEvent.preventDefault();
+      changePopoverColorTo(event.event.backgroundColor);
     },
     eventTimeFormat: {
       hour: '2-digit',
@@ -443,7 +520,7 @@ function loadFreeTimes() {
     return;
   }
 
-  fetch("/events/schedule?eventId=" + eventId).then(response => response.json()).then(freeTimes => {
+  fetch("/events/schedule?eventId=" + eventId).then(handleError).then(response => response.json()).then(freeTimes => {
     freeTimes.forEach(freeTime => {
       var toStartDate = new Date(freeTime.start);
       var toEndDate = new Date(freeTime.end);
@@ -453,7 +530,10 @@ function loadFreeTimes() {
       buttonElem.setAttribute("onclick", "setTime('" + eventId + "','" + toStartDate.toISOString() + "')");
       document.getElementById("page-content-wrapper").appendChild(buttonElem);
     })
-  }).catch(error => alert(error));
+  }).catch(error => {
+    if (error == 401)
+      alert("You are not the owner of the event. You cannot select the time.");
+  });
 }
 
 function setTime(eventId, start) {
