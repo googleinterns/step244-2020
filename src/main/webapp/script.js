@@ -171,8 +171,10 @@ function showEvent(event, alreadyJoined) {
   var h2Element = document.createElement("h2");
   var h3Element = document.createElement("h3");
   var brElement = document.createElement("br");
-  var pElement = document.createElement("p");
-  var iElement = document.createElement("i");
+  var hrElement = document.createElement("hr");
+  var pElement1 = document.createElement("p");
+  var pElement2 = document.createElement("p");
+  var pElement3 = document.createElement("p");
   var formElement = document.createElement("form");
   var inputElement = document.createElement("input");
   var buttonElement = document.createElement("button");
@@ -191,20 +193,22 @@ function showEvent(event, alreadyJoined) {
   }
 
   formElement.appendChild(inputElement);
-  iElement.classList.add("fas", "fa-map-marker-alt");
-  pElement.innerText = event.location;
-  pElement.appendChild(iElement);
-
+  pElement1.innerHTML = '<i class="fas fa-clock"></i> ' + event.date + ' ' + event.time;
+  pElement2.innerHTML = '<i class="fas fa-stopwatch"></i> ' + event.duration + ' minutes';
+  pElement3.innerHTML = '<i class="fas fa-map-marker-alt"></i> ' + event.location;
   h3Element.innerText = event.description;
-  h2Element.innerText = event.duration;
   h1Element.innerText = event.title;
 
   divElement.appendChild(h1Element);
   divElement.appendChild(brElement);
   divElement.appendChild(h2Element);
-  divElement.appendChild(h3Element);
   divElement.appendChild(brElement);
-  divElement.appendChild(pElement);
+  divElement.appendChild(pElement1);
+  divElement.appendChild(pElement2);
+  divElement.appendChild(pElement3);
+  divElement.appendChild(hrElement);
+  divElement.appendChild(brElement);
+  divElement.appendChild(h3Element);
   divElement.appendChild(brElement);
   if (!alreadyJoined)
     divElement.appendChild(formElement);
@@ -310,24 +314,21 @@ function getGCalendarEvents(calendar, startTime, endTime) {
                   var startTime = new Date(storedEvent.dateTimeRange.startDate + "T" + storedEvent.dateTimeRange.startTime + ":00Z");
                   var endTime = new Date(storedEvent.dateTimeRange.endDate + "T" + storedEvent.dateTimeRange.endTime + ":00Z");
                   var startTimeWithShift = new Date(startTime.getTime() + storedEvent.dateTimeRange.tzShift).getTime();
-                  var endTimeWithShift = new Date(endTime.getTime() + storedEvent.dateTimeRange.tzShift).getTime();
+                  var endTimeWithShift = new Date(endTime.getTime() + storedEvent.dateTimeRange.tzShift).getTime() + 24 * 60 * 60 * 1000;
 
-                  while (startTimeWithShift <= endTimeWithShift) { //Add an allday event for all days from the DateRange
-                    storedEventsSource.push({
-                      id: storedEvent.id,
-                      storageId: storedEvent.id,
-                      title: storedEvent.title,
-                      description: storedEvent.description,
-                      shared: storedEvent.fields,
-                      location: storedEvent.location,
-                      start: startTimeWithShift,
-                      end: endTimeWithShift,
-                      color: "#dc3545",
-                      classNames: ["no-time-set-event"],
-                      allDay: true
-                    });
-                    startTimeWithShift += 24 * 60 * 60 * 1000;
-                  }
+                  storedEventsSource.push({
+                    id: storedEvent.id,
+                    storageId: storedEvent.id,
+                    title: storedEvent.title,
+                    description: storedEvent.description,
+                    shared: storedEvent.fields,
+                    location: storedEvent.location,
+                    start: startTimeWithShift,
+                    end: endTimeWithShift,
+                    color: "#dc3545",
+                    classNames: ["no-time-set-event"],
+                    allDay: true
+                  });
                 });
 
                 while (calendar.getEventSources().length)
@@ -397,8 +398,12 @@ function createCalendarElements(givenProperties) {
       }
       var extendedPropertyElement = document.createElement("div");
       extendedPropertyElement.classList.add("extendedprop-wrapper");
+      var extendedIcon = document.createElement("i");
+      extendedIcon.classList.add("fa", "fa-plus-circle");
       var extendedPropertyName = document.createElement("div");
-      extendedPropertyName.innerHTML = key;
+      extendedPropertyName.appendChild(extendedIcon);
+      var textNode = document.createTextNode(key + ": ");
+      extendedPropertyName.appendChild(textNode);
       extendedPropertyName.classList.add("left-item");
       var extendedPropertyValue = document.createElement("div");
       extendedPropertyValue.innerHTML = value;
