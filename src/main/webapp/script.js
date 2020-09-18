@@ -171,8 +171,10 @@ function showEvent(event, alreadyJoined) {
   var h2Element = document.createElement("h2");
   var h3Element = document.createElement("h3");
   var brElement = document.createElement("br");
-  var pElement = document.createElement("p");
-  var iElement = document.createElement("i");
+  var hrElement = document.createElement("hr");
+  var pElement1 = document.createElement("p");
+  var pElement2 = document.createElement("p");
+  var pElement3 = document.createElement("p");
   var formElement = document.createElement("form");
   var inputElement = document.createElement("input");
   var buttonElement = document.createElement("button");
@@ -191,20 +193,22 @@ function showEvent(event, alreadyJoined) {
   }
 
   formElement.appendChild(inputElement);
-  iElement.classList.add("fas", "fa-map-marker-alt");
-  pElement.innerText = event.location;
-  pElement.appendChild(iElement);
-
+  pElement1.innerHTML = '<i class="fas fa-clock"></i> ' + event.date + ' ' + event.time;
+  pElement2.innerHTML = '<i class="fas fa-stopwatch"></i> ' + event.duration + ' minutes';
+  pElement3.innerHTML = '<i class="fas fa-map-marker-alt"></i> ' + event.location;
   h3Element.innerText = event.description;
-  h2Element.innerText = event.duration;
   h1Element.innerText = event.title;
 
   divElement.appendChild(h1Element);
   divElement.appendChild(brElement);
   divElement.appendChild(h2Element);
-  divElement.appendChild(h3Element);
   divElement.appendChild(brElement);
-  divElement.appendChild(pElement);
+  divElement.appendChild(pElement1);
+  divElement.appendChild(pElement2);
+  divElement.appendChild(pElement3);
+  divElement.appendChild(hrElement);
+  divElement.appendChild(brElement);
+  divElement.appendChild(h3Element);
   divElement.appendChild(brElement);
   if (!alreadyJoined)
     divElement.appendChild(formElement);
