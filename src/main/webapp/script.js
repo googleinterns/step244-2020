@@ -14,15 +14,12 @@
 
 function getEvent(event_id) {
   fetch('/events/' + event_id).then(response => response.json()).then((event) => {
-    document.getElementById('duration-info').hidden = true;
-    document.getElementById('location-info').hidden = true;
-    
     document.getElementById('title-info').innerText = event.title;
     document.getElementById('start-date-info').innerText = event.dateTimeRange.startDate;
     document.getElementById('start-time-info').innerText = event.dateTimeRange.startTime;
     if (event.duration != null && event.duration != "") {
       document.getElementById('duration-info').hidden = false;
-      document.getElementById('duration-info').innerText = 'Duration: ' + event.duration + 'minutes';
+      document.getElementById('duration-info').innerText = event.duration + ' minutes';
     }
 
     document.getElementById('category-info').innerText = event.category;
@@ -34,63 +31,83 @@ function getEvent(event_id) {
 
     document.getElementById('description-info').innerText = event.description;
     if (event.location != null && event.location != "") {
-        document.getElementById('location-info').hidden = false;
-        document.getElementById('location-info').innerText = 'Location: ' + event.location;
+      document.getElementById('location-wrapper').hidden = false;
+      document.getElementById('location-info').innerText = event.location;
     }
 
-    var today = new Date();
-    fetch('/weather?' + new URLSearchParams({
-        location: event.location,
-      }) + '&' + new URLSearchParams({
-        hours: today.getUTCHours() - event.dateTimeRange.startTime.split(':')[0],
-      }) + '&' + new URLSearchParams({
-        days: today.getDay() - event.dateTimeRange.startDate.split('-')[2],
-      })).then(weatherResponse => weatherResponse.json()).then((weather) => {
-        document.getElementById('weather-type-info').innerText = "Weather: " + weather.type;
-        document.getElementById('weather-temperature-info').innerText = "Temperature: " + weather.temperature + "°C, feels like " + weather.temperatureFeelsLike + "°C";
-        document.getElementById('weather-pressure-info').innerText = "Pressure: " + weather.pressure;
-        document.getElementById('weather-humidity-info').innerText = "Humidity: " + weather.humidity;
-        document.getElementById('weather-clouds-info').innerText = "Clouds: " + weather.clouds;
-        document.getElementById('weather-icon').src = `"http://openweathermap.org/img/wn/${weather.iconId}.@2x.png"`;
-    });
-
     for (link in event.links) {
+      document.getElementById('links-info').hidden = false;
       const linkA = document.createElement('a');
       linkA.innerText = event.links[link];
       linkA.href = "https://" + event.links[link];
       document.getElementById('links-info').appendChild(linkA);
     }
+
     if (typeof event.gcalendarId === "undefined") {
-      var doodleLink = document.createElement("a");
-      doodleLink.href = getCurrentUrl() + "/doodle.html?eventId=" + event.id;
-      doodleLink.innerText = "Click to select a time";
-      document.getElementById("links-info").appendChild(doodleLink);
+      document.getElementById("doodle-link-info").hidden = false;
+      document.getElementById("doodle-link-info").href = getCurrentUrl() + "/doodle.html?eventId=" + event.id;
     }
+
     for (field in event.fields) {
       const fieldLI = document.createElement('li');
       fieldLI.innerText = field + ': ' + event.fields[field];
       document.getElementById('fields-info').appendChild(fieldLI);
     }
 
-    document.getElementById('owner-info').innerText = 'Owner of event: ' + event.ownerId;
+    document.getElementById('owner-info').innerText = event.ownerId;
+    var peopleList = document.getElementById('people-list-info');
     for (person in event.joinedUsersId) {
       const personLI = document.createElement('li');
       personLI.innerText = event.joinedUsersId[person];
       personLI.setAttribute('class', 'joined');
-      document.getElementById('people-list-info').appendChild(personLI);
+      peopleList.appendChild(personLI);
     }
     for (person in event.invitedUsersId) {
       const personLI = document.createElement('li');
       personLI.innerText = event.invitedUsersId[person];
       personLI.setAttribute('class', 'invited');
-      document.getElementById('people-list-info').appendChild(personLI);
+      peopleList.appendChild(personLI);
     }
     for (person in event.declinedUsersId) {
       const personLI = document.createElement('li');
       personLI.innerText = event.declinedUsersId[person];
       personLI.setAttribute('class', 'declined');
-      document.getElementById('people-list-info').appendChild(personLI);
+      peopleList.appendChild(personLI);
     }
+
+    var today = new Date();
+    var startHours = parseInt(event.dateTimeRange.startTime.split(':')[0]);
+    var startYear = parseInt(event.dateTimeRange.startDate.split('-')[0]);
+    var startMonth = parseInt(event.dateTimeRange.startDate.split('-')[1]);
+    var startDate = parseInt(event.dateTimeRange.startDate.split('-')[2]);
+    var days = null;
+    var hours = null;
+    if (startYear == today.getFullYear() && startMonth == today.getMonth() + 1) {
+      days = startDate - today.getDate();
+      if (days == 0) {
+        hours = startHours - today.getUTCHours();
+      }
+    }
+    if (days == null || days > 7)
+      return;
+    
+    fetch('/weather?' + new URLSearchParams({
+        location: event.location,
+      }) + '&' + new URLSearchParams({
+        hours: hours,
+      }) + '&' + new URLSearchParams({
+        days: days,
+      })).then(weatherResponse => weatherResponse.json()).then((weather) => {
+      document.getElementById('weather-info').hidden = false;
+      document.getElementById('weather-type-info').innerText = weather.type;
+      document.getElementById('weather-temperature-info').innerText = "Temperature: " + weather.temperature + "\u00B0C, feels like " + 
+                                                                                        weather.temperatureFeelsLike + "\u00B0C";
+      document.getElementById('weather-pressure-info').innerText = "Pressure: " + weather.pressure;
+      document.getElementById('weather-humidity-info').innerText = "Humidity: " + weather.humidity;
+      document.getElementById('weather-clouds-info').innerText = "Clouds: " + weather.clouds;
+      document.getElementById('weather-icon').src = `https://openweathermap.org/img/wn/${weather.iconId}@2x.png`;
+    });
+
   });
 }
 
@@ -498,6 +515,21 @@ function addField() {
   form.insertBefore(FieldInput, button);
   form.insertBefore(fieldLabel, button);
   form.insertBefore(fieldInput, button);
+}
+
+function addTag() {
+  var eventTag = document.getElementById('event-custom-tag').value;
+  document.getElementById('event-custom-tag').value = '';
+
+  const tagInput = document.createElement('input');
+  tagInput.setAttribute('type', 'hidden');
+  tagInput.setAttribute('name', 'tags');
+  tagInput.setAttribute('value', eventTag);
+  document.getElementById('add-event-form').insertBefore(tagInput, document.getElementById('event-custom-tags'));
+
+  const tagLI = document.createElement('li');
+  tagLI.innerText = eventTag;
+  document.getElementById('event-custom-tags-list').appendChild(tagLI);
 }
 
 function addPerson() {
