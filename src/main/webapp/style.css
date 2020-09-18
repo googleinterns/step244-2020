@@ -394,13 +394,14 @@ ul {
   border-radius: 15px;
   padding: 1em;
   margin: 0 50px;
+  width: 350px;
 }
 
 svg {
   margin: 0 5px;
 }
 
-.event-wrapper {
+.event-info-wrapper {
   margin: 0 20em;
 }
 
