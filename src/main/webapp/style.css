@@ -399,5 +399,14 @@ svg {
 }
 
 .event-wrapper {
-  margin: 0 10em;
+  margin: 0 20em;
+}
+
+.text-button {
+  display: flex;
+  justify-content: space-between;
+}
+
+.text-button input[type="button"] {
+  flex-shrink: 10;
 }
