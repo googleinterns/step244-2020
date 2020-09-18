@@ -397,3 +397,7 @@ ul {
 svg {
   margin: 0 5px;
 }
+
+.event-wrapper {
+  margin: 0 10em;
+}
