@@ -63,15 +63,15 @@
         <label for="event-start-time">Start time</label>
         <input type="time" id="event-start-time" name="start-time">
 
-        <label for="open-ended-event">If you would like to make an open ended event, check this</label>
+        <label for="open-ended-event">If you would like to choose a time range, check this</label>
         <input type="checkbox" id="checkbox-open-ended" name="open-ended-event"><br>
 
-        <div id="event-end-wrapper">
+        <div id="event-end-wrapper" hidden>
           <label for="event-end-date" id="label-end">End date</label>
-          <input type="date" id="event-end-date" name="end-date" max="2200-01-01" >
+          <input type="date" id="event-end-date" name="end-date" max="2200-01-01" disabled>
 
           <label for="event-end-time" id="label-end-time">End time</label>
-          <input type="time" id="event-end-time" name="end-time">
+          <input type="time" id="event-end-time" name="end-time" disabled>
         </div>
 
         <label for="event-duration">Duration in minutes</label>
@@ -152,7 +152,7 @@
     document.getElementById("timezone-input").value = new Date().getTimezoneOffset() * 60 * 1000;
     document.getElementById("timezone-label").innerText = "The times are in your current TimeZone";
     $('#checkbox-open-ended').change(function () {
-      if (this.checked) {
+      if (!this.checked) {
         document.getElementById("event-end-date").disabled = true;
         document.getElementById("event-end-time").disabled = true;
         document.getElementById("event-end-wrapper").hidden = true;
