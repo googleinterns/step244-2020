@@ -96,6 +96,10 @@ public class Utils {
     gcalendarEvent.setStart(new EventDateTime().setDateTime(startDateTimeWithShift));
     gcalendarEvent.setEnd(new EventDateTime().setDateTime(endDateTime));
 
+    if (event.getLocation() != null) {
+      gcalendarEvent.setLocation(event.getLocation());
+    }
+    
     List<String> joinedParticipants = event.getJoinedIDs();
     if (joinedParticipants != null) {
       List<String> participantsEmails = DatastoreServiceFactory.getDatastoreService()
