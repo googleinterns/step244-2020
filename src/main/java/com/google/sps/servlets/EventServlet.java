@@ -34,11 +34,13 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -79,7 +81,7 @@ public class EventServlet extends HttpServlet {
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String pathName = request.getPathInfo();
-    
+
     if (!userService.isUserLoggedIn()) {
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
       return;
@@ -310,14 +312,17 @@ public class EventServlet extends HttpServlet {
       return;
     }
     Vector<Time> busyTimesForAttendees = utilsObject.getBusyTimesForAttendees(response, flow, usersCredentials,
-        startDateTimeWithShift, endDateTimeWithShift);
+        joinedParticipantsIds, startDateTimeWithShift, endDateTimeWithShift);
     writeFreeTimesFromInterval(startDateTimeWithShift.getValue(), endDateTimeWithShift.getValue(), duration,
-        busyTimesForAttendees, response);
+        busyTimesForAttendees, joinedParticipantsIds, response);
   }
 
   private void writeFreeTimesFromInterval(Long start, Long end, Long duration, Vector<Time> busyTimes,
-      HttpServletResponse response) throws IOException {
-    List<Time> freeTimes = new ArrayList<>();
+      List<String> joinedParticipantsIds, HttpServletResponse response) throws IOException {
+    List<String> joinedParticipantsUsernames = joinedParticipantsIds.stream()
+        .map(id -> userStorageObject.getUsernameByID(id)).collect(Collectors.toList());
+    List<Time> freeTimesForAll = new ArrayList<>();
+    List<Time> freeTimesForSome = new ArrayList<>();
     final Long SHIFT = Long.valueOf(1000 * 60 * 15);
     Long currentStart = start;
     Long currentEnd = start + duration * 60 * 1000;
@@ -326,13 +331,29 @@ public class EventServlet extends HttpServlet {
       final Long innerCurrentStart = Long.valueOf(currentStart);
       final Long innerCurrentEnd = Long.valueOf(currentEnd);
       if (!busyTimes.stream().anyMatch(time -> time.overlaps(innerCurrentStart, innerCurrentEnd))) {
-        freeTimes.add(new Time(currentStart, currentEnd));
+        freeTimesForAll.add(new Time(currentStart, currentEnd));
+      } else {
+        Set<String> unavailableParticipants = busyTimes.stream()
+            .filter(busyTime -> busyTime.overlaps(innerCurrentStart, innerCurrentEnd))
+            .map(overlappedTime -> userStorageObject.getUsernameByID(overlappedTime.getOwnerID()))
+            .collect(Collectors.toSet());
+        List<String> availableParticipants = new ArrayList<>(joinedParticipantsUsernames);
+        availableParticipants.removeAll(unavailableParticipants);
+        if (availableParticipants.size() < 2) {
+          currentStart = currentStart + SHIFT;
+          currentEnd += SHIFT;
+          continue;
+        }
+        freeTimesForSome.add(new Time(currentStart, currentEnd, availableParticipants));
       }
       currentStart = currentStart + SHIFT;
       currentEnd += SHIFT;
     }
+    if (freeTimesForAll.size() < 5) {
+      freeTimesForAll.addAll(freeTimesForSome);
+    }
     response.setContentType("application/json");
-    response.getWriter().println(new Gson().toJson(freeTimes));
+    response.getWriter().println(new Gson().toJson(freeTimesForAll));
 
     return;
   }
@@ -373,7 +394,7 @@ public class EventServlet extends HttpServlet {
       return false;
     }
     response.setContentType("application/json;");
-    
+
     event.setOwnerID(userStorageObject.getUsernameByID(event.getOwnerID()));
     event.setInvitedIDs(IDsToUsernames(event.getInvitedIDs()));
     event.setJoinedIDs(IDsToUsernames(event.getJoinedIDs()));
@@ -449,10 +470,8 @@ public class EventServlet extends HttpServlet {
   }
 
   private List<String> IDsToUsernames(List<String> IDs) {
-    return IDs != null
-        ? IDs.stream().map(id -> userStorageObject.getUsernameByID(id))
-            .filter(Objects::nonNull).collect(Collectors.toList())
-        : null;
+    return IDs != null ? IDs.stream().map(id -> userStorageObject.getUsernameByID(id)).filter(Objects::nonNull)
+        .collect(Collectors.toList()) : null;
   }
 
   private List<String> parseInvitedIDs(String[] invitedIDs) {
@@ -470,7 +489,8 @@ public class EventServlet extends HttpServlet {
     return Arrays.asList(links.split(","));
   }
 
-  private DateTimeRange formatDateTimeRange(String startDate, String startTime, String endDate, String endTime, Long tzShift) {
+  private DateTimeRange formatDateTimeRange(String startDate, String startTime, String endDate, String endTime,
+      Long tzShift) {
     if (endDate == null || endTime == null)
       return new DateTimeRange(startDate, startTime, tzShift);
     return new DateTimeRange(startDate, endDate, startTime, endTime, tzShift);
