@@ -25,7 +25,7 @@ import com.google.gson.JsonObject;
 import com.google.inject.Inject;
 import com.google.sps.data.Event;
 import com.google.sps.data.EventStorage;
-import com.google.sps.data.Time;
+import com.google.sps.data.TimeEvent;
 import com.google.sps.data.DateTimeRange;
 import com.google.sps.data.User;
 import com.google.sps.data.UserStorage;
@@ -39,6 +39,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -79,7 +80,7 @@ public class EventServlet extends HttpServlet {
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String pathName = request.getPathInfo();
-    
+
     if (!userService.isUserLoggedIn()) {
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
       return;
@@ -309,15 +310,18 @@ public class EventServlet extends HttpServlet {
       response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
       return;
     }
-    Vector<Time> busyTimesForAttendees = utilsObject.getBusyTimesForAttendees(response, flow, usersCredentials,
-        startDateTimeWithShift, endDateTimeWithShift);
+    Vector<TimeEvent> busyTimesForAttendees = utilsObject.getBusyTimesForAttendees(response, flow, usersCredentials,
+        joinedParticipantsIds, startDateTimeWithShift, endDateTimeWithShift);
     writeFreeTimesFromInterval(startDateTimeWithShift.getValue(), endDateTimeWithShift.getValue(), duration,
-        busyTimesForAttendees, response);
+        busyTimesForAttendees, joinedParticipantsIds, response);
   }
 
-  private void writeFreeTimesFromInterval(Long start, Long end, Long duration, Vector<Time> busyTimes,
-      HttpServletResponse response) throws IOException {
-    List<Time> freeTimes = new ArrayList<>();
+  private void writeFreeTimesFromInterval(Long start, Long end, Long duration, Vector<TimeEvent> busyTimes,
+      List<String> joinedParticipantsIds, HttpServletResponse response) throws IOException {
+    List<String> joinedParticipantsUsernames = joinedParticipantsIds.stream()
+        .map(id -> userStorageObject.getUsernameByID(id)).collect(Collectors.toList());
+    List<TimeEvent> freeTimesForAll = new ArrayList<>();
+    List<TimeEvent> freeTimesForSome = new ArrayList<>();
     final Long SHIFT = Long.valueOf(1000 * 60 * 15);
     Long currentStart = start;
     Long currentEnd = start + duration * 60 * 1000;
@@ -326,13 +330,29 @@ public class EventServlet extends HttpServlet {
       final Long innerCurrentStart = Long.valueOf(currentStart);
       final Long innerCurrentEnd = Long.valueOf(currentEnd);
       if (!busyTimes.stream().anyMatch(time -> time.overlaps(innerCurrentStart, innerCurrentEnd))) {
-        freeTimes.add(new Time(currentStart, currentEnd));
+        freeTimesForAll.add(new TimeEvent(currentStart, currentEnd));
+      } else {
+        Set<String> unavailableParticipants = busyTimes.stream()
+            .filter(busyTime -> busyTime.overlaps(innerCurrentStart, innerCurrentEnd))
+            .map(overlappedTime -> userStorageObject.getUsernameByID(overlappedTime.getOwnerID()))
+            .collect(Collectors.toSet());
+        List<String> availableParticipants = new ArrayList<>(joinedParticipantsUsernames);
+        availableParticipants.removeAll(unavailableParticipants);
+        if (availableParticipants.size() < 2) {
+          currentStart = currentStart + SHIFT;
+          currentEnd += SHIFT;
+          continue;
+        }
+        freeTimesForSome.add(new TimeEvent(currentStart, currentEnd, availableParticipants));
       }
       currentStart = currentStart + SHIFT;
       currentEnd += SHIFT;
     }
+    if (freeTimesForAll.size() < 5) {
+      freeTimesForAll.addAll(freeTimesForSome);
+    }
     response.setContentType("application/json");
-    response.getWriter().println(new Gson().toJson(freeTimes));
+    response.getWriter().println(new Gson().toJson(freeTimesForAll));
 
     return;
   }
@@ -373,7 +393,7 @@ public class EventServlet extends HttpServlet {
       return false;
     }
     response.setContentType("application/json;");
-    
+
     event.setOwnerID(userStorageObject.getUsernameByID(event.getOwnerID()));
     event.setInvitedIDs(IDsToUsernames(event.getInvitedIDs()));
     event.setJoinedIDs(IDsToUsernames(event.getJoinedIDs()));
@@ -449,10 +469,10 @@ public class EventServlet extends HttpServlet {
   }
 
   private List<String> IDsToUsernames(List<String> IDs) {
-    return IDs != null
-        ? IDs.stream().map(id -> userStorageObject.getUsernameByID(id))
-            .filter(Objects::nonNull).collect(Collectors.toList())
-        : null;
+    if (IDs == null)
+      return null;
+    return IDs.stream().map(id -> userStorageObject.getUsernameByID(id)).filter(Objects::nonNull)
+      .collect(Collectors.toList());
   }
 
   private List<String> parseInvitedIDs(String[] invitedIDs) {
@@ -470,7 +490,8 @@ public class EventServlet extends HttpServlet {
     return Arrays.asList(links.split(","));
   }
 
-  private DateTimeRange formatDateTimeRange(String startDate, String startTime, String endDate, String endTime, Long tzShift) {
+  private DateTimeRange formatDateTimeRange(String startDate, String startTime, String endDate, String endTime,
+      Long tzShift) {
     if (endDate == null || endTime == null)
       return new DateTimeRange(startDate, startTime, tzShift);
     return new DateTimeRange(startDate, endDate, startTime, endTime, tzShift);

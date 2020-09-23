@@ -27,12 +27,10 @@ import com.google.api.services.calendar.model.FreeBusyRequestItem;
 import com.google.api.services.calendar.model.FreeBusyResponse;
 import com.google.api.services.calendar.model.TimePeriod;
 import com.google.api.services.calendar.model.Event.ExtendedProperties;
-import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.users.UserServiceFactory;
-import com.google.sps.data.Event;
-import com.google.sps.data.Time;
+import com.google.sps.data.TimeEvent;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -46,6 +44,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
@@ -147,16 +146,20 @@ public class Utils {
     return;
   }
 
-  protected Vector<Time> getBusyTimesForAttendees(HttpServletResponse response, AuthorizationCodeFlow flow,
-      List<Credential> usersCredentials, DateTime startDateTimeWithShift, DateTime endDateTimeWithShift) {
-    Vector<Time> busyTimesForAttendees = new Vector<>();
+  protected Vector<TimeEvent> getBusyTimesForAttendees(HttpServletResponse response, AuthorizationCodeFlow flow,
+      List<Credential> usersCredentials, List<String> participantsIds, DateTime startDateTimeWithShift,
+      DateTime endDateTimeWithShift) {
+    Vector<TimeEvent> busyTimesForAttendees = new Vector<>();
+    AtomicInteger currentRequestNumber = new AtomicInteger(0);
     JsonBatchCallback<FreeBusyResponse> callback = new JsonBatchCallback<FreeBusyResponse>() {
 
       public void onSuccess(FreeBusyResponse apiResponse, HttpHeaders responseHeaders) throws IOException {
         FreeBusyCalendar freeBusyCalendar = apiResponse.getCalendars().get("primary");
+        String userIdForThisRequest = participantsIds.get(currentRequestNumber.getAndIncrement());
         List<TimePeriod> userBusyTimes = freeBusyCalendar.getBusy();
         userBusyTimes.forEach(busyTime -> {
-          busyTimesForAttendees.add(new Time(busyTime.getStart().getValue(), busyTime.getEnd().getValue()));
+          busyTimesForAttendees
+              .add(new TimeEvent(busyTime.getStart().getValue(), busyTime.getEnd().getValue(), userIdForThisRequest));
         });
       }
 
@@ -176,13 +179,12 @@ public class Utils {
       } catch (GeneralSecurityException e1) {
         e1.printStackTrace();
       }
-      try {
-        batchRequest.execute();
-      } catch (IOException e1) {
-        e1.printStackTrace();
-      }
-      return;
     });
+    try {
+      batchRequest.execute();
+    } catch (IOException e1) {
+      e1.printStackTrace();
+    }
     return busyTimesForAttendees;
   }
 

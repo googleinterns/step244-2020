@@ -561,15 +561,40 @@ function loadFreeTimes() {
   }
 
   fetch("/events/schedule?eventId=" + eventId).then(handleError).then(response => response.json()).then(freeTimes => {
+    if (freeTimes.length == 0) {
+      alert("We couldn't find any possible times for your event.")
+      return ;
+    }
     freeTimes.forEach(freeTime => {
       var toStartDate = new Date(freeTime.start);
       var toEndDate = new Date(freeTime.end);
       var buttonElem = document.createElement("button");
-      buttonElem.classList.add("btn", "btn-success");
-      buttonElem.innerText = toStartDate.toLocaleString() + "  ///  " + toEndDate.toLocaleString();
+      if (typeof freeTime.availableAttendees === "undefined")
+        buttonElem.classList.add("btn", "btn-success");
+      else buttonElem.classList.add("btn", "btn-primary");
+
+      var rangeNode = document.createTextNode(toStartDate.toLocaleString() + "  ///  " + toEndDate.toLocaleString());
+      buttonElem.appendChild(rangeNode);
+      if (typeof freeTime.availableAttendees !== "undefined") {
+        var infoNode = document.createTextNode("For this event just the following people are available:");
+        var attendeesNode = document.createTextNode("");
+        var firstIteration = true;
+        freeTime.availableAttendees.forEach(attendee => {
+          if (!firstIteration) {
+            attendeesNode.nodeValue += ", " + attendee;
+          } else {
+            firstIteration = false;
+            attendeesNode.nodeValue += attendee;
+          }
+        });
+        buttonElem.appendChild(document.createElement("BR"));
+        buttonElem.appendChild(infoNode);
+        buttonElem.appendChild(document.createElement("BR"));
+        buttonElem.appendChild(attendeesNode);
+      }
       buttonElem.setAttribute("onclick", "setTime('" + eventId + "','" + toStartDate.toISOString() + "')");
       document.getElementById("page-content-wrapper").appendChild(buttonElem);
-    })
+    });
   }).catch(error => {
     if (error == 401)
       alert("You are not the owner of the event. You cannot select the time.");
