@@ -92,11 +92,7 @@ public class EventServlet extends HttpServlet {
       String end = request.getParameter("end");
       String duration = request.getParameter("duration");
       String location = request.getParameter("location");
-      String tagsString = request.getParameter("tags");
-      if (tagsString == null) {
-        tagsString = "";
-      }
-      List<String> tags = Arrays.asList(tagsString.split("\\s*,\\s*"));
+      List<String> tags = parseTags(request.getParameterValues("tags"));
 
       Search search = new Search(text, category, start, end, duration, location, tags);
 
@@ -217,9 +213,9 @@ public class EventServlet extends HttpServlet {
         }
       }
     }
-    boolean isPublic = false;
-    if (request.getParameter("is-public") == "on") {
-      isPublic = true;
+    boolean isPublic = true;
+    if (request.getParameter("is-public") == null) {
+      isPublic = false;
     }
     Long tzShift = parseLongFromString(request.getParameter("tzShift"));
     if (tzShift == null) {
