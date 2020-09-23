@@ -35,9 +35,9 @@ public final class SearchTest {
   
   private static final Search NULL_SEARCH = new Search();
   private static final Search EMPTY_SEARCH = new Search("", "all", "", "", null, null, EMPTY_TAGS);
-  private static final Search SEARCH_A = new Search("Meeting", "Business", "2020-06-06", "2020-07-07", null, null, TAGS_A);
+  private static final Search SEARCH_A = new Search("Meeting tomorrow", "Business", "2020-06-06", "2020-07-07", null, null, TAGS_A);
   private static final Search SEARCH_B = new Search("eti", "Education", "2020-06-06", null, null, null, TAGS_B);
-  private static final Search SEARCH_C = new Search("pEn", "Education", "", "2020-08-06", null, null, TAGS_C);
+  private static final Search SEARCH_C = new Search("pEn aPPle", "Education", "", "2020-08-06", null, null, TAGS_C);
 
   private static final String TITLE_A = "Meeting";
   private static final String TITLE_B = "Party";
@@ -95,12 +95,11 @@ public final class SearchTest {
   public void textContainingMatches() {
     Assert.assertTrue(SEARCH_A.isTextMatching(TITLE_A));
     Assert.assertTrue(SEARCH_A.isTextMatching(DESCRIPTION_C));
-    Assert.assertTrue(SEARCH_B.isTextMatching(TITLE_D));
   }
 
   @Test
   public void textContainingDoesntMatch() {
-    Assert.assertFalse(SEARCH_A.isTextMatching(TITLE_D));
+    Assert.assertFalse(SEARCH_C.isTextMatching(TITLE_D));
   }
 
   @Test
@@ -120,10 +119,8 @@ public final class SearchTest {
   @Test
   public void titleOrDescriptionMatches() {
     Assert.assertTrue(SEARCH_A.isSearchedTextMatching(TITLE_A, DESCRIPTION_A));
-    Assert.assertTrue(SEARCH_B.isSearchedTextMatching(TITLE_A, DESCRIPTION_A));
     Assert.assertTrue(SEARCH_C.isSearchedTextMatching(TITLE_A, DESCRIPTION_A));
     Assert.assertTrue(SEARCH_A.isSearchedTextMatching(TITLE_C, DESCRIPTION_C));
-    Assert.assertTrue(SEARCH_B.isSearchedTextMatching(TITLE_C, DESCRIPTION_C));
   }
 
   @Test
