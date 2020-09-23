@@ -23,6 +23,9 @@ import java.util.stream.*;
 import org.apache.commons.lang3.StringUtils;
 
 public class Search {
+
+  private final int MAX_DISTANCE = 3;
+
   private final String text;
   private final String category;
   private final String start;
@@ -95,7 +98,7 @@ public class Search {
     for (String string : stringList) {
       int length = string.length();
       for (String text : textList) {
-        int distance = Math.min(Math.min(text.length(), length) / 2, 3);
+        int distance = Math.min(Math.min(text.length(), length) / 2, MAX_DISTANCE);
         if (StringUtils.getLevenshteinDistance(string, text) <= distance) {
           return true;
         }
