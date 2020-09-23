@@ -79,7 +79,7 @@ public class Event {
         .setDateTimeRange(new Gson().fromJson((String) eventEntity.getProperty("date-time-range"), DateTimeRange.class))
         .setDuration((Long) eventEntity.getProperty("duration"))
         .setLocation((String) eventEntity.getProperty("location"))
-        .setIsPublic((boolean) eventEntity.getProperty("isPublic"))
+        .setIsPublic((boolean) eventEntity.getProperty("is-public"))
         .setLocationId((String) eventEntity.getProperty("location-id"))
         .setLinks((ArrayList) eventEntity.getProperty("links"))
         .setFields(new Gson().fromJson((String) eventEntity.getProperty("fields"), Map.class))
@@ -183,11 +183,13 @@ public class Event {
   }
 
   public boolean joinEvent(String userId) {
-    if (isPublic == false && invitedUsersId == null)
-        return false;
+    if (isPublic) {
+      joinedUsersId.add(userId);
+      return true;
+    }
     if (joinedUsersId == null)
-        joinedUsersId = new ArrayList<>();
-    if (invitedUsersId.contains(userId) || isPublic) {
+      joinedUsersId = new ArrayList<>();
+    if (invitedUsersId.contains(userId)) {
       invitedUsersId.remove(userId);
       joinedUsersId.add(userId);
       return true;

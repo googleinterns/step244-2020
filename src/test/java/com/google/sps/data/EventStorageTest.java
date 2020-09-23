@@ -169,7 +169,7 @@ public class EventStorageTest {
     entity.setProperty("invited-users", event.getInvitedIDs());
     entity.setProperty("joined-users", event.getJoinedIDs());
     entity.setProperty("declined-users", event.getDeclinedIDs());
-    entity.setProperty("isPublic", event.isPublic());
+    entity.setProperty("is-public", event.isPublic());
 
     return entity;
   }

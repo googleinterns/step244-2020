@@ -107,7 +107,6 @@ function getEvent(event_id) {
       document.getElementById('weather-clouds-info').innerText = "Clouds: " + weather.clouds;
       document.getElementById('weather-icon').src = `https://openweathermap.org/img/wn/${weather.iconId}@2x.png`;
     });
-
   });
 }
 

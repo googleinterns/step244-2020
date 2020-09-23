@@ -217,9 +217,9 @@ public class EventServlet extends HttpServlet {
         }
       }
     }
-    boolean isPublic = true;
-    if (request.getParameter("is-public") == null) {
-      isPublic = false;
+    boolean isPublic = false;
+    if (request.getParameter("is-public") == "on") {
+      isPublic = true;
     }
     Long tzShift = parseLongFromString(request.getParameter("tzShift"));
     if (tzShift == null) {
