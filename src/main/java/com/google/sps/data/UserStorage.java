@@ -64,16 +64,12 @@ public class UserStorage {
     DatastoreServiceFactory.getDatastoreService().put(userEntity);
   }
 
-  public void deleteUser(String userId) {
-    DatastoreServiceFactory.getDatastoreService().delete(KeyFactory.createKey("User", userId));
-  }
-
   public String getIDbyUsername(String username) {
     Query query = new Query("User").setFilter(new FilterPredicate("username", FilterOperator.EQUAL, username));
 
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
     Entity userEntity = datastore.prepare(query).asSingleEntity();
-    return userEntity != null ? (String) userEntity.getProperty("id") : null;
+    return userEntity != null ? userEntity.getKey().getName() : null;
   }
 
   public String getUsernameByID(String userId) {
@@ -95,16 +91,4 @@ public class UserStorage {
     new EventStorage().joinEvent(userId, eventId);
   }
 
-  public List<Event> search() {
-    Query query = new Query("EventInfo");
-
-    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-    PreparedQuery results = datastore.prepare(query);
-
-    List<Event> events = new ArrayList<>();
-    for (Entity entity : results.asIterable()) {
-    }
-    // TODO: Search with parameters.
-    return events;
-  }
 }
