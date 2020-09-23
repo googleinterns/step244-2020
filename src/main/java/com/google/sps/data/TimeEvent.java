@@ -3,27 +3,27 @@ package com.google.sps.data;
 import java.util.List;
 import java.util.Objects;
 
-public class Time implements Comparable<Time> {
+public class TimeEvent implements Comparable<TimeEvent> {
   private Long start;
   private Long end;
   private String ownerID;
   private List<String> availableAttendees;
 
-  public Time(Long start, Long end, List<String> availableAttendees) {
+  public TimeEvent(Long start, Long end, List<String> availableAttendees) {
     this.start = start;
     this.end = end;
     this.availableAttendees = availableAttendees;
     this.ownerID = null;
   }
 
-  public Time(Long start, Long end) {
+  public TimeEvent(Long start, Long end) {
     this.start = start;
     this.end = end;
     this.availableAttendees = null;
     this.ownerID = null;
   }
 
-  public Time(Long start, Long end, String ownerId) {
+  public TimeEvent(Long start, Long end, String ownerId) {
     this.start = start;
     this.end = end;
     this.ownerID = ownerId;
@@ -32,9 +32,9 @@ public class Time implements Comparable<Time> {
 
   @Override
   public boolean equals(Object obj) {
-    if (!(obj instanceof Time))
+    if (!(obj instanceof TimeEvent))
       return false;
-    Time other = (Time) obj;
+    TimeEvent other = (TimeEvent) obj;
     return Objects.equals(this.start, other.start) && Objects.equals(this.end, other.end)
         && Objects.equals(this.availableAttendees, other.availableAttendees)
         && Objects.equals(this.ownerID, other.ownerID);
@@ -53,7 +53,7 @@ public class Time implements Comparable<Time> {
   }
 
   @Override
-  public int compareTo(Time other) {
+  public int compareTo(TimeEvent other) {
     return Long.compare(this.start, other.start);
   }
 

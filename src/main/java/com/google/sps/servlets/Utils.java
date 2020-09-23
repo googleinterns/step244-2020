@@ -30,7 +30,7 @@ import com.google.api.services.calendar.model.Event.ExtendedProperties;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.users.UserServiceFactory;
-import com.google.sps.data.Time;
+import com.google.sps.data.TimeEvent;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -146,20 +146,20 @@ public class Utils {
     return;
   }
 
-  protected Vector<Time> getBusyTimesForAttendees(HttpServletResponse response, AuthorizationCodeFlow flow,
+  protected Vector<TimeEvent> getBusyTimesForAttendees(HttpServletResponse response, AuthorizationCodeFlow flow,
       List<Credential> usersCredentials, List<String> participantsIds, DateTime startDateTimeWithShift,
       DateTime endDateTimeWithShift) {
-    Vector<Time> busyTimesForAttendees = new Vector<>();
-    AtomicInteger atomicInt = new AtomicInteger(0);
+    Vector<TimeEvent> busyTimesForAttendees = new Vector<>();
+    AtomicInteger currentRequestNumber = new AtomicInteger(0);
     JsonBatchCallback<FreeBusyResponse> callback = new JsonBatchCallback<FreeBusyResponse>() {
 
       public void onSuccess(FreeBusyResponse apiResponse, HttpHeaders responseHeaders) throws IOException {
         FreeBusyCalendar freeBusyCalendar = apiResponse.getCalendars().get("primary");
-        String userIdForThisRequest = participantsIds.get(atomicInt.getAndIncrement());
+        String userIdForThisRequest = participantsIds.get(currentRequestNumber.getAndIncrement());
         List<TimePeriod> userBusyTimes = freeBusyCalendar.getBusy();
         userBusyTimes.forEach(busyTime -> {
           busyTimesForAttendees
-              .add(new Time(busyTime.getStart().getValue(), busyTime.getEnd().getValue(), userIdForThisRequest));
+              .add(new TimeEvent(busyTime.getStart().getValue(), busyTime.getEnd().getValue(), userIdForThisRequest));
         });
       }
 
