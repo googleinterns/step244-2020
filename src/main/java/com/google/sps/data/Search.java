@@ -139,6 +139,6 @@ public class Search {
         && Objects.equals(end, other.getEnd())
         && Objects.equals(duration, other.getDuration())
         && Objects.equals(location, other.getLocation())
-        && Objects.equals(listToParameterString(tags), other.getTagsAsStringForParameters());
+        && Objects.equals(tags, other.getTags());
   }
 }
