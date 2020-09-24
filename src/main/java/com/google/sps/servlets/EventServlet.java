@@ -93,11 +93,7 @@ public class EventServlet extends HttpServlet {
       String end = request.getParameter("end");
       String duration = request.getParameter("duration");
       String location = request.getParameter("location");
-      String tagsString = request.getParameter("tags");
-      if (tagsString == null) {
-        tagsString = "";
-      }
-      List<String> tags = Arrays.asList(tagsString.split("\\s*,\\s*"));
+      List<String> tags = parseTags(request.getParameterValues("tags"));
 
       Search search = new Search(text, category, start, end, duration, location, tags);
 
