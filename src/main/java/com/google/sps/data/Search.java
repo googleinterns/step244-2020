@@ -14,12 +14,18 @@
 
 package com.google.sps.data;
 
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.*;
 
+import org.apache.commons.lang3.StringUtils;
+
 public class Search {
+
+  private final int MAX_DISTANCE = 3;
+
   private final String text;
   private final String category;
   private final String start;
@@ -85,8 +91,20 @@ public class Search {
     return text == null || text.isEmpty() || isTextMatching(title) || isTextMatching(description);
   }
 
-  public boolean isTextMatching(String string) {
-    return string.toLowerCase().contains(text.toLowerCase());
+  public boolean isTextMatching(String stringToMatch) {
+    List<String> stringList = Arrays.asList(stringToMatch.toLowerCase().split("\\s+"));
+    List<String> textList = Arrays.asList(this.text.toLowerCase().split("\\s+"));
+
+    for (String string : stringList) {
+      int length = string.length();
+      for (String text : textList) {
+        int distance = Math.min(Math.min(text.length(), length) / 2, MAX_DISTANCE);
+        if (StringUtils.getLevenshteinDistance(string, text) <= distance) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   public boolean eventInRange(DateTimeRange range) {
