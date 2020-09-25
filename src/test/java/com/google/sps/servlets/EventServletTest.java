@@ -33,9 +33,12 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.api.client.auth.oauth2.AuthorizationCodeFlow;
+import com.google.api.client.auth.oauth2.BearerToken;
+import com.google.api.client.auth.oauth2.Credential;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
-
+import com.google.appengine.tools.development.testing.LocalDatastoreServiceTestConfig;
+import com.google.appengine.tools.development.testing.LocalServiceTestHelper;
 import com.google.gson.Gson;
 
 import com.google.sps.data.DateTimeRange;
@@ -44,6 +47,8 @@ import com.google.sps.data.EventStorage;
 import com.google.sps.data.UserStorage;
 import com.google.sps.data.Search;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -67,6 +72,18 @@ public class EventServletTest {
   HttpServletResponse mockResponse;
   @Rule
   public MockitoRule mockitoRule = MockitoJUnit.rule();
+
+  private final LocalServiceTestHelper helper = new LocalServiceTestHelper(new LocalDatastoreServiceTestConfig());
+
+  @Before
+  public void setUp() {
+    helper.setUp();
+  }
+
+  @After
+  public void tearDown() {
+    helper.tearDown();
+  }
 
   private static final List<String> LIST = new ArrayList<>();
   private static final Map<String, String> MAP = new HashMap<>();
@@ -262,5 +279,27 @@ public class EventServletTest {
     verify(mockEventStorage, atLeast(1)).getSearchedEvents(eq(SEARCH));
     writer.flush();
     assertTrue(stringWriter.toString().contains(new Gson().toJson(EVENT_LIST)));
+  }
+
+  @Test
+  public void eventServletTest_getCredentialsFromUserList_returnsValidCredentials()
+      throws InterruptedException, IOException {
+    when(mockFlow.loadCredential("cred1"))
+        .thenReturn(new Credential(BearerToken.authorizationHeaderAccessMethod()).setAccessToken("token1"));
+    when(mockFlow.loadCredential("cred2"))
+        .thenReturn(new Credential(BearerToken.authorizationHeaderAccessMethod()).setAccessToken("token2"));
+    when(mockFlow.loadCredential("cred3"))
+        .thenReturn(new Credential(BearerToken.authorizationHeaderAccessMethod()).setAccessToken("token3"));
+
+    List<Credential> returnedCredentials = new EventServlet(mockUserStorage, mockEventStorage, mockUserService,
+        mockUtilsObject, mockFlow).getCredentialsFromUserList(Arrays.asList("cred1", "cred2", "cred3"));
+
+    verify(mockFlow, atLeast(1)).loadCredential("cred1");
+    verify(mockFlow, atLeast(1)).loadCredential("cred2");
+    verify(mockFlow, atLeast(1)).loadCredential("cred3");
+    assertTrue(returnedCredentials.size() == 3);
+    assertTrue(returnedCredentials.get(0).getAccessToken().equals("token1"));
+    assertTrue(returnedCredentials.get(1).getAccessToken().equals("token2"));
+    assertTrue(returnedCredentials.get(2).getAccessToken().equals("token3"));
   }
 }

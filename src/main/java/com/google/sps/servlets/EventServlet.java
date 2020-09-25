@@ -353,7 +353,7 @@ public class EventServlet extends HttpServlet {
     return;
   }
 
-  private List<Credential> getCredentialsFromUserList(List<String> userIds) throws InterruptedException {
+  protected List<Credential> getCredentialsFromUserList(List<String> userIds) throws InterruptedException {
     List<Credential> usersCredential = new ArrayList<>();
     ExecutorService executorService = Executors.newCachedThreadPool(ThreadManager.currentRequestThreadFactory());
     List<Callable<Credential>> callables = new ArrayList<>();
