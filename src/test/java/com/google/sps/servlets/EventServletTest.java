@@ -282,21 +282,24 @@ public class EventServletTest {
   }
 
   @Test
-  public void eventServletTest_getCredentialsFromUserList_returnsValidCredentials() throws InterruptedException,
-      IOException {
-    when(mockFlow.loadCredential("1")).thenReturn(new Credential(BearerToken.authorizationHeaderAccessMethod()).setAccessToken("1"));
-    when(mockFlow.loadCredential("2")).thenReturn(new Credential(BearerToken.authorizationHeaderAccessMethod()).setAccessToken("2"));
-    when(mockFlow.loadCredential("3")).thenReturn(new Credential(BearerToken.authorizationHeaderAccessMethod()).setAccessToken("3"));
-   
-    List<Credential> returnedCredentials = new EventServlet(mockUserStorage, mockEventStorage, mockUserService, mockUtilsObject, mockFlow)
-        .getCredentialsFromUserList(Arrays.asList("1", "2", "3"));
-      
-    verify(mockFlow, atLeast(1)).loadCredential("1");
-    verify(mockFlow, atLeast(1)).loadCredential("2");
-    verify(mockFlow, atLeast(1)).loadCredential("3");
+  public void eventServletTest_getCredentialsFromUserList_returnsValidCredentials()
+      throws InterruptedException, IOException {
+    when(mockFlow.loadCredential("cred1"))
+        .thenReturn(new Credential(BearerToken.authorizationHeaderAccessMethod()).setAccessToken("token1"));
+    when(mockFlow.loadCredential("cred2"))
+        .thenReturn(new Credential(BearerToken.authorizationHeaderAccessMethod()).setAccessToken("token2"));
+    when(mockFlow.loadCredential("cred3"))
+        .thenReturn(new Credential(BearerToken.authorizationHeaderAccessMethod()).setAccessToken("token3"));
+
+    List<Credential> returnedCredentials = new EventServlet(mockUserStorage, mockEventStorage, mockUserService,
+        mockUtilsObject, mockFlow).getCredentialsFromUserList(Arrays.asList("cred1", "cred2", "cred3"));
+
+    verify(mockFlow, atLeast(1)).loadCredential("cred1");
+    verify(mockFlow, atLeast(1)).loadCredential("cred2");
+    verify(mockFlow, atLeast(1)).loadCredential("cred3");
     assertTrue(returnedCredentials.size() == 3);
-    assertTrue(returnedCredentials.get(0).getAccessToken().equals("1"));
-    assertTrue(returnedCredentials.get(1).getAccessToken().equals("2"));
-    assertTrue(returnedCredentials.get(2).getAccessToken().equals("3"));
+    assertTrue(returnedCredentials.get(0).getAccessToken().equals("token1"));
+    assertTrue(returnedCredentials.get(1).getAccessToken().equals("token2"));
+    assertTrue(returnedCredentials.get(2).getAccessToken().equals("token3"));
   }
 }
